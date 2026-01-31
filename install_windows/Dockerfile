@@ -44,11 +44,21 @@ RUN cd f1tenth_gym && \
 # ros2 gym bridge
 RUN mkdir -p sim_ws/src/f1tenth_gym_ros
 RUN git clone https://github.com/f1tenth/f1tenth_gym_ros.git /sim_ws/src/f1tenth_gym_ros
-# COPY . /sim_ws/src/f1tenth_gym_ros
-RUN source /opt/ros/foxy/setup.bash && \
+
+# add levine_blocked map into f1tenth simulator
+RUN git clone https://github.com/f1tenth/f1tenth_lab4_template.git /tmp/lab4_temp && \
+    mkdir -p /sim_ws/src/f1tenth_gym_ros/maps && \
+    cp /tmp/lab4_temp/gap_follow/levine_blocked.png /sim_ws/src/f1tenth_gym_ros/maps/ && \
+    cp /tmp/lab4_temp/gap_follow/levine_blocked.yaml /sim_ws/src/f1tenth_gym_ros/maps/ && \
+    rm -rf /tmp/lab4_temp
+
+
+# COPY . /sim_ws/src/f1tenth_gym_rosRUN 
+source /opt/ros/foxy/setup.bash && \
     cd sim_ws/ && \
     apt-get update --fix-missing && \
     rosdep install -i --from-path src --rosdistro foxy -y && \
     colcon build
 
 ENTRYPOINT ["/bin/bash"]
+
