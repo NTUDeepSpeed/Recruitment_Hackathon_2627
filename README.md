@@ -1,3 +1,14 @@
+# Notes for Hackathon
+#### We have provided a template for gap finder under `f1tenth_simulator/gap_finder_template.py` as a foundation for you to build your algorithm
+
+#### We have included the race tracks that will be used for final evaluation. Do follow the steps below to rebuild your container to get the latest changes. (Windows users should do this in WSL)
+``` bash
+cd ~/F1Tenth_Workshop_2526
+git pull # pull the changes
+```
+Once completed, repeat the `Docker Setup` step in the installation guide below.
+
+
 # ROS2_Workshop
   
 # Installation
