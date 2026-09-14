@@ -1,11 +1,7 @@
 # Notes for Hackathon
 #### We have provided a template for gap finder under `f1tenth_simulator/gap_finder_template.py` as a foundation for you to build your algorithm
 
-#### We have included the race tracks that will be used for final evaluation. Do follow the steps below to rebuild your container to get the latest changes. (Windows users should do this in WSL)
-``` bash
-cd ~/F1Tenth_Workshop_2627
-git pull # pull the changes
-```
+#### The track used for the hackathon will be released after the info talk ends
 Once completed, repeat the `Docker Setup` step in the installation guide below.
 
 
@@ -15,7 +11,7 @@ Once completed, repeat the `Docker Setup` step in the installation guide below.
 
 ## Windows
 
-1. [Install docker](https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe)
+1. [Download and Install docker](https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe)
 3. **After docker is installed**, install WSL by launching Windows Powershell as **administrator** and running the following command
    
     ```powershell
