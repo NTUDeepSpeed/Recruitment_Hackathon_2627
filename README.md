@@ -3,7 +3,6 @@
 
 #### We have included the race tracks that will be used for final evaluation. Do follow the steps below to rebuild your container to get the latest changes. (Windows users should do this in WSL)
 ``` bash
-git clone https://github.com/NTUDeepSpeed/F1Tenth_Workshop_2627
 cd ~/F1Tenth_Workshop_2627
 git pull # pull the changes
 ```
