@@ -3,7 +3,7 @@
 
 #### We have included the race tracks that will be used for final evaluation. Do follow the steps below to rebuild your container to get the latest changes. (Windows users should do this in WSL)
 ``` bash
-cd ~/F1Tenth_Workshop_2526
+cd ~/F1Tenth_Workshop_2627
 git pull # pull the changes
 ```
 Once completed, repeat the `Docker Setup` step in the installation guide below.
@@ -35,14 +35,14 @@ Once completed, repeat the `Docker Setup` step in the installation guide below.
    ```
 6. Clone this repository
    ```sh
-   git clone https://github.com/NTU-Autonomous-Racing-Team/F1Tenth_Workshop_2526.git ~/F1Tenth_Workshop_2526/
+   git clone https://github.com/NTU-Autonomous-Racing-Team/F1Tenth_Workshop_2627.git ~/F1Tenth_Workshop_2627/
    ```
    > If you can't copy paste, right click powershell then navigate to `Properties > Tick "Use Ctrl+Shift+C/V as copy paste`"
 8. Docker Setup
     - Setting up docker container
       
       ```sh
-      cd ~/F1Tenth_Workshop_2526/install_windows/
+      cd ~/F1Tenth_Workshop_2627/install_windows/
       sudo docker network create f1tenth_net
       sudo docker build -t f1tenth_gym_ros .
       ```
@@ -77,13 +77,13 @@ Once completed, repeat the `Docker Setup` step in the installation guide below.
 2.  Clone this repository
    
      ```sh
-     git clone https://github.com/NTU-Autonomous-Racing-Team/F1Tenth_Workshop_2526.git ~/F1Tenth_Workshop_2526/
+     git clone https://github.com/NTU-Autonomous-Racing-Team/F1Tenth_Workshop_2627.git ~/F1Tenth_Workshop_2627/
      ```
 3. Launch Docker
 4. Docker Setup
     - Setting up docker containers
       ```sh
-      cd ~/F1Tenth_Workshop_2526/install_macos/
+      cd ~/F1Tenth_Workshop_2627/install_macos/
       docker compose -p f1tenth_gym_ros up -d
       ```
     
@@ -100,13 +100,13 @@ Once completed, repeat the `Docker Setup` step in the installation guide below.
 3. Clone this repository
    
     ```sh
-    git clone https://github.com/NTU-Autonomous-Racing-Team/F1Tenth_Workshop_2526.git ~/F1Tenth_Workshop_2526/
+    git clone https://github.com/NTU-Autonomous-Racing-Team/F1Tenth_Workshop_2627.git ~/F1Tenth_Workshop_2627/
     ```
     
 5. Docker Setup
     - Setting up docker container      
       ```sh
-      cd ~/F1Tenth_Workshop_2526/install_linux/
+      cd ~/F1Tenth_Workshop_2627/install_linux/
       sudo docker network create f1tenth_net
       sudo docker build -t f1tenth_gym_ros .
       ```
