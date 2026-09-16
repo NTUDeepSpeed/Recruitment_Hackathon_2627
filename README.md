@@ -94,6 +94,30 @@ docs-site/
 └── static/            Favicon and anything else copied as-is
 ```
 
+### The platform switch
+
+The site carries a Linux / macOS / Windows switch, and every documented command
+follows it. Two things drive it, both detected from the prose — **no special
+Markdown syntax, and nothing to maintain by hand**:
+
+- Any `install/<platform>/…` path in a command becomes all three variants, and
+  CSS shows the one for the reader's platform. Copy buttons give the right
+  command because `innerText` skips what is hidden.
+- A run of consecutive per-platform `###` headings (as under *1.2 Install
+  Docker*) becomes one switchable group, and the contents list follows it.
+- A heading that names its platforms in brackets — *1.6 Running the simulator
+  on your host (macOS, Windows)* — gets a note telling everyone else they can
+  skip it. The section stays visible, because the prose cross-references these
+  by number.
+
+Nothing is rewritten at run time: every variant ships in the HTML, so the page
+is correct before the JavaScript loads. The choice is remembered per reader,
+and defaults to the OS they appear to be on.
+
+Keep writing the Markdown for a GitHub reader, who has no switch. A line like
+`./install/linux/setup.sh  # or install/macos, …` is right there and the site
+hides the redundant half.
+
 ### Build it locally
 
 ```sh

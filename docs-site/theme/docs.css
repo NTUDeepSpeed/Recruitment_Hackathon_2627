@@ -733,3 +733,74 @@ h1:hover .hl, h2:hover .hl, h3:hover .hl, h4:hover .hl { opacity: 1; }
   .shell { display: block; padding: 0; }
   .prose { max-width: none; }
 }
+
+/* ===== Platform switch =============================================== */
+/*
+ * Every platform's variant is in the HTML; CSS shows the one matching
+ * <html data-platform>. Nothing is rewritten at run time, so the page is
+ * already correct before app.js loads, and a copy button lifts the right
+ * command because innerText skips what is display:none.
+ */
+
+[data-pf] { display: none; }
+html[data-platform="linux"]   [data-pf~="linux"],
+html[data-platform="macos"]   [data-pf~="macos"],
+html[data-platform="windows"] [data-pf~="windows"] { display: revert; }
+
+/* Alternatives spelled out for GitHub readers, who have no switch. */
+.pf-alt { display: none; }
+
+.pf-switch {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: var(--r-1);
+  overflow: hidden;
+  flex: none;
+}
+.pf-switch button {
+  appearance: none; -webkit-appearance: none;
+  background: transparent; border: 0;
+  padding: 6px 11px;
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--fg-muted); cursor: pointer; white-space: nowrap;
+  transition: color var(--dur-fast) var(--ease-mech), background var(--dur-fast) var(--ease-mech);
+}
+.pf-switch button + button { border-left: 1px solid var(--line); }
+.pf-switch button:hover { color: var(--fg); }
+.pf-switch button:active { transform: scale(0.97); }
+
+html[data-platform="linux"]   .pf-switch [data-set-pf="linux"],
+html[data-platform="macos"]   .pf-switch [data-set-pf="macos"],
+html[data-platform="windows"] .pf-switch [data-set-pf="windows"] {
+  background: var(--accent); color: var(--ink-0w);
+}
+
+.pf-switch--nav { display: flex; width: 100%; margin-bottom: var(--s-8); }
+.pf-switch--nav button { flex: 1; justify-content: center; padding: 7px 2px; }
+.pf-switch--quick { margin-bottom: var(--s-5); }
+
+/* The switch repeated where the per-platform sections actually start. */
+.pf-tabs {
+  display: flex; align-items: center; gap: var(--s-4); flex-wrap: wrap;
+  margin: var(--s-6) 0 var(--s-6);
+  padding-bottom: var(--s-4);
+  border-bottom: 1px solid var(--line);
+}
+.pf-block > h3:first-child { margin-top: 0; }
+.pf-block > :last-child { margin-bottom: 0; }
+
+/* Said to the platforms a section is not for. The section stays visible —
+   the prose cross-references these by number. */
+.pf-scope {
+  margin: var(--s-4) 0 var(--s-6);
+  padding: var(--s-3) var(--s-4);
+  background: var(--bg-elev-1);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--warn);
+  font-size: var(--t-sm); color: var(--fg-muted);
+  max-width: none;
+}
+
+@media (max-width: 1100px) { .pf-switch--hdr { display: none; } }
+@media print { .pf-switch, .pf-tabs { display: none !important; } }

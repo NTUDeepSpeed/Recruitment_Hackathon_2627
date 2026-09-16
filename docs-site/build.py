@@ -161,15 +161,182 @@ def link_rewriter(repo: str, branch: str):
 
 
 # --------------------------------------------------------------------------
+# Platforms
+#
+# The setup instructions differ by host OS, and the Markdown says so in two
+# ways: `install/<platform>/…` in the commands, and a run of per-platform
+# headings under "Install Docker". Both are turned into one switch here.
+#
+# Nothing is rewritten at run time. Every variant is emitted and CSS shows the
+# one matching `<html data-platform>`, which means the page is correct before
+# the JavaScript runs, and a copy button lifts the right command because
+# innerText skips what is `display: none`.
+# --------------------------------------------------------------------------
+PLATFORMS = (
+    ("linux", "Linux", ("linux", "ubuntu", "debian")),
+    ("macos", "macOS", ("macos", "mac os", "osx", "apple silicon")),
+    ("windows", "Windows", ("windows", "wsl", "powershell")),
+)
+PLATFORM_IDS = tuple(p[0] for p in PLATFORMS)
+PLATFORM_LABEL = {p[0]: p[1] for p in PLATFORMS}
+
+
+def platform_of(text: str) -> str | None:
+    """The single platform a heading is about, or None if it is not about one."""
+    low = re.sub(r"<[^>]+>", " ", text).lower()
+    hits = {pid for pid, _, words in PLATFORMS if any(w in low for w in words)}
+    return hits.pop() if len(hits) == 1 else None
+
+
+def platforms_in(text: str) -> list:
+    low = re.sub(r"<[^>]+>", " ", text).lower()
+    return [pid for pid, _, words in PLATFORMS if any(w in low for w in words)]
+
+
+def platform_switch(extra: str = "") -> str:
+    buttons = "".join(
+        f'<button type="button" data-set-pf="{pid}">{e(label)}</button>'
+        for pid, label, _ in PLATFORMS
+    )
+    return (
+        f'<div class="pf-switch {extra}" role="group" aria-label="Platform">{buttons}</div>'
+    )
+
+
+PLATFORM_PATH_RE = re.compile(r"install/(%s)/" % "|".join(PLATFORM_IDS))
+TEXT_NODE_RE = re.compile(r">([^<]+)<")
+
+
+def swap_platform_paths(body: str) -> str:
+    """`install/linux/` follows the reader's platform wherever it is written."""
+
+    def variants(_match: re.Match) -> str:
+        return "install/" + "".join(
+            f'<span class="pf" data-pf="{pid}">{pid}</span>' for pid in PLATFORM_IDS
+        ) + "/"
+
+    def in_text(match: re.Match) -> str:
+        return ">" + PLATFORM_PATH_RE.sub(variants, match.group(1)) + "<"
+
+    # Only text nodes — never an href, so the GitHub links keep their branch path.
+    return TEXT_NODE_RE.sub(in_text, body)
+
+
+# "# or install/macos, or install/windows from WSL" is there for GitHub, where
+# there is no switch. On the site the path above it is already correct.
+ALT_COMMENT_RE = re.compile(
+    r'(?:<span class="w">\s*</span>|\s)*<span class="c[^"]*">#\s*or install/[^<]*</span>'
+)
+
+
+def hide_platform_alternatives(body: str) -> str:
+    return ALT_COMMENT_RE.sub(lambda m: f'<span class="pf-alt">{m.group(0)}</span>', body)
+
+
+HEADING_RE = re.compile(r"^<(h2|h3|hr)\b([^>]*)>(.*?)(?:</\1>)?$", re.IGNORECASE)
+HEADING_ID_RE = re.compile(r'id="([^"]+)"')
+
+
+def group_platform_sections(body: str) -> tuple:
+    """
+    Fold a run of consecutive per-platform <h3> sections into one switchable
+    group. Returns the rewritten body and {heading id: platform} so the
+    contents list can hide the entries it no longer shows.
+    """
+    lines = body.split("\n")
+
+    # Where each top-level h2/h3/hr starts, so a section is a line range.
+    marks = []
+    for i, line in enumerate(lines):
+        m = HEADING_RE.match(line)
+        if m:
+            marks.append((i, m.group(1).lower(), m.group(3)))
+
+    # A run is >= 2 adjacent h3 marks, each about exactly one platform, with
+    # nothing but their own bodies in between.
+    runs, current = [], []
+    for index, (line_no, tag, text) in enumerate(marks):
+        pid = platform_of(text) if tag == "h3" else None
+        if pid:
+            current.append((index, line_no, pid))
+        else:
+            if len(current) >= 2:
+                runs.append(current)
+            current = []
+    if len(current) >= 2:
+        runs.append(current)
+
+    owned = {}
+    edits = []
+    for run in runs:
+        for position, (index, line_no, pid) in enumerate(run):
+            end = marks[index + 1][0] if index + 1 < len(marks) else len(lines)
+            ident = HEADING_ID_RE.search(lines[line_no])
+            if ident:
+                owned[ident.group(1)] = pid
+            edits.append((line_no, end, pid, position == 0))
+
+    for start, end, pid, first in sorted(edits, reverse=True):
+        opener = f'<div class="pf-block" data-pf="{pid}">'
+        if first:
+            opener = (
+                '<div class="pf-tabs"><span class="eyebrow">Your platform</span>'
+                + platform_switch()
+                + "</div>\n"
+                + opener
+            )
+        lines[start:end] = [opener] + lines[start:end] + ["</div>"]
+
+    return "\n".join(lines), owned
+
+
+SCOPE_RE = re.compile(r"^(<h[23]\b[^>]*>)(.*?)(</h[23]>)$", re.IGNORECASE)
+
+
+def annotate_platform_scope(body: str) -> str:
+    """
+    A heading like "1.6 Running the simulator on your host (macOS, Windows)"
+    names who it is for. Say so to everyone else rather than hiding it — the
+    prose cross-references these sections by number.
+    """
+    out = []
+    for line in body.split("\n"):
+        match = SCOPE_RE.match(line)
+        out.append(line)
+        if not match:
+            continue
+        # Drop the permalink anchor first — it would sit after the bracket.
+        heading = re.sub(r'<a class="hl".*?</a>', "", match.group(2))
+        tail = re.search(r"\(([^)]*)\)\s*$", re.sub(r"<[^>]+>", "", heading).strip())
+        if not tail:
+            continue
+        named = platforms_in(tail.group(1))
+        if not named or len(named) == len(PLATFORM_IDS):
+            continue
+        others = [p for p in PLATFORM_IDS if p not in named]
+        listed = " and ".join(PLATFORM_LABEL[p] for p in named)
+        out.append(
+            f'<p class="pf-scope" data-pf="{" ".join(others)}">'
+            f"This section is for {e(listed)}. You can skip it on "
+            f'{e(" and ".join(PLATFORM_LABEL[p] for p in others))}.</p>'
+        )
+    return "\n".join(out)
+
+
+# --------------------------------------------------------------------------
 # Page model
 # --------------------------------------------------------------------------
 class Page:
-    def __init__(self, slug: str, title: str, body: str, toc: list, source: str):
+    def __init__(self, slug: str, title: str, body: str, toc: list, source: str,
+                 platform_headings: dict | None = None):
         self.slug = slug          # "index" or "03-baselines"
         self.title = title        # "3. Baseline algorithms"
         self.body = body
         self.toc = toc
         self.source = source      # path within the branch, for the "edit" link
+        # {heading id: platform} for headings inside a per-platform section,
+        # so the contents list hides what the page is not showing.
+        self.platform_headings = platform_headings or {}
 
     @property
     def href(self) -> str:
@@ -219,20 +386,32 @@ def convert(md_text: str, repo: str, branch: str, source: str) -> Page:
     body = wrap_tables(body)
     body = link_rewriter(repo, branch)(body)
 
+    # Platform passes run last: grouping walks top-level headings line by line,
+    # so it has to see the finished block structure.
+    body, platform_headings = group_platform_sections(body)
+    body = annotate_platform_scope(body)
+    body = hide_platform_alternatives(body)
+    body = swap_platform_paths(body)
+
     slug = Path(source).stem
     if slug == "README":
         slug = "index"
-    return Page(slug, title, body, getattr(md, "toc_tokens", []), source)
+    return Page(slug, title, body, getattr(md, "toc_tokens", []), source, platform_headings)
 
 
-def render_toc(tokens: list) -> str:
+def render_toc(tokens: list, owned: dict | None = None) -> str:
     if not tokens:
         return ""
+    owned = owned or {}
     out = ["<ul>"]
     for node in tokens:
-        out.append(f'<li><a href="#{html.escape(node["id"])}">{html.escape(node["name"])}</a>')
+        pid = owned.get(node["id"])
+        attr = f' data-pf="{pid}"' if pid else ""
+        out.append(
+            f'<li{attr}><a href="#{html.escape(node["id"])}">{html.escape(node["name"])}</a>'
+        )
         if node.get("children"):
-            out.append(render_toc(node["children"]))
+            out.append(render_toc(node["children"], owned))
         out.append("</li>")
     out.append("</ul>")
     return "".join(out)
@@ -263,6 +442,7 @@ def header(cfg: dict, *, active: str, prefix: str) -> str:
   <div class="hdr-right">
     <span class="hdr-meta">Deadline <b>{e(cfg['deadline'])}</b></span>
     <a class="hdr-meta" href="{repo_url}">GitHub</a>
+    {platform_switch("pf-switch--hdr")}
     <button class="toggle" type="button" aria-label="Switch theme">
       <span class="t-light">Light</span><span class="t-dark">Dark</span>
     </button>
@@ -308,12 +488,13 @@ def sidebar(cfg: dict, track: dict, pages: list, current: Page) -> str:
     return f"""<aside class="nav" id="sidenav">
   <div class="nav-lbl">Select track</div>
   <div class="nav-switch">{''.join(switch)}</div>
+  <div class="nav-lbl">Your platform</div>
+  {platform_switch("pf-switch--nav")}
   <div class="nav-lbl">{e(track['name'])} &middot; Contents</div>
   <ul class="nav-list">{''.join(items)}</ul>
   <div class="nav-lbl">Elsewhere</div>
   <div class="nav-out">
     <a href="{repo_url}/tree/{e(track['branch'])}">Branch <code>{e(track['branch'])}</code></a>
-    <a href="{repo_url}/actions">Judging runs</a>
     <a href="mailto:{e(cfg['contact'])}">Ask a question</a>
   </div>
 </aside>"""
@@ -360,7 +541,7 @@ def build_track(cfg: dict, track: dict, src: Path, out: Path, tpl: str) -> list:
     dest.mkdir(parents=True, exist_ok=True)
 
     for page in pages:
-        toc = render_toc(page.toc)
+        toc = render_toc(page.toc, page.platform_headings)
         crumb = (
             f'<span class="red">{e(track["name"])}</span><span class="sep">/</span>'
             + (
@@ -462,6 +643,7 @@ def build_landing(cfg: dict, tracks_pages: dict, out: Path) -> None:
             f'{e(track["name"])} &middot; branch <span class="r">{e(track["branch"])}</span></div>'
             f'<pre>{chr(10).join(lines)}</pre></div>'
         )
+    quick_html = swap_platform_paths("".join(quickstart))
 
     tpl = load_template("index.html")
     out.mkdir(parents=True, exist_ok=True)
@@ -479,7 +661,7 @@ def build_landing(cfg: dict, tracks_pages: dict, out: Path) -> None:
             tracks="".join(cards),
             shared=shared,
             chapters="".join(chapters),
-            quickstart="".join(quickstart),
+            quickstart=platform_switch("pf-switch--quick") + quick_html,
             repo_url=f"https://github.com/{cfg['repo']}",
             contact=e(cfg["contact"]),
             footer=footer(cfg, prefix=""),

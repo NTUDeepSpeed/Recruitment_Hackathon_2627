@@ -17,6 +17,25 @@
     });
   }
 
+  /* ---- Platform ------------------------------------------------------
+     The attribute is already set by the inline head script; this only wires
+     the buttons and keeps every copy of the switch in agreement. */
+  var pfButtons = Array.prototype.slice.call(document.querySelectorAll("[data-set-pf]"));
+  function markPlatform(id) {
+    pfButtons.forEach(function (btn) {
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-set-pf") === id ? "true" : "false");
+    });
+  }
+  pfButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var id = btn.getAttribute("data-set-pf");
+      root.setAttribute("data-platform", id);
+      try { localStorage.setItem("ds-platform", id); } catch (e) { /* private mode */ }
+      markPlatform(id);
+    });
+  });
+  markPlatform(root.getAttribute("data-platform") || "linux");
+
   /* ---- Mobile drawer ------------------------------------------------ */
   var navbtn = document.querySelector(".navbtn");
   var scrim = document.querySelector(".scrim");

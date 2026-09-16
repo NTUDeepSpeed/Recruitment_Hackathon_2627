@@ -39,7 +39,7 @@
         "cd Recruitment_Hackathon_2627",
         "git checkout track1",
         "",
-        "./install/linux/setup.sh   # or macos, or windows from WSL",
+        "./install/linux/setup.sh   # builds the image, once",
         "./install/linux/run.sh     # builds, then drops you in"
       ]
     },
@@ -68,7 +68,7 @@
         "git checkout track2",
         "",
         "./scripts/fetch_simulator.sh   # 140 MB, once",
-        "./install/linux/setup.sh       # or macos, or windows from WSL",
+        "./install/linux/setup.sh       # builds the image, once",
         "./install/linux/run.sh         # builds, then drops you in"
       ]
     }
