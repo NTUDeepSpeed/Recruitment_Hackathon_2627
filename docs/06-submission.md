@@ -113,7 +113,8 @@ If that produces a `COMPLETE` result, your entry will run on judging day.
 Pushing runs the same thing on GitHub Actions and writes the result to the
 workflow summary — see
 [§4.6](04-evaluation.md#46-automated-judging-on-every-push). Check it is green
-before you tell us you are done.
+before you tell us you are done — green means your entry runs, not that it is
+fast, and none of the times it prints are scored.
 
 ---
 
@@ -229,7 +230,8 @@ affect the recruitment decision, not the leaderboard.
 - [ ] `./scripts/evaluate.sh --team <team> --runs 1` gives `COMPLETE`
 - [ ] Your own judged runs committed in `results/submitted/`, unedited, with
       the machine described in `SUBMISSION.md`
-- [ ] The **Judge** workflow is green on your submitted branch
+- [ ] The **Judge** workflow is green on your submitted branch (a check that
+      your entry runs, not a score — the organisers' run decides that)
 - [ ] No build artefacts or simulator committed, and no result files outside
       `results/submitted/`
 - [ ] Anything precomputed is committed, with the code that generated it

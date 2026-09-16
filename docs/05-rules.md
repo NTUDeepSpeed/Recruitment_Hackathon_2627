@@ -107,6 +107,12 @@ rules 33 and 34, because they matter.
     The simulator is not perfectly deterministic, and nobody should lose on a
     single unlucky run.
 
+    **That run, on the judging machine, is the only one that scores.** The
+    GitHub Actions **Judge** workflow races your entry too, but it is for
+    reference — it tells you the entry builds and runs, on hardware that is
+    neither yours nor ours. Nothing it reports counts towards the leaderboard.
+    See [§4.6](04-evaluation.md#46-automated-judging-on-every-push).
+
 24. Results are computed by
     [`scripts/leaderboard.py`](../scripts/leaderboard.py), which is in this
     repository. You can run it yourself.

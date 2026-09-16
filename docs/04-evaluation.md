@@ -225,6 +225,13 @@ entry on GitHub Actions whenever you push, and writes the result to the
 workflow summary. It is the same referee with the same settings, so a green run
 means your entry will at least start on judging day.
 
+> **The workflow is for reference only. It never decides your result.**
+> Your score comes from the organisers' run on the judging machine
+> ([§4.8](#48-judging-day)) — three runs, best attempt, rule 23. A green
+> Judge run tells you the entry builds, starts and finishes; the times it
+> prints are an indication and nothing more. Nothing it reports is scored,
+> and a quick time here wins nothing.
+
 It runs in two stages:
 
 | Stage | What it does |
@@ -279,8 +286,9 @@ CI runs on a shared two-core runner with no GPU. The simulator is happy enough
 headless — it needs no graphics device at all — but it will run below real time,
 so a run takes a while in wall-clock terms. That does **not** change your lap
 times (§4.3). It does mean a driver that only just fits its control loop here
-may behave differently on the judging machine. The real result is a scored run
-on the machine in §4.8.
+may behave differently on the judging machine. Nothing CI reports is scored:
+the result that counts is the organisers' run on the machine in
+[§4.8](#48-judging-day).
 
 ---
 

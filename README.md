@@ -45,7 +45,9 @@ Watch it drive, then go make it faster. When you want a score:
 
 Pushing also races your entry on GitHub Actions and writes the result to the
 workflow summary. On an untouched template it races the baseline instead, so
-you can see the time to beat before writing a line of code.
+you can see the time to beat before writing a line of code. That workflow is
+for reference only — it runs on GitHub's hardware and nothing it prints is
+scored. **Your result is the organisers' run on the judging machine.**
 
 Full walkthrough: **[docs/01-setup.md](docs/01-setup.md)**.
 
