@@ -1,125 +1,160 @@
-# Notes for Hackathon
-#### We have provided a template for gap finder under `f1tenth_simulator/gap_finder_template.py` as a foundation for you to build your algorithm
+# RoboRacer Autonomous Racing — Track 1
 
-#### The track used for the hackathon will be released after the info talk ends
-Once completed, repeat the `Docker Setup` step in the installation guide below.
+**NTU DeepSpeed Recruitment Hackathon 26/27**
 
+Write the software that drives a 1/10-scale racing car around a circuit it has
+never seen, as fast as it can, without hitting anything. Everything you need —
+the simulator, the judging environment, reference algorithms and every official
+track — is in this repository. You will not need to clone anything else.
 
-# ROS2_Workshop
-  
-# Installation
+> **Submission deadline: 18 October 2026, 23:59 (SGT)**
 
-## Windows
+---
 
-1. [Download and Install docker](https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe)
-3. **After docker is installed**, install WSL by launching Windows Powershell as **administrator** and running the following command
-   
-    ```powershell
-    wsl --install
-    ```
-    
-4. Enable Ubuntu in Docker Desktop settings
-    - Navigate to settings in Docker Desktop
-    - Under Resources > WSL integration
-    - Enable the Ubuntu option then click "Apply and Restart"
-  
-5. After it's done installing run the following commands to start WSL
+## Quick start
 
-   ```powershell
-   wsl --set-default Ubuntu
-   wsl ~
-   ```
-6. Clone this repository
-   ```sh
-   git clone https://github.com/NTU-Autonomous-Racing-Team/Recruitment_Hackathon_2627.git ~/Recruitment_Hackathon_2627/
-   ```
-   > If you can't copy paste, right click powershell then navigate to `Properties > Tick "Use Ctrl+Shift+C/V as copy paste`"
-8. Docker Setup
-    - Setting up docker container
-      
-      ```sh
-      cd ~/Recruitment_Hackathon_2627/install_windows/
-      sudo docker network create f1tenth_net
-      sudo docker build -t f1tenth_gym_ros .
-      ```
-
-    - Run this script to start the docker container
-      ```sh
-      sudo ./run_docker_container_win.sh
-      ```
-      
-## MacOS
-
-### **If you have homebrew installed already, you can skip to installing git**
-   - Make sure xcode-select is installed by launching a terminal and running this command
-     ```sh
-     xcode-select --install
-     ```
-     > If it is installed you will see this in your terminal
-     >
-     > `xcode-select: note: Command line tools are already installed. Use "Software Update" in System Settings or the softwareupdate command line interface to install updates`
-     > 
-     > This step will take some time if you don't have xcode installed
-   - Install Homebrew
-     ```sh
-     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-     ```
-   - Install git
-   
-     ```sh
-     brew install git
-     ```
-   - [Install docker](https://docs.docker.com/desktop/install/mac-install/)
-2.  Clone this repository
-   
-     ```sh
-     git clone https://github.com/NTU-Autonomous-Racing-Team/Recruitment_Hackathon_2627.git ~/Recruitment_Hackathon_2627/
-     ```
-3. Launch Docker
-4. Docker Setup
-    - Setting up docker containers
-      ```sh
-      cd ~/Recruitment_Hackathon_2627/install_macos/
-      docker compose -p f1tenth_gym_ros up -d
-      ```
-    
-    - Run this script to start the docker containers
-      ```sh
-      sudo ./run_docker_containers_mac.sh
-      ```
-    > To stop the docker containers run `sudo ./stop_docker_containers_mac.sh`
-      
-## Ubuntu Linux
-
-1. [Install docker](https://docs.docker.com/engine/install/ubuntu/)
-2. [Add Docker into sudo group ](https://docs.docker.com/engine/install/linux-postinstall/)
-3. Clone this repository
-   
-    ```sh
-    git clone https://github.com/NTU-Autonomous-Racing-Team/Recruitment_Hackathon_2627.git ~/Recruitment_Hackathon_2627/
-    ```
-    
-5. Docker Setup
-    - Setting up docker container      
-      ```sh
-      cd ~/Recruitment_Hackathon_2627/install_linux/
-      sudo docker network create f1tenth_net
-      sudo docker build -t f1tenth_gym_ros .
-      ```
-
-    - Run this script to start the docker container
-      ```sh
-      sudo ./run_docker_container.sh
-      ```
-
-# Running the simulator
-
-In your respective terminals run 
-> Windows users need to make sure they're in WSL
 ```sh
-source /opt/ros/foxy/setup.bash
-cd sim_ws
-source ./install/local_setup.bash
-ros2 launch f1tenth_gym_ros gym_bridge_launch.py
+git clone --recurse-submodules https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627.git
+cd Recruitment_Hackathon_2627
+git checkout track1
+
+./install/linux/setup.sh          # or install/macos, or install/windows from WSL
+./install/linux/run.sh            # builds if needed, then drops you into the container
 ```
-If everything is working, a window should pop up (It might take awhile for the simulation to startup when ran for the first time). For MacOS users click on this link [http://localhost:8080/vnc.html](http://localhost:8080/vnc.html) and click on connect to view the simulation.
+
+Then, inside the container:
+
+```sh
+cd /hackathon/race_ws && colcon build --symlink-install
+source install/local_setup.bash
+
+# Terminal 1 — the simulator
+ros2 launch roboracer_referee simulator.launch.py
+
+# Terminal 2 — your car
+ros2 run team_driver driver
+```
+
+Watch it drive, then go make it faster. When you want a score:
+
+```sh
+./scripts/evaluate.sh --team your_team_name
+```
+
+Pushing also races your entry on GitHub Actions and writes the result to the
+workflow summary. On an untouched template it races the baselines instead, so
+you can see the times to beat before writing a line of code.
+
+Full walkthrough: **[docs/01-setup.md](docs/01-setup.md)**.
+
+> Cloned without `--recurse-submodules`, or downloaded a ZIP? Run
+> `git submodule update --init --recursive`. The setup scripts will also do it
+> for you. A ZIP download will not work — submodules need a real clone.
+
+---
+
+## The challenge
+
+You get a LiDAR scan and the car's exact position. You publish a steering angle
+and a speed. That is the whole interface.
+
+| | |
+| --- | --- |
+| **Car** | Ackermann steering, 0.33 m wheelbase, 0.31 × 0.58 m, steering limited to ±0.4189 rad |
+| **Sensor** | 819-beam LiDAR, 270° field of view, 25 m range |
+| **Localisation** | Ground-truth pose on `/ego_racecar/odom` — **allowed and recommended** |
+| **Track** | `icra26`, in this repository. 17 x 18 m, about 55 m a lap, cone slaloms and a hairpin complex. |
+| **Scored on** | Your single fastest lap, and your time for 10 consecutive laps |
+| **Penalties** | +10 s on the lap for each collision; more than 10 collisions is a disqualification |
+| **Judged on** | One machine: i9-14900HX, 32 GB, RTX 5060 Laptop. Times are in simulated seconds, so your own hardware does not affect your score. |
+
+Reactive algorithms like follow-the-gap will get you round. Planning against
+the map and your own position is where the lap time is. And you are not
+required to build on the baselines at all — **replacing the approach outright
+is encouraged**: reinforcement learning, MPC, a learned end-to-end policy,
+anything you can defend. The environment is ROS 2 Jazzy on Python 3.12 with a
+GPU available, so a learned policy is a realistic option. See
+[docs/03-baselines.md](docs/03-baselines.md).
+
+---
+
+## Where things are
+
+```
+Recruitment_Hackathon_2627/
+├── install/                    Setup scripts, one folder per platform
+│   ├── linux/  macos/  windows/    setup.sh, run.sh, shell.sh, stop.sh
+│   └── common.sh
+├── race_ws/src/                The ROS 2 workspace, mounted into the container
+│   ├── team_driver/            ★ YOUR CODE GOES HERE
+│   ├── roboracer_baselines/      Reference algorithms to read, race and beat
+│   └── roboracer_referee/        The judging environment — do not modify
+├── scripts/                    evaluate.sh, leaderboard.py, track_tool.py, …
+├── maps/                       The circuit: icra26.pgm, its yaml, tracks.yaml
+├── docker/                     Image definition (ROS 2 Jazzy) and compose files
+├── external/                   Upstream simulator sources, as git submodules
+├── results/                    Where your run results land
+├── .github/workflows/          Automated judging on every push
+├── docs/                       This guide
+└── workshop/                   ROS 2 teaching material from the workshop
+```
+
+The one file you are meant to open first:
+**[`race_ws/src/team_driver/team_driver/driver.py`](race_ws/src/team_driver/team_driver/driver.py)**
+
+---
+
+## The guide
+
+| Chapter | What is in it |
+| --- | --- |
+| **[1. Setup](docs/01-setup.md)** | Installing Docker, building the image, first run, troubleshooting |
+| **[2. The simulator](docs/02-simulator.md)** | Topics, message types, changing tracks, RViz, ground-truth odometry |
+| **[3. Baseline algorithms](docs/03-baselines.md)** | Wall following, follow-the-gap, pure pursuit — how they work and where they break |
+| **[4. Evaluation](docs/04-evaluation.md)** | Scoring yourself, reading result files, how judging day runs |
+| **[5. Rules](docs/05-rules.md)** | The rules, the scoring formula, and what gets you disqualified |
+| **[6. Submission](docs/06-submission.md)** | What to hand in, how, and what the interview covers |
+| **[7. ROS 2 primer](docs/07-workshop.md)** | Nodes, topics and the workshop slides, if ROS is new to you |
+
+---
+
+## Rules at a glance
+
+The full rules are in **[docs/05-rules.md](docs/05-rules.md)** and they are what
+counts. The short version:
+
+- **Teams of 3 to 5.**
+- **Deadline: 18 October 2026, 23:59 SGT.** Late entries are not scored.
+- **AI assistants are allowed.** You will be asked to explain your code at the
+  interview, so do not submit anything you cannot defend.
+- **Do not modify the judging environment.** Check yourself with
+  `./scripts/verify_judging_env.sh`.
+- **Score (out of 100):**
+
+  | | Weight | Formula |
+  | --- | --- | --- |
+  | Fastest single lap | 50 | `50 × (fastest lap of any team ÷ your fastest lap)` |
+  | 10-lap total | 50 | `50 × (fastest 10-lap total ÷ your 10-lap total)` |
+
+  One warm-up lap is granted before timing starts. Each collision adds 10 s to
+  the lap it happened on. More than 10 collisions in a run is a
+  disqualification.
+
+- **Bonus marks** at the interview, for work you can explain properly:
+  replacing the ground-truth odometry with your own localisation; generating a
+  racing line from the map at runtime; or **replacing the driving algorithm
+  entirely** — reinforcement learning, MPC, imitation learning, anything
+  beyond tuning what we gave you.
+
+---
+
+## Getting help
+
+- Check the troubleshooting section at the end of
+  [docs/01-setup.md](docs/01-setup.md) first — most problems are there.
+- Bring the exact error text and what you ran to the team channel.
+- `./scripts/verify_judging_env.sh` will tell you if your environment has
+  drifted from the official one.
+- You may email `ntu-deepspeed@e.ntu.edu.sg` for further inquiries if you cannot solve the issues after troubleshooting.
+
+Good luck. Go fast.

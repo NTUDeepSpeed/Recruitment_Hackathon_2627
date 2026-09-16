@@ -1,6 +1,33 @@
+# --- OS / editor ---
 .DS_Store
-.vscode
-ros2_ws/install
-ros2_ws/build
-ros2_ws/log
-f1tenth_simulator/__pycache__
+.vscode/
+.idea/
+*.swp
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# --- ROS / colcon ---
+race_ws/build/
+race_ws/install/
+race_ws/log/
+workshop/ros2_ws/build/
+workshop/ros2_ws/install/
+workshop/ros2_ws/log/
+
+# --- Docker helper state, written by install/<os>/run.sh ---
+docker/.env
+docker/.x11-placeholder/
+
+# --- Evaluation output ---
+# Keep the folder, ignore the runs. Commit a result only if asked to.
+results/*
+!results/.gitkeep
+!results/README.md
+
+# --- Recordings ---
+*.bag
+rosbag2_*/

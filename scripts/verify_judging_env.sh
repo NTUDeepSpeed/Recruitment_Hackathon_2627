@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+#
+# Check that the judging environment is untouched.
+#
+# Rule 1 says not to modify the judging environment. This makes that checkable
+# rather than a matter of trust: it hashes every file the judges rely on and
+# compares against a manifest, and checks the pinned submodule commits.
+#
+#   ./scripts/verify_judging_env.sh           # check (what the judges run)
+#   ./scripts/verify_judging_env.sh --update  # regenerate the manifest (organisers)
+#
+# Teams: run this before you submit. A clean report means your entry will be
+# judged; a modified referee or Dockerfile will not be.
+#
+set -euo pipefail
+source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../install" && pwd)/common.sh"
+
+MANIFEST="${REPO_ROOT}/scripts/judging_manifest.sha256"
+SUBMODULE_PINS="${REPO_ROOT}/scripts/judging_submodules.txt"
+
+# Everything a scored run depends on. team_driver and the docs are absent on
+# purpose: those are yours to change.
+PROTECTED_PATHS=(
+    "race_ws/src/roboracer_referee"
+    "docker/Dockerfile"
+    "docker/entrypoint.sh"
+    "docker/docker-compose.yml"
+    "docker/docker-compose.gpu.yml"
+    "maps"
+    "scripts/evaluate.sh"
+    "scripts/leaderboard.py"
+    "scripts/track_tool.py"
+    "scripts/detect_submission.sh"
+    "scripts/template_manifest.sha256"
+    ".github/workflows"
+    "install/common.sh"
+    "install/linux"
+    "install/macos"
+    "install/windows"
+)
+
+UPDATE=0
+for arg in "$@"; do
+    case "${arg}" in
+        --update) UPDATE=1 ;;
+        -h|--help) print_header_usage "$0"; exit 0 ;;
+        *) die "Unknown argument: ${arg}" ;;
+    esac
+done
+
+command -v sha256sum >/dev/null 2>&1 || die "sha256sum is not available on this system."
+
+list_protected_files() {
+    local path
+    for path in "${PROTECTED_PATHS[@]}"; do
+        if [ -d "${REPO_ROOT}/${path}" ]; then
+            find "${REPO_ROOT}/${path}" -type f \
+                ! -name '*.pyc' ! -path '*/__pycache__/*' -print
+        elif [ -f "${REPO_ROOT}/${path}" ]; then
+            printf '%s\n' "${REPO_ROOT}/${path}"
+        fi
+    done | sed "s|^${REPO_ROOT}/||" | LC_ALL=C sort
+}
+
+generate_manifest() {
+    ( cd "${REPO_ROOT}" && list_protected_files | tr '\n' '\0' | xargs -0 sha256sum )
+}
+
+generate_pins() {
+    git -C "${REPO_ROOT}" submodule status --cached \
+        | sed 's/^[-+U ]//' | awk '{print $1, $2}' | LC_ALL=C sort
+}
+
+if [ "${UPDATE}" = "1" ]; then
+    info "Regenerating the judging manifest."
+    generate_manifest > "${MANIFEST}"
+    generate_pins > "${SUBMODULE_PINS}"
+    ok "Wrote $(wc -l < "${MANIFEST}") file hashes to ${MANIFEST}"
+    ok "Wrote $(wc -l < "${SUBMODULE_PINS}") submodule pins to ${SUBMODULE_PINS}"
+    exit 0
+fi
+
+[ -f "${MANIFEST}" ] || die "No manifest at ${MANIFEST}. An organiser must run --update first."
+
+failures=0
+work="$(mktemp -d)"
+trap 'rm -rf "${work}"' EXIT
+
+info "Checking protected files against the manifest."
+if ( cd "${REPO_ROOT}" && sha256sum --check "${MANIFEST}" ) > "${work}/check" 2>&1; then
+    ok "All $(wc -l < "${MANIFEST}") protected files match."
+else
+    failures=1
+    printf '%s\n' "${_C_RED}The following judging files have been modified or removed:${_C_OFF}" >&2
+    grep -v ': OK$' "${work}/check" | grep -v '^sha256sum: WARNING' | sed 's/^/  /' >&2
+fi
+
+# Files added into a protected directory would pass the hash check by simply
+# not being in the manifest, so look for those separately.
+info "Checking for files added to protected directories."
+extra="$(comm -13 <(cut -d' ' -f3- "${MANIFEST}" | LC_ALL=C sort) \
+                  <(cd "${REPO_ROOT}" && list_protected_files) || true)"
+if [ -n "${extra}" ]; then
+    failures=1
+    printf '%s\n' "${_C_RED}Unexpected files inside the judging environment:${_C_OFF}" >&2
+    printf '%s\n' "${extra}" | sed 's/^/  /' >&2
+else
+    ok "No unexpected files."
+fi
+
+if [ -f "${SUBMODULE_PINS}" ]; then
+    info "Checking submodule pins."
+    if diff -u "${SUBMODULE_PINS}" <(generate_pins) > "${work}/pins" 2>&1; then
+        ok "Submodules are at the pinned commits."
+    else
+        failures=1
+        printf '%s\n' "${_C_RED}Submodules are not at the pinned commits:${_C_OFF}" >&2
+        sed 's/^/  /' "${work}/pins" >&2
+    fi
+fi
+
+echo
+if [ "${failures}" = "0" ]; then
+    ok "Judging environment is intact."
+    exit 0
+fi
+
+cat >&2 <<'MSG'
+The judging environment does not match the official one.
+
+If you changed these files by accident, restore them:
+    git checkout -- race_ws/src/roboracer_referee docker maps scripts install
+    git submodule update --init --recursive
+
+If you changed them on purpose, move your work into race_ws/src/team_driver
+before submitting. Entries that modify the judging environment are not scored.
+MSG
+exit 1

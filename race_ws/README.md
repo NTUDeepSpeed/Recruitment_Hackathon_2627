@@ -1,0 +1,24 @@
+# `race_ws` — the racing workspace
+
+A colcon workspace, bind-mounted into the container at `/hackathon/race_ws`.
+
+```sh
+cd /hackathon/race_ws
+colcon build --symlink-install
+source install/local_setup.bash
+```
+
+| Package | Yours? | What it is |
+| --- | --- | --- |
+| [`team_driver`](src/team_driver/) | **Yes** | Your entry. Start in [`team_driver/driver.py`](src/team_driver/team_driver/driver.py). |
+| [`roboracer_baselines`](src/roboracer_baselines/) | Read-only reference | Wall follower, gap follower, pure pursuit. Read them, race them, beat them. |
+| [`roboracer_referee`](src/roboracer_referee/) | **Do not modify** | The judging environment: lap timing, penalties, result files, and the simulator launch. |
+
+The simulator itself is built into the image at `/sim_ws` and is not part of
+this workspace.
+
+`--symlink-install` means Python edits take effect without rebuilding. Rebuild
+only after adding a file or changing `setup.py`.
+
+See [docs/03-baselines.md](../docs/03-baselines.md) and
+[docs/04-evaluation.md](../docs/04-evaluation.md).

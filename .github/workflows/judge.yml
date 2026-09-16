@@ -1,0 +1,229 @@
+# Automated judging.
+#
+# Builds the official image, races whatever is in race_ws/src/team_driver, and
+# writes the result to the workflow summary. On the template repository there
+# is no entry to score, so it races the baselines instead - that way the
+# pipeline is exercised, and the numbers double as the target to beat.
+#
+# Nothing here decides the real result: judging day is a scored run on the
+# machine in docs/04-evaluation.md. This is the same referee with the same
+# settings, so a green run here means your entry will start on the day.
+
+name: Judge
+
+on:
+  push:
+    branches: [track1, main]
+  pull_request:
+    branches: [track1, main]
+  workflow_dispatch:
+    inputs:
+      laps:
+        description: "Scored laps per run"
+        default: "10"
+      runs:
+        description: "Runs per driver, best counted"
+        default: "1"
+      force_baselines:
+        description: "Race the baselines even if an entry is present"
+        type: boolean
+        default: false
+
+concurrency:
+  group: judge-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE_NAME: roboracer_track1
+  LAPS: ${{ github.event.inputs.laps || '10' }}
+  RUNS: ${{ github.event.inputs.runs || '1' }}
+
+jobs:
+  # ---------------------------------------------------------------------
+  # Fast feedback. None of this needs Docker, so it fails in under a minute
+  # when something is obviously wrong rather than 30 minutes into a build.
+  # ---------------------------------------------------------------------
+  checks:
+    name: Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      mode: ${{ steps.detect.outputs.mode }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install tooling
+        run: python -m pip install --quiet pyyaml
+
+      - name: Referee rule tests
+        run: python3 race_ws/src/roboracer_referee/test/test_session.py
+
+      - name: Track definition is valid
+        run: ./scripts/track_tool.py validate
+
+      - name: Judging environment is unmodified
+        run: ./scripts/verify_judging_env.sh
+
+      - name: Detect entry or template
+        id: detect
+        run: |
+          set +e
+          mode="$(./scripts/detect_submission.sh --explain)"
+          status=$?
+          set -e
+          if [ "${status}" = "2" ]; then
+            echo "::warning::Could not tell an entry from the template; racing the baselines."
+            mode="template"
+          fi
+          if [ "${{ github.event.inputs.force_baselines }}" = "true" ]; then
+            echo "::notice::force_baselines requested."
+            mode="template"
+          fi
+          echo "mode=${mode}" >> "$GITHUB_OUTPUT"
+          echo "Mode: ${mode}"
+
+  # ---------------------------------------------------------------------
+  # The race.
+  # ---------------------------------------------------------------------
+  judge:
+    name: Race
+    needs: checks
+    runs-on: ubuntu-latest
+    # The image build is 15-30 minutes and each run is 11 laps of simulated
+    # racing on a two-core runner, so this is generous on purpose.
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install tooling
+        run: python -m pip install --quiet pyyaml
+
+      - name: Free up disk space
+        # The image is large and a hosted runner starts with little headroom.
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc || true
+          df -h /
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build the image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          tags: ${{ env.IMAGE_NAME }}:ci
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Race
+        id: race
+        env:
+          MODE: ${{ needs.checks.outputs.mode }}
+        run: |
+          set -euo pipefail
+          mkdir -p results
+
+          # One shot per driver. The container runs evaluate.sh natively - it
+          # detects that it is already inside and skips the docker hop.
+          race() {
+            local team="$1" pkg="$2" exec_name="$3"
+            echo "::group::Racing ${team} (${pkg}/${exec_name})"
+            docker run --rm \
+              -v "${PWD}:/hackathon" \
+              -e ROS_LOCALHOST_ONLY=1 \
+              "${IMAGE_NAME}:ci" \
+              /hackathon/scripts/evaluate.sh \
+                --team "${team}" \
+                --driver-pkg "${pkg}" \
+                --driver-exec "${exec_name}" \
+                --laps "${LAPS}" \
+                --runs "${RUNS}" \
+                --headless \
+                --timeout 7200 \
+                --wall-timeout 7200 \
+              || echo "::warning::${team} did not finish cleanly; see the log above."
+            echo "::endgroup::"
+          }
+
+          if [ "${MODE}" = "submission" ]; then
+            race "team_driver" "team_driver" "driver"
+          else
+            race "baseline_gap_follower"  "roboracer_baselines" "gap_follower"
+            race "baseline_wall_follower" "roboracer_baselines" "wall_follower"
+            race "baseline_pure_pursuit"  "roboracer_baselines" "pure_pursuit"
+          fi
+
+          # The container writes as root through the bind mount.
+          sudo chown -R "$(id -u):$(id -g)" results || true
+          ls -la results/
+
+      - name: Write the summary
+        if: always()
+        env:
+          MODE: ${{ needs.checks.outputs.mode }}
+        run: |
+          set -euo pipefail
+          if ! ls results/*.json >/dev/null 2>&1; then
+            {
+              echo "## No results"
+              echo
+              echo "> [!CAUTION]"
+              echo "> No run produced a result file. The referee log in the *Race*"
+              echo "> step says why - usually the driver failed to start, or the"
+              echo "> workspace did not build."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          if [ "${MODE}" = "submission" ]; then
+            {
+              echo "# Judging results"
+              echo
+              echo "Your entry, raced on \`icra26\` over ${LAPS} scored laps."
+              echo
+              ./scripts/leaderboard.py summarise results/ --markdown --title "Runs"
+              echo
+              echo "> [!NOTE]"
+              echo "> Scores here are relative to this run only. The leaderboard is"
+              echo "> computed across all teams on judging day - see"
+              echo "> [docs/04-evaluation.md](docs/04-evaluation.md)."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "# Baseline results"
+              echo
+              echo "\`race_ws/src/team_driver\` is still the template, so there is no"
+              echo "entry to score. These are the reference algorithms on \`icra26\`,"
+              echo "over ${LAPS} scored laps - the numbers to beat."
+              echo
+              ./scripts/leaderboard.py rank results/ --markdown --title "Baselines"
+              echo
+              ./scripts/leaderboard.py summarise results/ --markdown --title "Run detail"
+              echo
+              echo "> [!TIP]"
+              echo "> Edit \`race_ws/src/team_driver/team_driver/driver.py\` and this"
+              echo "> workflow will score your entry instead."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ github.run_number }}
+          path: results/*.json
+          if-no-files-found: warn
+          retention-days: 30
