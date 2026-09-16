@@ -216,7 +216,7 @@ Track definitions in [`maps/tracks.yaml`](../maps/tracks.yaml) look like this:
 
 ```yaml
 icra26:
-  map_path: /sim_ws/src/f1tenth_gym_ros/maps/hackathon/icra26
+  map_path: /hackathon/maps/icra26          # /hackathon is this repository
   map_image_ext: .pgm
   start_pose: [-1.68, -0.01, 0.0]              # x, y, theta — behind the line
   finish_line: [[1.32, -0.76], [1.32, 0.89]]

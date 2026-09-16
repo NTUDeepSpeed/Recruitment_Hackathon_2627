@@ -22,7 +22,7 @@ Point = Tuple[float, float]
 # run against, the repository copy is what teams edit during practice.
 DEFAULT_SEARCH_PATHS = (
     "/hackathon/maps/tracks.yaml",
-    "/sim_ws/src/f1tenth_gym_ros/maps/hackathon/tracks.yaml",
+    "/opt/hackathon_maps/tracks.yaml",
 )
 
 

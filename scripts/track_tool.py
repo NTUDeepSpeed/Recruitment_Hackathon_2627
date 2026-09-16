@@ -476,12 +476,12 @@ def resample_closed(points: List[Point], spacing: float) -> List[Point]:
 def _resolve_map_yaml(map_path: str, ext: str) -> Optional[str]:
     """Find a map yaml on the host, though map_path is an in-container path."""
     candidates = [map_path + ".yaml"]
+    # map_path is an in-container path; on the host the same file lives under
+    # the repository's maps/ directory.
+    candidates.append(os.path.join(REPO_ROOT, "maps", os.path.basename(map_path)) + ".yaml")
     marker = "/maps/"
     if marker in map_path:
         tail = map_path.split(marker, 1)[1]
-        if tail.startswith("hackathon/"):
-            tail = tail[len("hackathon/"):]
-        candidates.append(os.path.join(REPO_ROOT, "maps", tail) + ".yaml")
         candidates.append(
             os.path.join(REPO_ROOT, "external", "f1tenth_gym_ros", "maps", tail) + ".yaml")
     for candidate in candidates:

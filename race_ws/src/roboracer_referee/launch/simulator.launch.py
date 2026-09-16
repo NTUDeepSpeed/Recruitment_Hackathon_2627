@@ -21,6 +21,7 @@ What it does set, and why:
 import os
 import sys
 import tempfile
+from dataclasses import replace
 
 import yaml
 from ament_index_python.packages import get_package_share_directory
@@ -35,6 +36,9 @@ from roboracer_referee.tracks import TrackError, load_track
 
 # Written over the upstream defaults. Everything not named here keeps whatever
 # the bridge's own sim.yaml says, so upstream stays the source of truth.
+# Where the Dockerfile puts the circuit, used when the repository is not mounted.
+IMAGE_MAPS = "/opt/hackathon_maps"
+
 JUDGING_OVERRIDES = {
     "num_agents": 1,
     "use_sim_time": True,          # bridge publishes /clock
@@ -91,10 +95,20 @@ def _setup(context, *_args, **_kwargs):
 
     map_yaml = track.map_path + ".yaml"
     if not os.path.isfile(map_yaml):
-        print(f"\n[simulator.launch.py] Map file not found: {map_yaml}\n"
-              f"Check 'map_path' for track '{track.name}' in maps/tracks.yaml.\n",
-              file=sys.stderr)
-        raise FileNotFoundError(map_yaml)
+        # Normally the circuit comes from the bind mount at /hackathon. Without
+        # it - a bare `docker run` with no volume - fall back to the copy baked
+        # into the image rather than failing on a map that is right there.
+        fallback = os.path.join(IMAGE_MAPS, os.path.basename(track.map_path))
+        if os.path.isfile(fallback + ".yaml"):
+            print(f"[simulator.launch.py] {map_yaml} is missing; "
+                  f"using the image's copy at {fallback}")
+            track = replace(track, map_path=fallback)
+            map_yaml = fallback + ".yaml"
+        else:
+            print(f"\n[simulator.launch.py] Map file not found: {map_yaml}\n"
+                  f"Check 'map_path' for track '{track.name}' in maps/tracks.yaml.\n",
+                  file=sys.stderr)
+            raise FileNotFoundError(map_yaml)
 
     config_path = _write_sim_config(track, noise)
     print(f"[simulator.launch.py] Track '{track.name}' -> {track.map_path}")

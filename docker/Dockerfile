@@ -21,13 +21,23 @@ ENV DEBIAN_FRONTEND=noninteractive \
     ROS_DISTRO=jazzy \
     SIM_WS=/sim_ws \
     RACE_WS=/hackathon/race_ws \
+    PYDEPS=/opt/pydeps \
+    PYTHONPATH=/opt/pydeps \
     PYTHONUNBUFFERED=1 \
     PIP_BREAK_SYSTEM_PACKAGES=1 \
+    UV_LINK_MODE=copy \
     JAX_PLATFORMS=cpu
 
-# PIP_BREAK_SYSTEM_PACKAGES: Ubuntu 24.04 marks the system Python externally
-#   managed (PEP 668). The container is the isolation layer, so install into it
-#   directly - colcon entry points run /usr/bin/python3 and would not see a venv.
+# PYDEPS / PYTHONPATH: every Python dependency goes into one prefix rather than
+#   into the system site-packages. Ubuntu's ROS packages bring apt's numpy 1.26
+#   (via tf2_geometry_msgs) while the simulator needs numpy 2, and an installer
+#   cannot cleanly replace an apt-managed package. Installing beside it and
+#   winning on sys.path order sidesteps that: PYTHONPATH is searched before the
+#   system dist-packages, so nothing has to be uninstalled.
+# PIP_BREAK_SYSTEM_PACKAGES: nothing here uses pip, but it keeps an ad-hoc
+#   `pip install` working inside the container while you are practising.
+# UV_LINK_MODE=copy: the uv cache and the target are on different layers, where
+#   hardlinking would warn on every package.
 # JAX_PLATFORMS: keep the simulator on the CPU. It is small enough that the GPU
 #   buys nothing, and CPU execution keeps a judged run reproducible.
 
@@ -63,20 +73,26 @@ RUN set -euxo pipefail; \
     rm -rf /var/lib/apt/lists/*
 
 # ---------------------------------------------------------------------------
-# 2. f1tenth_gym (vendored submodule -> editable install)
+# 2. f1tenth_gym, installed with uv
 #
-# Editable because the gym writes downloaded tracks back into its own package
-# directory. Installed outside /sim_ws/src and /hackathon so that neither the
-# workspace build nor the bind mount can shadow it.
+# uv resolves and installs the simulator's stack (JAX, SciPy, OpenCV, Qt,
+# scikit-image) in well under a minute, against several for pip.
+#
+# Installed into ${PYDEPS} rather than the system: see the PYTHONPATH note
+# above. A regular install, not editable - an editable install writes a .pth
+# file, and .pth files are only honoured in real site directories, never in a
+# PYTHONPATH entry, so it would resolve to nothing at runtime.
 # ---------------------------------------------------------------------------
-RUN pip3 install --no-cache-dir --ignore-installed pip
+COPY --from=ghcr.io/astral-sh/uv:0.12.15 /uv /uvx /usr/local/bin/
 
 COPY external/f1tenth_gym /opt/f1tenth_gym
-RUN set -euxo pipefail; \
+RUN --mount=type=cache,target=/root/.cache/uv \
+    set -euxo pipefail; \
     test -f /opt/f1tenth_gym/pyproject.toml \
       || { echo "ERROR: external/f1tenth_gym is empty. Run: git submodule update --init --recursive" >&2; exit 1; }; \
-    pip3 install --no-cache-dir --ignore-installed -e /opt/f1tenth_gym; \
-    python3 -c "import f1tenth_gym; print('f1tenth_gym import OK')"
+    uv --version; \
+    uv pip install --python /usr/bin/python3 --target ${PYDEPS} /opt/f1tenth_gym; \
+    python3 -c "import f1tenth_gym, numpy, jax; print('gym OK, numpy ' + numpy.__version__)"
 
 # ---------------------------------------------------------------------------
 # 3. The ROS bridge
@@ -100,11 +116,21 @@ RUN set -euxo pipefail; \
 
 # ---------------------------------------------------------------------------
 # 4. The circuit
+#
+# Deliberately NOT inside the bridge package. Its setup.py declares
+# `glob('maps/*')` as data_files, and setuptools cannot copy a directory as a
+# data file - a maps/hackathon/ subdirectory breaks `colcon build` outright.
+# Keeping the circuit in its own prefix also means upstream can reorganise its
+# maps without touching us.
+#
+# This copy is a fallback. Normally the repository is bind-mounted at
+# /hackathon and the circuit is read from there, so what teams edit is what
+# runs.
 # ---------------------------------------------------------------------------
-COPY maps ${SIM_WS}/src/f1tenth_gym_ros/maps/hackathon
+COPY maps /opt/hackathon_maps
 RUN set -euxo pipefail; \
-    test -f ${SIM_WS}/src/f1tenth_gym_ros/maps/hackathon/icra26.pgm; \
-    test -f ${SIM_WS}/src/f1tenth_gym_ros/maps/hackathon/tracks.yaml; \
+    test -f /opt/hackathon_maps/icra26.pgm; \
+    test -f /opt/hackathon_maps/tracks.yaml; \
     echo "Hackathon circuit installed."
 
 # ---------------------------------------------------------------------------
@@ -143,7 +169,8 @@ RUN set -euxo pipefail; \
 COPY race_ws/src/team_driver/apt-packages.txt \
      race_ws/src/team_driver/requirements.txt \
      /opt/team-deps/
-RUN set -euxo pipefail; \
+RUN --mount=type=cache,target=/root/.cache/uv \
+    set -euxo pipefail; \
     apt_list="$(grep -vE '^[[:space:]]*(#|$)' /opt/team-deps/apt-packages.txt || true)"; \
     if [ -n "${apt_list}" ]; then \
         echo "Installing team-declared apt packages: ${apt_list}"; \
@@ -154,11 +181,12 @@ RUN set -euxo pipefail; \
         echo "No team apt packages declared."; \
     fi; \
     if grep -qvE '^[[:space:]]*(#|$)' /opt/team-deps/requirements.txt; then \
-        echo "Installing team-declared pip packages:"; \
+        echo "Installing team-declared Python packages:"; \
         grep -vE '^[[:space:]]*(#|$)' /opt/team-deps/requirements.txt; \
-        pip3 install --no-cache-dir -r /opt/team-deps/requirements.txt; \
+        uv pip install --python /usr/bin/python3 --target ${PYDEPS} \
+            -r /opt/team-deps/requirements.txt; \
     else \
-        echo "No team pip packages declared."; \
+        echo "No team Python packages declared."; \
     fi; \
     python3 -c "import f1tenth_gym" \
       || { echo "ERROR: a declared package broke the simulator's Python environment." >&2; exit 1; }
