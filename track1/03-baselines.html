@@ -274,12 +274,16 @@ machine, and any package you declare (rule 33). Some directions that fit:</p>
   sampling-based planners, a hand-rolled optimiser. If you can explain it, it
   counts.</li>
 </ul>
-<p>Two warnings worth taking seriously. A learned policy that cannot say <em>why</em> it
-did something is hard to defend in an interview, and this is a recruitment
-hackathon — rule 38 applies to a neural network exactly as it applies to an
-<code>if</code> statement. And ambition is not scored: ten clean laps from a well-tuned
-gap follower beats a half-trained policy that crashes out on lap three. Get
-something finishing first, then get clever.</p>
+<p>Two things worth knowing before you commit to one. Rule 38 applies to a neural
+network exactly as it applies to an <code>if</code> statement — but what it asks for is
+the method, not the weights. Nobody will ask you what a particular weight is
+for. Be ready to say what the network sees and emits, how you trained it (the
+environment, the reward, the data and how much of it), why that method rather
+than the alternatives, how you checked it works, and where it fails. Explain
+how the box was built and you have explained the box. And ambition is not
+scored: ten clean laps from a well-tuned gap follower beats a half-trained
+policy that crashes out on lap three. Get something finishing first, then get
+clever.</p>
 <p>Whatever you build, put it behind <code>ros2 run team_driver driver</code> (rule 34) and
 declare its dependencies (rule 33).</p>
 <hr>

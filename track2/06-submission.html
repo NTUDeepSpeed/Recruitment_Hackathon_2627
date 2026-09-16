@@ -164,7 +164,10 @@ just say so.
 
 <span class="gu">## Anything precomputed</span>
 A map, a racing line, trained weights. What is computed offline, which script
-produces it, and how to regenerate it from scratch.
+produces it, and how to regenerate it from scratch. For trained weights, say
+how they were trained as well — environment or dataset, reward or loss, roughly
+how long, and how you decided the result was good. That description is what we
+discuss at the interview, not the weights themselves.
 
 <span class="gu">## Dependencies we added</span>
 Everything in <span class="sb">`requirements.txt`</span> / <span class="sb">`apt-packages.txt`</span>, with one line each on
@@ -193,6 +196,8 @@ Where it breaks, and what you would do next with more time.
 <li>Why that approach and not the others?</li>
 <li>What does this parameter do, and what happens if we double it?</li>
 <li>Show us a change you made that did not work, and how you knew.</li>
+<li>If any of it is learned: how did you train it, why that way, and how do you
+  know it works?</li>
 <li>How does your throttle become a speed? What happens when it is wrong?</li>
 <li>How would you handle a track twice as fast? An obstacle mid-corner?</li>
 <li>You have never seen this circuit. What in your design made that survivable?</li>
