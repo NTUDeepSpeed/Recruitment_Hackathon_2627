@@ -89,9 +89,46 @@
 <li>A <code>SUBMISSION.md</code> at the repository root (template in §6.3).</li>
 <li>Nothing else changed in the judging environment — verify with
    <code>./scripts/verify_judging_env.sh</code>.</li>
+<li><strong>The results of your own judged runs</strong>, in <code>results/submitted/</code> — the
+   result files <code>./scripts/evaluate.sh</code> wrote on your machine, unedited, with
+   the machine described in <code>SUBMISSION.md</code>. See below.</li>
 </ol>
-<p>Do <strong>not</strong> commit <code>results/</code>, <code>race_ws/build/</code>, <code>race_ws/install/</code> or
-<code>race_ws/log/</code>. The <code>.gitignore</code> already handles this.</p>
+<p>Do <strong>not</strong> commit <code>race_ws/build/</code>, <code>race_ws/install/</code>, <code>race_ws/log/</code>, or
+anything in <code>results/</code> other than <code>results/submitted/</code>. The <code>.gitignore</code>
+already handles this.</p>
+<h3 id="your-own-judged-runs">Your own judged runs<a class="hl" href="#your-own-judged-runs" title="Link to this section">#</a></h3>
+<p>We race every entry ourselves on the judging machine, and that run is the one
+that scores. Your own result files are the control: they record what the same
+code did on your hardware, which is what lets us tell a real difference from a
+broken one.</p>
+<div class="code"><pre><code>mkdir<span class="w"> </span>-p<span class="w"> </span>results/submitted
+./scripts/evaluate.sh<span class="w"> </span>--team<span class="w"> </span>&lt;your_team&gt;<span class="w"> </span>--runs<span class="w"> </span><span class="m">3</span><span class="w"> </span>--headless
+cp<span class="w"> </span>results/&lt;your_team&gt;__*.json<span class="w"> </span>results/submitted/
+git<span class="w"> </span>add<span class="w"> </span>results/submitted
+</code></pre><span class="code-lang">shell</span></div>
+<p>What is required:</p>
+<ul>
+<li><strong>At least one run</strong> with <code>"status": "COMPLETE"</code> and <code>"scored": true</code>. Commit
+  as many as you like — the more we have, the better we can tell ordinary
+  variation from something wrong.</li>
+<li><strong>The files exactly as the referee wrote them.</strong> Do not edit them, do not
+  assemble one by hand, do not rename a field. They are read against the format
+  in <a href="04-evaluation.html#45-reading-a-result-file">§4.5</a> and against our own run,
+  and rule 44 applies to a result file as much as to a run.</li>
+<li><strong>The machine that produced them</strong>, described in <code>SUBMISSION.md</code>: CPU, GPU,
+  RAM, OS, and the <code>environment.real_time_factor</code> you usually saw.</li>
+</ul>
+<p>If nothing you have run reaches <code>COMPLETE</code>, commit the best attempt you have
+and say so in <code>SUBMISSION.md</code>. A <code>DNF</code> you are honest about costs you nothing
+here; a missing file leaves us guessing.</p>
+<p><strong>If our result and yours differ significantly, we will come to you.</strong> A large
+gap is usually environmental — a dependency that resolved to a different
+version, a timing assumption that only holds on your hardware, a real-time
+factor a long way from 1.0 — and we would rather debug it with you than record
+a number neither of us believes. That is what this deliverable is for. It is
+not a second leaderboard: nothing you commit here is scored.</p>
+<p>The <strong>Judge</strong> workflow result is not a substitute. It runs on GitHub's
+hardware, which is neither your machine nor ours.</p>
 <hr>
 <h2 id="62-how-to-submit">6.2 How to submit<a class="hl" href="#62-how-to-submit" title="Link to this section">#</a></h2>
 <ol>
@@ -144,9 +181,20 @@ tried that did not work.
 <span class="k">-</span><span class="w"> </span>Map: ...
 
 <span class="gu">## Results on our own machine</span>
+The runs committed in <span class="sb">`results/submitted/`</span>, summarised.
+
 | Best lap | 10-lap total | Collisions | Runs attempted |
 | --- | --- | --- | --- |
 | ... | ... | ... | ... |
+
+<span class="gu">### The machine that produced them</span>
+| CPU | GPU | RAM | OS | Typical real-time factor |
+| --- | --- | --- | --- | --- |
+| ... | ... | ... | ... | ... |
+
+Anything else that might explain a gap between your numbers and ours: a run
+that only works on the second attempt, a warning the referee logged, a result
+you cannot reproduce.
 
 <span class="gu">## Anything precomputed</span>
 A map, a racing line, trained weights. What is computed offline, which script
@@ -203,8 +251,11 @@ recruitment decision, not the leaderboard.</p>
 <li>[ ] <code>./install/&lt;os&gt;/setup.sh --no-cache</code> succeeds from clean if you declared any</li>
 <li>[ ] <code>./scripts/verify_judging_env.sh</code> reports the environment intact</li>
 <li>[ ] <code>./scripts/evaluate.sh --team &lt;team&gt; --runs 1</code> gives <code>COMPLETE</code></li>
+<li>[ ] Your own judged runs committed in <code>results/submitted/</code>, unedited, with
+      the machine described in <code>SUBMISSION.md</code></li>
 <li>[ ] The <strong>Judge</strong> workflow is green on your submitted branch</li>
-<li>[ ] No build artefacts or result files committed</li>
+<li>[ ] No build artefacts committed, and no result files outside
+      <code>results/submitted/</code></li>
 <li>[ ] <code>SUBMISSION.md</code> filled in, including AI usage and attributions</li>
 <li>[ ] Pushed, and the URL sent to the organisers, before 18 Oct 2026 23:59 SGT</li>
 </ul>
@@ -214,7 +265,7 @@ recruitment decision, not the leaderboard.</p>
     <nav class="pager"><a class="prev" href="05-rules.html"><span class="arw">&larr;</span><span><span class="k">Previous</span><span class="t">Rules</span></span></a><a class="next" href="07-workshop.html"><span><span class="k">Next</span><span class="t">ROS 2 primer</span></span><span class="arw">&rarr;</span></a></nav>
     <div class="src">Source &middot; <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track1/docs/06-submission.md">docs/06-submission.md</a></div>
   </main>
-  <nav class="toc" aria-label="On this page"><div class="nav-lbl">On this page</div><ul><li><a href="#61-what-to-submit">6.1 What to submit</a></li><li><a href="#62-how-to-submit">6.2 How to submit</a><ul><li><a href="#test-from-a-clean-clone-first">Test from a clean clone first</a></li></ul></li><li><a href="#63-submissionmd-template">6.3 SUBMISSION.md template</a></li><li><a href="#64-the-interview">6.4 The interview</a></li><li><a href="#65-submission-checklist">6.5 Submission checklist</a></li></ul></nav>
+  <nav class="toc" aria-label="On this page"><div class="nav-lbl">On this page</div><ul><li><a href="#61-what-to-submit">6.1 What to submit</a><ul><li><a href="#your-own-judged-runs">Your own judged runs</a></li></ul></li><li><a href="#62-how-to-submit">6.2 How to submit</a><ul><li><a href="#test-from-a-clean-clone-first">Test from a clean clone first</a></li></ul></li><li><a href="#63-submissionmd-template">6.3 SUBMISSION.md template</a></li><li><a href="#64-the-interview">6.4 The interview</a></li><li><a href="#65-submission-checklist">6.5 Submission checklist</a></li></ul></nav>
 </div>
 <footer class="ft"><div class="ft-in">
   <span>NTU DeepSpeed &middot; Recruitment Hackathon 26/27</span>
