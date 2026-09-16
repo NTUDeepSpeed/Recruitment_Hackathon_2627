@@ -19,7 +19,7 @@ cp results/<your_team>__*.json results/submitted/
 ```
 
 Nothing in `results/submitted/` is scored — see
-[docs/06-submission.md](../docs/06-submission.md) for what it is for.
+[docs/07-submission.md](../docs/07-submission.md) for what it is for.
 
 ```sh
 # What your last few runs did
@@ -29,4 +29,4 @@ Nothing in `results/submitted/` is scored — see
 ./scripts/leaderboard.py rank results/ --csv leaderboard.csv
 ```
 
-The format is documented in [docs/04-evaluation.md](../docs/04-evaluation.md).
+The format is documented in [docs/05-evaluation.md](../docs/05-evaluation.md).

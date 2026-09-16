@@ -1,10 +1,10 @@
-# 6. Submission
+# 7. Submission
 
 **Deadline: 18 October 2026, 23:59 (SGT).**
 
 ---
 
-## 6.1 What to submit
+## 7.1 What to submit
 
 A git repository containing this repository plus your work, with:
 
@@ -16,7 +16,7 @@ A git repository containing this repository plus your work, with:
    installed into the image; undeclared ones will not exist during judging.
 3. Anything you built offline — an occupancy grid, a racing line, trained
    weights — committed alongside, plus the code that produced it (rule 36).
-4. A `SUBMISSION.md` at the repository root (template in §6.3).
+4. A `SUBMISSION.md` at the repository root (template in §7.3).
 5. Nothing else changed in the judging environment or the AutoDRIVE Devkit —
    verify with `./scripts/verify_judging_env.sh`.
 6. **The results of your own judged runs**, in `results/submitted/` — the
@@ -50,7 +50,7 @@ What is required:
   variation from something wrong.
 - **The files exactly as the referee wrote them.** Do not edit them, do not
   assemble one by hand, do not rename a field. They are read against the format
-  in [§4.5](04-evaluation.md#45-reading-a-result-file) and against our own run,
+  in [§5.5](05-evaluation.md#55-reading-a-result-file) and against our own run,
   and rule 50 applies to a result file as much as to a run.
 - **The machine that produced them**, described in `SUBMISSION.md`: CPU, GPU,
   RAM, OS, and the `environment.real_time_factor` you usually saw.
@@ -78,7 +78,7 @@ so in `SUBMISSION.md` and check the judges can clone it.
 
 ---
 
-## 6.2 How to submit
+## 7.2 How to submit
 
 1. Fork this repository, or push a branch to the repository the organisers gave
    your team.
@@ -112,13 +112,13 @@ If that produces a `COMPLETE` result, your entry will run on judging day.
 
 Pushing runs the same thing on GitHub Actions and writes the result to the
 workflow summary — see
-[§4.6](04-evaluation.md#46-automated-judging-on-every-push). Check it is green
+[§5.6](05-evaluation.md#56-automated-judging-on-every-push). Check it is green
 before you tell us you are done — green means your entry runs, not that it is
 fast, and none of the times it prints are scored.
 
 ---
 
-## 6.3 `SUBMISSION.md` template
+## 7.3 `SUBMISSION.md` template
 
 ```markdown
 # Team <name>
@@ -187,7 +187,7 @@ Where it breaks, and what you would do next with more time.
 
 ---
 
-## 6.4 The interview
+## 7.4 The interview
 
 Every team is interviewed after the race. Expect roughly 30 minutes.
 
@@ -213,12 +213,12 @@ fine; not knowing what your teammates built is not.
 **Bonus marks** are available for replacing the algorithm outright (RL, MPC,
 imitation learning), mapping the circuit yourself, your own localisation,
 runtime racing-line generation, a real speed controller, and clear
-engineering — see [rule 45](05-rules.md#59-interview-and-bonus-marks). These
+engineering — see [rule 45](06-rules.md#69-interview-and-bonus-marks). These
 affect the recruitment decision, not the leaderboard.
 
 ---
 
-## 6.5 Submission checklist
+## 7.5 Submission checklist
 
 - [ ] 3 to 5 members, all named in `SUBMISSION.md`
 - [ ] `ros2 run team_driver driver` works from a clean clone
@@ -240,4 +240,4 @@ affect the recruitment decision, not the leaderboard.
 
 ---
 
-Next: **[7. ROS 2 primer](07-workshop.md)**
+Back to the **[README](../README.md)**.

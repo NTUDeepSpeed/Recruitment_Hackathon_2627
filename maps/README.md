@@ -3,7 +3,7 @@
 **Nothing in this directory is used to score a run.** The AutoDRIVE Simulator
 owns the circuit, the start/finish line, the lap counter and the collision
 detection, and publishes all of it over the devkit bridge. The referee reads
-that telemetry. See [docs/04-evaluation.md](../docs/04-evaluation.md).
+that telemetry. See [docs/05-evaluation.md](../docs/05-evaluation.md).
 
 What is here is for *your* planning.
 

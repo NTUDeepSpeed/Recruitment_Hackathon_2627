@@ -6,7 +6,7 @@
 # pipeline is exercised, and the numbers double as the target to beat.
 #
 # Nothing here decides the real result: judging day is a scored run on the
-# machine in docs/04-evaluation.md. This is the same referee with the same
+# machine in docs/05-evaluation.md. This is the same referee with the same
 # settings, so a green run here means your entry will start on the day.
 
 name: Judge
@@ -241,7 +241,7 @@ jobs:
             race "team_driver" "team_driver" "driver"
           else
             # wall_follower is deliberately absent: it drives, but it is not
-            # competitive on this circuit (docs/03-baselines.md), so racing it
+            # competitive on this circuit (docs/04-baselines.md), so racing it
             # every push would burn runner time to report the same thing.
             race "baseline_gap_follower" "roboracer_baselines" "gap_follower"
             race "baseline_pure_pursuit" "roboracer_baselines" "pure_pursuit"
@@ -280,7 +280,7 @@ jobs:
               echo "> [!NOTE]"
               echo "> Scores here are relative to this run only. The leaderboard is"
               echo "> computed across all teams on judging day - see"
-              echo "> [docs/04-evaluation.md](docs/04-evaluation.md)."
+              echo "> [docs/05-evaluation.md](docs/05-evaluation.md)."
             } >> "$GITHUB_STEP_SUMMARY"
           else
             {

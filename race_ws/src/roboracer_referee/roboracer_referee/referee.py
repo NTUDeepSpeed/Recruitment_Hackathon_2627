@@ -17,7 +17,7 @@ scored run independent of the map file entirely - which matters, because the
 compete circuit is released as a simulator build, not as an occupancy grid.
 
 Timing is the simulator's own. It runs on simulated time, so a run scores the
-same on a fast desktop and a tired laptop; see docs/04-evaluation.md.
+same on a fast desktop and a tired laptop; see docs/05-evaluation.md.
 """
 
 from __future__ import annotations

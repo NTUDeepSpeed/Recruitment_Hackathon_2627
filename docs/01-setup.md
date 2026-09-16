@@ -185,7 +185,7 @@ The GPU is there for **your** code — a learned policy, a planner — and for
 rendering the simulator when you want to watch it. A scored run uses
 `-batchmode -nographics`, which creates no graphics device at all, so judging
 does not depend on it. The container is Python 3.10, so CUDA builds of PyTorch
-and friends install and run; see [chapter 4](04-evaluation.md#48-judging-day).
+and friends install and run; see [chapter 5](05-evaluation.md#58-judging-day).
 
 ---
 

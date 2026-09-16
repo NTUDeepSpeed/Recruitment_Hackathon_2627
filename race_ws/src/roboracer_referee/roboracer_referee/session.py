@@ -7,7 +7,7 @@ lives here, so the rules can be unit tested without standing up a simulator.
 Track 2 does not time laps itself. The AutoDRIVE Simulator owns the
 start/finish line and the track boundaries, and reports lap count, lap times
 and a collision count over the devkit bridge. Those numbers are the ground
-truth a scored run is built from - see docs/04-evaluation.md - which is why
+truth a scored run is built from - see docs/05-evaluation.md - which is why
 there is no finish-line geometry anywhere in this package.
 
 All times are the simulator's own, never the referee's wall clock.

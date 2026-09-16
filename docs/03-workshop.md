@@ -1,7 +1,7 @@
-# 7. ROS 2 primer
+# 3. ROS 2 primer
 
 If ROS 2 is new to you, start here. If you sat through the workshop, skip to
-[chapter 3](03-baselines.md).
+[chapter 4](04-baselines.md).
 
 You need surprisingly little ROS to win this. A node, a subscriber, a
 publisher, and parameters — that is the whole surface area of a competitive
@@ -9,7 +9,7 @@ entry.
 
 ---
 
-## 7.1 The five ideas
+## 3.1 The five ideas
 
 **Node** — one process doing one job. Your driver is a node. The AutoDRIVE
 bridge is a node. The referee is a node.
@@ -32,7 +32,7 @@ is how you tune without rebuilding, and it is worth using from day one.
 
 ---
 
-## 7.2 The whole pattern
+## 3.2 The whole pattern
 
 ```python
 import rclpy
@@ -45,7 +45,7 @@ from std_msgs.msg import Float32
 NS = '/autodrive/roboracer_1'
 
 # The AutoDRIVE bridge publishes RELIABLE / KEEP_LAST(1) / VOLATILE. Match it,
-# or your subscription silently receives nothing at all - see §7.5.
+# or your subscription silently receives nothing at all - see §3.5.
 QOS = QoSProfile(durability=QoSDurabilityPolicy.VOLATILE,
                  reliability=QoSReliabilityPolicy.RELIABLE,
                  history=QoSHistoryPolicy.KEEP_LAST, depth=1)
@@ -75,7 +75,7 @@ Everything else is the driving algorithm.
 
 ---
 
-## 7.3 Commands worth knowing
+## 3.3 Commands worth knowing
 
 ```sh
 ros2 topic list                       # what exists
@@ -95,7 +95,7 @@ to find out which link in the chain is dead.
 
 ---
 
-## 7.4 Building
+## 3.4 Building
 
 ```sh
 cd /hackathon/race_ws
@@ -114,7 +114,7 @@ colcon build --symlink-install --packages-select team_driver
 
 ---
 
-## 7.5 Two things that will waste an afternoon
+## 3.5 Two things that will waste an afternoon
 
 Both of these look like a broken simulator and are not.
 
@@ -134,7 +134,7 @@ ordering for you; if you start them by hand, bridge first.
 
 ---
 
-## 7.6 Workshop material
+## 3.6 Workshop material
 
 The full workshop content is in [`workshop/`](../workshop/):
 
@@ -151,7 +151,7 @@ AutoDRIVE topics; the concepts carry over unchanged, the topic names do not.
 
 ---
 
-## 7.7 Further reading
+## 3.7 Further reading
 
 - [ROS 2 Humble tutorials](https://docs.ros.org/en/humble/Tutorials.html) — the
   official ones are good, and Humble is what this image runs. The beginner CLI
@@ -166,4 +166,4 @@ AutoDRIVE topics; the concepts carry over unchanged, the topic names do not.
 
 ---
 
-Back to the **[README](../README.md)**.
+Next: **[4. Baseline algorithms](04-baselines.md)**

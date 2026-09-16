@@ -8,7 +8,7 @@
     ./scripts/leaderboard.py rank results/
     ./scripts/leaderboard.py rank results/ --csv leaderboard.csv --json leaderboard.json
 
-Scoring, per docs/05-rules.md:
+Scoring, per docs/06-rules.md:
 
     lap score        = 50 * (fastest single lap of any team / this team's fastest lap)
     endurance score  = 50 * (fastest 10-lap total of any team / this team's 10-lap total)

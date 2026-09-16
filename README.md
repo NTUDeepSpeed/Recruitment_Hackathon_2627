@@ -80,7 +80,7 @@ the map you build yourself, and against your own position — is where the lap
 time is. And you are not required to build on the baselines at all —
 **replacing the approach outright is encouraged**: reinforcement learning, MPC,
 a learned end-to-end policy, anything you can defend. See
-[docs/03-baselines.md](docs/03-baselines.md).
+[docs/04-baselines.md](docs/04-baselines.md).
 
 ### What is different from Track 1
 
@@ -134,17 +134,17 @@ The one file you are meant to open first:
 | --- | --- |
 | **[1. Setup](docs/01-setup.md)** | Installing Docker, fetching the simulator, building the image, first run, troubleshooting |
 | **[2. The simulator](docs/02-simulator.md)** | AutoDRIVE, the bridge, every topic, the vehicle and sensor specifications |
-| **[3. Baseline algorithms](docs/03-baselines.md)** | Wall following, follow-the-gap, pure pursuit, and the speed controller you now need |
-| **[4. Evaluation](docs/04-evaluation.md)** | Scoring yourself, reading result files, how judging day runs |
-| **[5. Rules](docs/05-rules.md)** | The rules, the scoring formula, and what gets you disqualified |
-| **[6. Submission](docs/06-submission.md)** | What to hand in, how, and what the interview covers |
-| **[7. ROS 2 primer](docs/07-workshop.md)** | Nodes, topics and the workshop slides, if ROS is new to you |
+| **[3. ROS 2 primer](docs/03-workshop.md)** | Nodes, topics and the workshop slides, if ROS is new to you |
+| **[4. Baseline algorithms](docs/04-baselines.md)** | Wall following, follow-the-gap, pure pursuit, and the speed controller you now need |
+| **[5. Evaluation](docs/05-evaluation.md)** | Scoring yourself, reading result files, how judging day runs |
+| **[6. Rules](docs/06-rules.md)** | The rules, the scoring formula, and what gets you disqualified |
+| **[7. Submission](docs/07-submission.md)** | What to hand in, how, and what the interview covers |
 
 ---
 
 ## Rules at a glance
 
-The full rules are in **[docs/05-rules.md](docs/05-rules.md)** and they are what
+The full rules are in **[docs/06-rules.md](docs/06-rules.md)** and they are what
 counts. The short version:
 
 - **Teams of 3 to 5.**

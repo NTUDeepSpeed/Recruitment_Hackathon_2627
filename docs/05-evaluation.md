@@ -1,4 +1,4 @@
-# 4. Evaluation
+# 5. Evaluation
 
 The judging environment is in this repository. The script that scores you on
 judging day is the same one you can run right now, against the same referee
@@ -6,7 +6,7 @@ with the same settings. There are no surprises on the day.
 
 ---
 
-## 4.1 Score yourself
+## 5.1 Score yourself
 
 ```sh
 # From the host, with the container running
@@ -17,7 +17,7 @@ That builds the workspace, starts the simulator and the devkit bridge, starts
 your driver, runs the full race format and writes a result file to `results/`.
 
 Keep the result files from your final runs. Committing them is part of a
-submission — see [§6.1](06-submission.md#61-what-to-submit).
+submission — see [§7.1](07-submission.md#71-what-to-submit).
 
 Useful variations:
 
@@ -47,7 +47,7 @@ inside the container directly.
 
 ---
 
-## 4.2 The race format
+## 5.2 The race format
 
 | | |
 | --- | --- |
@@ -63,7 +63,7 @@ Two numbers come out:
 - **10-lap total** — the sum of all ten timed laps, including penalties.
 
 The scoring formula that turns those into leaderboard points is in
-[chapter 5](05-rules.md).
+[chapter 6](06-rules.md).
 
 Twelve laps are driven and ten are scored. The out lap is a full circuit here
 rather than the short run-up it is on Track 1, because the simulator spawns the
@@ -82,7 +82,7 @@ A run can also end early:
 
 ---
 
-## 4.3 The simulator does the timing, not us
+## 5.3 The simulator does the timing, not us
 
 **This is the most important thing in this chapter, and it is the biggest
 difference from Track 1.**
@@ -131,7 +131,7 @@ arrives at 40 Hz, so keep the per-scan work bounded.
 
 ---
 
-## 4.4 How collisions are counted
+## 5.4 How collisions are counted
 
 The simulator detects contact with the track boundary and publishes a running
 count on `…/collision_count`. The referee counts what the simulator counted and
@@ -144,7 +144,7 @@ collision is one collision.
 Each one adds **10 seconds** to the lap it happened on. Against a lap in the
 low twenties that is half a lap thrown away per contact, and the shipped gap
 follower spends nearly twice as long in penalties as it does driving
-([§3.1](03-baselines.md#31-what-they-actually-do-on-this-circuit)). **Not
+([§4.1](04-baselines.md#41-what-they-actually-do-on-this-circuit)). **Not
 hitting things is worth more than any amount of speed on this track.**
 
 **More than 10 collisions in a run is a disqualification**, and the referee
@@ -155,7 +155,7 @@ and the remaining laps tell nobody anything.
 That threshold is not far away. The shipped gap follower averages about four
 collisions a lap and is disqualified inside three laps; pure pursuit averages
 three and goes out on lap four
-([§3.1](03-baselines.md#31-what-they-actually-do-on-this-circuit)). **Both
+([§4.1](04-baselines.md#41-what-they-actually-do-on-this-circuit)). **Both
 baselines are disqualified well before the flag**, which is the plainest
 possible statement of what this track is about.
 
@@ -166,7 +166,7 @@ cannot cost you anything.
 
 ---
 
-## 4.5 Reading a result file
+## 5.5 Reading a result file
 
 ```jsonc
 {
@@ -218,7 +218,7 @@ A warning does not invalidate a run, but do mention it if you report a problem.
 
 ---
 
-## 4.6 Automated judging on every push
+## 5.6 Automated judging on every push
 
 [`.github/workflows/judge.yml`](../.github/workflows/judge.yml) races your
 entry on GitHub Actions whenever you push, and writes the result to the
@@ -227,7 +227,7 @@ means your entry will at least start on judging day.
 
 > **The workflow is for reference only. It never decides your result.**
 > Your score comes from the organisers' run on the judging machine
-> ([§4.8](#48-judging-day)) — three runs, best attempt, rule 23. A green
+> ([§5.8](#58-judging-day)) — three runs, best attempt, rule 23. A green
 > Judge run tells you the entry builds, starts and finishes; the times it
 > prints are an indication and nothing more. Nothing it reports is scored,
 > and a quick time here wins nothing.
@@ -285,14 +285,14 @@ Result JSONs are attached to the run as an artifact, so you can feed them to
 CI runs on a shared two-core runner with no GPU. The simulator is happy enough
 headless — it needs no graphics device at all — but it will run below real time,
 so a run takes a while in wall-clock terms. That does **not** change your lap
-times (§4.3). It does mean a driver that only just fits its control loop here
+times (§5.3). It does mean a driver that only just fits its control loop here
 may behave differently on the judging machine. Nothing CI reports is scored:
 the result that counts is the organisers' run on the machine in
-[§4.8](#48-judging-day).
+[§5.8](#58-judging-day).
 
 ---
 
-## 4.7 Watching a run
+## 5.7 Watching a run
 
 ```sh
 ./scripts/evaluate.sh --team my_team --laps 3 --graphics
@@ -311,7 +311,7 @@ The referee log prints each lap as it closes, with any penalty applied:
 
 ---
 
-## 4.8 Judging day
+## 5.8 Judging day
 
 ### The judging machine
 
@@ -366,11 +366,11 @@ Identical referee settings for every team.
 
 A run that fails to build, fails to start, or never publishes a command scores
 zero for the timing component. Test from a clean clone before you submit — see
-[chapter 6](06-submission.md).
+[chapter 7](07-submission.md).
 
 ---
 
-## 4.9 Verifying your environment
+## 5.9 Verifying your environment
 
 ```sh
 ./scripts/verify_judging_env.sh
@@ -395,4 +395,4 @@ there and is not checked.
 
 ---
 
-Next: **[5. Rules](05-rules.md)**
+Next: **[6. Rules](06-rules.md)**

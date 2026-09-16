@@ -89,7 +89,7 @@ wall, both of which will cost you if you ignore them:
 1. **The LiDAR sees through the gaps between ducts.** A beam that slips between
    two of them reports the far side of the track, or nothing. A naive "steer at
    the deepest reading" therefore aims the car straight at a duct. Disparity
-   extension exists to fix exactly this — see [chapter 3](03-baselines.md).
+   extension exists to fix exactly this — see [chapter 4](04-baselines.md).
 2. **The gaps are not a route.** Going between two ducts is leaving the course.
    The simulator scores a collision when you touch one, so it enforces itself.
 
@@ -355,7 +355,7 @@ ros2 bag record /autodrive/roboracer_1/lidar /autodrive/roboracer_1/ips \
 
 **None of this affects a scored run.** The referee never opens a map; it reads
 the simulator's own lap and collision telemetry. See
-[chapter 4](04-evaluation.md). That separation is deliberate, and it is why the
+[chapter 5](05-evaluation.md). That separation is deliberate, and it is why the
 environment worked before this map existed.
 
 ---
@@ -402,4 +402,4 @@ rate limit means a step command does not arrive instantly however hard you ask.
 
 ---
 
-Next: **[3. Baseline algorithms](03-baselines.md)**
+Next: **[3. ROS 2 primer](03-workshop.md)**

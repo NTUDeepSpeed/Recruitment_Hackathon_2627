@@ -1,4 +1,4 @@
-# 5. Rules
+# 6. Rules
 
 These rules govern Track 2 of the NTU DeepSpeed Recruitment Hackathon 26/27.
 Where this page and any other document disagree, this page wins.
@@ -11,17 +11,17 @@ rules 33 and 34, because they matter.
 
 ---
 
-## 5.1 Teams
+## 6.1 Teams
 
 1. A team has **3 to 5 members**.
 2. Each person may be on **one team only**.
 3. The roster is fixed at submission. Name every member in your `SUBMISSION.md`
-   (see [chapter 6](06-submission.md)).
+   (see [chapter 7](07-submission.md)).
 4. One entry per team.
 
 ---
 
-## 5.2 Deadline
+## 6.2 Deadline
 
 5. **Submissions close 18 October 2026, 23:59 (SGT).**
 6. The commit timestamp on your submitted branch is what counts. Anything
@@ -31,12 +31,12 @@ rules 33 and 34, because they matter.
 
 ---
 
-## 5.3 The race
+## 6.3 The race
 
 8. Every run is driven on the official circuit — the **compete** track inside
    the AutoDRIVE Simulator `2026-icra` build — in the official Docker image
    built from this repository, on a single judging machine whose specification
-   is published in [§4.8](04-evaluation.md#48-judging-day).
+   is published in [§5.8](05-evaluation.md#58-judging-day).
 9. A run consists of:
    - an **out lap** from the grid slot to the start/finish line — not timed;
    - **one warm-up lap** — granted, not scored;
@@ -47,7 +47,7 @@ rules 33 and 34, because they matter.
    being a short run-up as it is on Track 1. Twelve laps are driven; ten are
    scored.
 10. Laps are counted, and timed, by the simulator. The referee records what the
-    simulator reports — see [§4.3](04-evaluation.md#43-the-simulator-does-the-timing-not-us).
+    simulator reports — see [§5.3](05-evaluation.md#53-the-simulator-does-the-timing-not-us).
 11. **The track boundary is a line of air ducts, and the gaps between them are
     not a route.** A duct marks the edge of the course exactly as a wall does;
     the gaps are a consequence of the ducts being separate objects. Go around
@@ -64,7 +64,7 @@ rules 33 and 34, because they matter.
 
 ---
 
-## 5.4 Collisions
+## 6.4 Collisions
 
 15. Every collision adds a **10-second penalty** to the lap on which it
     happened. Penalties are included in both your fastest lap and your adjusted
@@ -76,14 +76,14 @@ rules 33 and 34, because they matter.
 17. A collision is what the simulator counts as a collision. The referee reads
     `…/collision_count` and applies the penalty; it does not do its own contact
     detection and there is nothing to tune. See
-    [§4.4](04-evaluation.md#44-how-collisions-are-counted).
+    [§5.4](05-evaluation.md#54-how-collisions-are-counted).
 18. Collisions during the out lap or the warm-up lap count towards the limit in
     rule 16, but carry no time penalty, because there is no scored lap to apply
     it to.
 
 ---
 
-## 5.5 Scoring
+## 6.5 Scoring
 
 19. Two components, 50 points each, scored **relative to the best team**:
 
@@ -111,7 +111,7 @@ rules 33 and 34, because they matter.
     GitHub Actions **Judge** workflow races your entry too, but it is for
     reference — it tells you the entry builds and runs, on hardware that is
     neither yours nor ours. Nothing it reports counts towards the leaderboard.
-    See [§4.6](04-evaluation.md#46-automated-judging-on-every-push).
+    See [§5.6](05-evaluation.md#56-automated-judging-on-every-push).
 
 24. Results are computed by
     [`scripts/leaderboard.py`](../scripts/leaderboard.py), which is in this
@@ -136,7 +136,7 @@ collision costs 10 s of race time, consistency here mostly means not crashing.
 
 ---
 
-## 5.6 The judging environment
+## 6.6 The judging environment
 
 26. The official simulator is the **`2026-icra` compete build**, fetched by
     `./scripts/fetch_simulator.sh`. Do not substitute the `explore` or
@@ -182,7 +182,7 @@ collision costs 10 s of race time, consistency here mostly means not crashing.
 
 ---
 
-## 5.7 What your code may use
+## 6.7 What your code may use
 
 33. **Inputs you may read — all of them.**
 
@@ -264,7 +264,7 @@ collision costs 10 s of race time, consistency here mostly means not crashing.
 
     The image is ROS 2 Humble on Python 3.10, and the judging machine has an
     8 GB NVIDIA GPU, so CUDA builds of PyTorch and friends are usable — see
-    [§4.8](04-evaluation.md#48-judging-day). Rebuild from clean after adding
+    [§5.8](05-evaluation.md#58-judging-day). Rebuild from clean after adding
     anything, and check a run still starts.
 
 38. Your driver must remain a ROS 2 node launched as
@@ -278,7 +278,7 @@ collision costs 10 s of race time, consistency here mostly means not crashing.
 
 ---
 
-## 5.8 AI assistance
+## 6.8 AI assistance
 
 40. **Using AI assistants is permitted.** ChatGPT, Claude, Copilot, Cursor —
     all fine.
@@ -305,7 +305,7 @@ collision costs 10 s of race time, consistency here mostly means not crashing.
 
 ---
 
-## 5.9 Interview and bonus marks
+## 6.9 Interview and bonus marks
 
 44. Every team is interviewed after the race. The leaderboard decides the
     ranking; the interview decides recruitment.
@@ -332,7 +332,7 @@ collision costs 10 s of race time, consistency here mostly means not crashing.
 
 ---
 
-## 5.10 Conduct
+## 6.10 Conduct
 
 47. Do not interfere with another team's work, machines or submissions.
 48. Do not attack, overload or attempt to gain access to the organisers'
@@ -346,7 +346,7 @@ collision costs 10 s of race time, consistency here mostly means not crashing.
 
 ---
 
-## 5.11 Judges' discretion
+## 6.11 Judges' discretion
 
 51. The organisers may adjust or clarify these rules before the deadline. Any
     change is announced in the team channel and reflected here. This includes
@@ -358,4 +358,4 @@ collision costs 10 s of race time, consistency here mostly means not crashing.
 
 ---
 
-Next: **[6. Submission](06-submission.md)**
+Next: **[7. Submission](07-submission.md)**

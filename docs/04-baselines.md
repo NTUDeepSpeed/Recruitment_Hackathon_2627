@@ -1,4 +1,4 @@
-# 3. Baseline algorithms
+# 4. Baseline algorithms
 
 Three working drivers ship in
 [`race_ws/src/roboracer_baselines/`](../race_ws/src/roboracer_baselines/). They
@@ -8,7 +8,7 @@ know whether your own ideas are actually helping.
 ```sh
 ros2 run roboracer_baselines gap_follower
 ros2 run roboracer_baselines wall_follower
-ros2 run roboracer_baselines pure_pursuit    # needs a map; see §3.4
+ros2 run roboracer_baselines pure_pursuit    # needs a map; see §4.4
 ```
 
 Tunable defaults live in
@@ -16,7 +16,7 @@ Tunable defaults live in
 
 ---
 
-## 3.0 First, the thing that is not an algorithm
+## 4.0 First, the thing that is not an algorithm
 
 Every one of these has a component Track 1 did not need, and it is in
 [`control.py`](../race_ws/src/roboracer_baselines/roboracer_baselines/control.py)
@@ -50,7 +50,7 @@ cheapest improvement on this list.
 
 ---
 
-## 3.1 What they actually do on this circuit
+## 4.1 What they actually do on this circuit
 
 Full 10-lap runs on the compete circuit, with the defaults as shipped. Two runs
 of the gap follower, to show how much a single run tells you:
@@ -68,7 +68,7 @@ Two things to read off that.
 
 **The planner beats the reactive driver on both axes at once.** Pure pursuit is
 quicker per lap *and* hits things less often, because it knows what is coming
-and the gap follower can only see 10 m. That is the whole argument for §3.4,
+and the gap follower can only see 10 m. That is the whole argument for §4.4,
 and it is why "make the gap follower faster" is the wrong project.
 
 **Penalties dominate, and then they end the run.** Even pure pursuit spends 290
@@ -87,7 +87,7 @@ not deterministic. That is why the judges take the best of three (rule 23), and
 why a single run is not evidence that a change helped.
 
 The wall follower is not in that table on purpose: it drives, but it is not
-competitive here, for a reason worth understanding — §3.3.
+competitive here, for a reason worth understanding — §4.3.
 
 So the first job is not speed. It is contact.
 
@@ -103,7 +103,7 @@ Score a baseline exactly as the judges would:
 
 ---
 
-## 3.2 Follow-the-gap with disparity extension
+## 4.2 Follow-the-gap with disparity extension
 
 [`gap_follower.py`](../race_ws/src/roboracer_baselines/roboracer_baselines/gap_follower.py)
 
@@ -153,7 +153,7 @@ direction was wrong, and the only way to know was to run it.
 
 One more thing it shows, and it is a trap worth naming: **two laps is not
 enough to measure a collision rate.** The shipped configuration averages 2.5
-collisions a lap over two laps and 4.0 over ten (§3.1). Short runs are for
+collisions a lap over two laps and 4.0 over ten (§4.1). Short runs are for
 iterating; judge a change on a full-length one before you believe it.
 
 **Where it breaks:** it has no memory and no plan. It brakes for a corner only
@@ -166,7 +166,7 @@ speed limits.
 
 ---
 
-## 3.3 Wall follower
+## 4.3 Wall follower
 
 [`wall_follower.py`](../race_ws/src/roboracer_baselines/roboracer_baselines/wall_follower.py)
 
@@ -194,7 +194,7 @@ raise `projection_distance` before you touch the gains.
 
 ---
 
-## 3.4 Pure pursuit along a racing line
+## 4.4 Pure pursuit along a racing line
 
 [`pure_pursuit.py`](../race_ws/src/roboracer_baselines/roboracer_baselines/pure_pursuit.py)
 
@@ -251,7 +251,7 @@ possibly carrying "bifurcations and obstacles", that is not hypothetical.
 
 ---
 
-## 3.5 Where to go from here
+## 4.5 Where to go from here
 
 Roughly in order of lap time gained per hour spent:
 
@@ -288,11 +288,11 @@ Roughly in order of lap time gained per hour spent:
 
 Before any of it: measure. Run `./scripts/evaluate.sh` after each change. An
 idea that sounds better and is not shows up in the times immediately — as our
-own tuning table in §3.2 demonstrates.
+own tuning table in §4.2 demonstrates.
 
 ---
 
-## 3.6 Or throw all of this away
+## 4.6 Or throw all of this away
 
 Nothing obliges you to start from these baselines. **Replacing the approach
 outright is encouraged, and earns bonus marks at the interview if you can
@@ -335,4 +335,4 @@ declare its dependencies (rule 37).
 
 ---
 
-Next: **[4. Evaluation](04-evaluation.md)**
+Next: **[5. Evaluation](05-evaluation.md)**

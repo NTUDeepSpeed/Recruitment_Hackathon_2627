@@ -2,7 +2,7 @@
 #
 # Same rules as requirements.txt: declared packages are installed into the
 # image at build time, undeclared ones are simply absent during judging. See
-# rule 37 in docs/05-rules.md.
+# rule 37 in docs/06-rules.md.
 #
 #   libspatialindex-dev
 #   ros-humble-slam-toolbox

@@ -15,7 +15,7 @@
 # cut the corner across it.
 #
 # Nothing here is used to score a run - the simulator does that. See
-# docs/04-evaluation.md.
+# docs/05-evaluation.md.
 
 image: icra26_compete.pgm
 mode: trinary
