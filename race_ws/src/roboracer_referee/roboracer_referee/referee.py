@@ -10,7 +10,7 @@ same node is used for practice and for judging.
 
 Timing runs on the simulated clock the gym bridge publishes on /clock, not on
 the wall clock. A run therefore scores the same on a fast desktop and a tired
-laptop; see docs/04-evaluation.md.
+laptop; see docs/05-evaluation.md.
 """
 
 from __future__ import annotations

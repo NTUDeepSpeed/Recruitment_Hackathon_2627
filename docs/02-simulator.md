@@ -7,7 +7,7 @@ the car's actual footprint. The physics runs on JAX.
 
 Both upstream repositories are vendored in `external/` as pinned git
 submodules. The bridge publishes collisions and a simulated clock itself, so
-nothing here is patched; see [chapter 4](04-evaluation.md) for why both matter
+nothing here is patched; see [chapter 5](05-evaluation.md) for why both matter
 to judging.
 
 > **A note on names.** The competition is now called RoboRacer; it was F1TENTH
@@ -247,4 +247,4 @@ teleports.
 
 ---
 
-Next: **[3. Baseline algorithms](03-baselines.md)**
+Next: **[3. ROS 2 primer](03-workshop.md)**

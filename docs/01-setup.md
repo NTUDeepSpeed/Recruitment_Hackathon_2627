@@ -67,7 +67,7 @@ submodule folders empty and there is no way to fill them in afterwards.
 Apple Silicon works. The simulator runs under emulation for a few components
 and is slower than on an Intel Mac or a PC, but lap times are measured in
 simulated time, so **a slow machine does not cost you points**. See
-[chapter 4](04-evaluation.md).
+[chapter 5](05-evaluation.md).
 
 ### Ubuntu / Debian Linux
 
@@ -149,7 +149,7 @@ to CPU-only if Docker cannot. Force it either way with `--gpu` or `--no-gpu`.
 The container is Python 3.12, so CUDA builds of PyTorch, JAX and CuPy do
 install and run. The simulator itself stays on the CPU by design
 (`JAX_PLATFORMS=cpu`) so that a judged run is reproducible; the GPU is there
-for your code. See [chapter 4](04-evaluation.md#48-judging-day).
+for your code. See [chapter 5](05-evaluation.md#58-judging-day).
 
 ---
 

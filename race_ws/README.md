@@ -20,5 +20,5 @@ this workspace.
 `--symlink-install` means Python edits take effect without rebuilding. Rebuild
 only after adding a file or changing `setup.py`.
 
-See [docs/03-baselines.md](../docs/03-baselines.md) and
-[docs/04-evaluation.md](../docs/04-evaluation.md).
+See [docs/04-baselines.md](../docs/04-baselines.md) and
+[docs/05-evaluation.md](../docs/05-evaluation.md).

@@ -54,4 +54,4 @@ Two things decide that route, and both matter:
 `icra26_centerline.csv` is the middle of the corridor. The fast way round is
 not the middle: a racing line runs wide into a corner, clips the apex and runs
 wide again, and is both shorter and faster. Turning one into the other is the
-work — see [docs/03-baselines.md](../docs/03-baselines.md).
+work — see [docs/04-baselines.md](../docs/04-baselines.md).

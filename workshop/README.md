@@ -9,7 +9,7 @@ None of it is part of the hackathon build or the judging environment.
 | [`ros2_ws/`](ros2_ws/) | Teaching packages: publishers, subscribers, services, actions, custom messages, bag recording. |
 | [`assets/`](assets/) | Images used by the slides. |
 
-Start with [`../docs/07-workshop.md`](../docs/07-workshop.md) for the short
+Start with [`../docs/03-workshop.md`](../docs/03-workshop.md) for the short
 version.
 
 ---

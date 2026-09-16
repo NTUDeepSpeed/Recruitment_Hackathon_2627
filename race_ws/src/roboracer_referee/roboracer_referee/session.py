@@ -4,7 +4,7 @@ This module deliberately contains no ROS code. The referee node feeds it
 positions and collision events; everything about *what a lap is worth* lives
 here, so the rules can be unit tested without standing up a simulator.
 
-All times are simulated seconds, never wall-clock. See docs/04-evaluation.md
+All times are simulated seconds, never wall-clock. See docs/05-evaluation.md
 for why that distinction decides whether a result is reproducible.
 """
 

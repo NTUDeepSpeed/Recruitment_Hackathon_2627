@@ -1,21 +1,21 @@
-# 5. Rules
+# 6. Rules
 
 These rules govern Track 1 of the NTU DeepSpeed Recruitment Hackathon 26/27.
 Where this page and any other document disagree, this page wins.
 
 ---
 
-## 5.1 Teams
+## 6.1 Teams
 
 1. A team has **3 to 5 members**.
 2. Each person may be on **one team only**.
 3. The roster is fixed at submission. Name every member in your `SUBMISSION.md`
-   (see [chapter 6](06-submission.md)).
+   (see [chapter 7](07-submission.md)).
 4. One entry per team.
 
 ---
 
-## 5.2 Deadline
+## 6.2 Deadline
 
 5. **Submissions close 18 October 2026, 23:59 (SGT).**
 6. The commit timestamp on your submitted branch is what counts. Anything
@@ -25,12 +25,12 @@ Where this page and any other document disagree, this page wins.
 
 ---
 
-## 5.3 The race
+## 6.3 The race
 
 8. Every run is driven on the official circuit, `icra26`, in the official
    Docker image built from this repository, on a single judging machine whose
    specification is published in
-   [§4.7](04-evaluation.md#48-judging-day). The map is in `maps/`, so you can
+   [§5.8](05-evaluation.md#58-judging-day). The map is in `maps/`, so you can
    practise on exactly what you will be scored on. If the organisers revise the
    circuit before the deadline it is announced in the team channel and updated
    here.
@@ -59,7 +59,7 @@ Where this page and any other document disagree, this page wins.
 
 ---
 
-## 5.4 Collisions
+## 6.4 Collisions
 
 15. Every collision adds a **10-second penalty** to the lap on which it
     happened. Penalties are included in both your fastest lap and your 10-lap
@@ -70,14 +70,14 @@ Where this page and any other document disagree, this page wins.
     accrues a fresh collision, and a fresh 10-second penalty, every second
     it stays there. A car that ends up wedged against a wall is therefore
     disqualified after about eleven seconds of contact. See
-    [§4.4](04-evaluation.md#44-how-collisions-are-counted).
+    [§5.4](05-evaluation.md#54-how-collisions-are-counted).
 18. Collisions during the out lap or the warm-up lap count towards the limit in
     rule 16, but carry no time penalty, because there is no scored lap to apply
     it to.
 
 ---
 
-## 5.5 Scoring
+## 6.5 Scoring
 
 19. Two components, 50 points each, scored **relative to the best team**:
 
@@ -105,7 +105,7 @@ Where this page and any other document disagree, this page wins.
     GitHub Actions **Judge** workflow races your entry too, but it is for
     reference — it tells you the entry builds and runs, on hardware that is
     neither yours nor ours. Nothing it reports counts towards the leaderboard.
-    See [§4.6](04-evaluation.md#46-automated-judging-on-every-push).
+    See [§5.6](05-evaluation.md#56-automated-judging-on-every-push).
 
 24. Results are computed by
     [`scripts/leaderboard.py`](../scripts/leaderboard.py), which is in this
@@ -127,7 +127,7 @@ ten laps is worth exactly as much as one quick one.
 
 ---
 
-## 5.6 The judging environment
+## 6.6 The judging environment
 
 25. **Do not modify the judging environment.** That means:
     - `race_ws/src/roboracer_referee/`
@@ -159,7 +159,7 @@ ten laps is worth exactly as much as one quick one.
 
 ---
 
-## 5.7 What your code may use
+## 6.7 What your code may use
 
 29. **Inputs you may read:**
 
@@ -203,7 +203,7 @@ ten laps is worth exactly as much as one quick one.
 
     The image is ROS 2 Jazzy on Python 3.12, and the judging machine has an
     8 GB NVIDIA GPU, so CUDA builds of PyTorch, JAX and CuPy are all usable —
-    see [§4.7](04-evaluation.md#48-judging-day). Rebuild from clean after
+    see [§5.8](05-evaluation.md#58-judging-day). Rebuild from clean after
     adding anything, and check the simulator still starts: the build fails
     loudly if a package breaks it.
 
@@ -218,7 +218,7 @@ ten laps is worth exactly as much as one quick one.
 
 ---
 
-## 5.8 AI assistance
+## 6.8 AI assistance
 
 36. **Using AI assistants is permitted.** ChatGPT, Claude, Copilot,
     Cursor — all fine.
@@ -245,7 +245,7 @@ ten laps is worth exactly as much as one quick one.
 
 ---
 
-## 5.9 Interview and bonus marks
+## 6.9 Interview and bonus marks
 
 40. Every team is interviewed after the race. The leaderboard decides the
     ranking; the interview decides recruitment.
@@ -265,7 +265,7 @@ ten laps is worth exactly as much as one quick one.
 
 ---
 
-## 5.10 Conduct
+## 6.10 Conduct
 
 42. Do not interfere with another team's work, machines or submissions.
 43. Do not attack, overload or attempt to gain access to the organisers'
@@ -278,7 +278,7 @@ ten laps is worth exactly as much as one quick one.
 
 ---
 
-## 5.11 Judges' discretion
+## 6.11 Judges' discretion
 
 46. The organisers may adjust or clarify these rules before the deadline. Any
     change is announced in the team channel and reflected here.
@@ -288,4 +288,4 @@ ten laps is worth exactly as much as one quick one.
 
 ---
 
-Next: **[6. Submission](06-submission.md)**
+Next: **[7. Submission](07-submission.md)**

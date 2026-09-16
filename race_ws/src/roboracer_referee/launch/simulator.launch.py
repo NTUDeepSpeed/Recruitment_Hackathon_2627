@@ -11,7 +11,7 @@ Anything upstream changes there we inherit rather than having to chase.
 What it does set, and why:
 
   use_sim_time      the bridge publishes /clock, which is the only time base
-                    judging trusts - see docs/04-evaluation.md
+                    judging trusts - see docs/05-evaluation.md
   lidar_noise_std   zero, so a run is reproducible. The default adds Gaussian
                     noise, which would make the same submission score
                     differently on every attempt.

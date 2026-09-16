@@ -1,7 +1,7 @@
-# 7. ROS 2 primer
+# 3. ROS 2 primer
 
 If ROS 2 is new to you, start here. If you sat through the workshop, skip to
-[chapter 3](03-baselines.md).
+[chapter 4](04-baselines.md).
 
 You need surprisingly little ROS to win this. A node, a subscriber, a
 publisher, and parameters — that is the whole surface area of a competitive
@@ -9,7 +9,7 @@ entry.
 
 ---
 
-## 7.1 The five ideas
+## 3.1 The five ideas
 
 **Node** — one process doing one job. Your driver is a node. The simulator is a
 node. The referee is a node.
@@ -31,7 +31,7 @@ is how you tune without rebuilding, and it is worth using from day one.
 
 ---
 
-## 7.2 The whole pattern
+## 3.2 The whole pattern
 
 ```python
 import rclpy
@@ -65,7 +65,7 @@ Everything else is the driving algorithm.
 
 ---
 
-## 7.3 Commands worth knowing
+## 3.3 Commands worth knowing
 
 ```sh
 ros2 topic list                       # what exists
@@ -85,7 +85,7 @@ to find out which link in the chain is dead.
 
 ---
 
-## 7.4 Building
+## 3.4 Building
 
 ```sh
 cd /hackathon/race_ws
@@ -104,7 +104,7 @@ colcon build --symlink-install --packages-select team_driver
 
 ---
 
-## 7.5 Workshop material
+## 3.5 Workshop material
 
 The full workshop content is in [`workshop/`](../workshop/):
 
@@ -119,7 +119,7 @@ material, and it is not built during evaluation.
 
 ---
 
-## 7.6 Further reading
+## 3.6 Further reading
 
 - [ROS 2 Jazzy tutorials](https://docs.ros.org/en/jazzy/Tutorials.html) — the
   official ones are good; the beginner CLI and client library sections are
@@ -132,4 +132,4 @@ material, and it is not built during evaluation.
 
 ---
 
-Back to the **[README](../README.md)**.
+Next: **[4. Baseline algorithms](04-baselines.md)**

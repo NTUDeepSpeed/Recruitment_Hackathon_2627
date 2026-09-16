@@ -1,4 +1,4 @@
-# 3. Baseline algorithms
+# 4. Baseline algorithms
 
 Three working drivers ship in
 [`race_ws/src/roboracer_baselines/`](../race_ws/src/roboracer_baselines/). They are
@@ -36,7 +36,7 @@ Tunable defaults live in
 
 ---
 
-## 3.1 Wall follower
+## 4.1 Wall follower
 
 [`wall_follower.py`](../race_ws/src/roboracer_baselines/roboracer_baselines/wall_follower.py)
 
@@ -61,7 +61,7 @@ raise `projection_distance` before you touch the gains.
 
 ---
 
-## 3.2 Follow-the-gap with disparity extension
+## 4.2 Follow-the-gap with disparity extension
 
 [`gap_follower.py`](../race_ws/src/roboracer_baselines/roboracer_baselines/gap_follower.py)
 
@@ -101,7 +101,7 @@ you will see elsewhere leaves a third of the steering unused.
 
 ---
 
-## 3.3 Pure pursuit along a racing line
+## 4.3 Pure pursuit along a racing line
 
 [`pure_pursuit.py`](../race_ws/src/roboracer_baselines/roboracer_baselines/pure_pursuit.py)
 
@@ -152,7 +152,7 @@ column in the `s; x; y; psi; kappa; vx; ax` layout, those speeds are used.
 
 ---
 
-## 3.4 Where to go from here
+## 4.4 Where to go from here
 
 Roughly in order of lap time gained per hour spent:
 
@@ -182,7 +182,7 @@ idea that sounds better and is not shows up in the lap times immediately.
 
 ---
 
-## 3.5 Or throw all of this away
+## 4.5 Or throw all of this away
 
 Nothing obliges you to start from these baselines. **Replacing the approach
 outright is encouraged, and earns bonus marks at the interview if you can
@@ -222,4 +222,4 @@ declare its dependencies (rule 33).
 
 ---
 
-Next: **[4. Evaluation](04-evaluation.md)**
+Next: **[5. Evaluation](05-evaluation.md)**

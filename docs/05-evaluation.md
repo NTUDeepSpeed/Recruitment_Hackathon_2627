@@ -1,4 +1,4 @@
-# 4. Evaluation
+# 5. Evaluation
 
 The judging environment is in this repository. The script that scores you on
 judging day is the same one you can run right now, against the same referee
@@ -7,7 +7,7 @@ have not seen.
 
 ---
 
-## 4.1 Score yourself
+## 5.1 Score yourself
 
 ```sh
 # From the host, with the container running
@@ -18,7 +18,7 @@ That builds the workspace, starts the simulator, starts your driver, runs the
 full race format and writes a result file to `results/`.
 
 Keep the result files from your final runs. Committing them is part of a
-submission — see [§6.1](06-submission.md#61-what-to-submit).
+submission — see [§7.1](07-submission.md#71-what-to-submit).
 
 Useful variations:
 
@@ -41,7 +41,7 @@ inside the container directly.
 
 ---
 
-## 4.2 The race format
+## 5.2 The race format
 
 | | |
 | --- | --- |
@@ -57,7 +57,7 @@ Two numbers come out:
 - **10-lap total** — the sum of all ten timed laps, including penalties.
 
 The scoring formula that turns those into leaderboard points is in
-[chapter 5](05-rules.md).
+[chapter 6](06-rules.md).
 
 A run can also end early:
 
@@ -71,7 +71,7 @@ A run can also end early:
 
 ---
 
-## 4.3 Everything is measured in simulated time
+## 5.3 Everything is measured in simulated time
 
 **This is the most important thing in this chapter.** Lap times come from the
 simulator's own clock, not the wall clock.
@@ -100,7 +100,7 @@ per-scan work bounded.
 
 ---
 
-## 4.4 How collisions are counted
+## 5.4 How collisions are counted
 
 The bridge publishes the simulator's own collision flag on
 `/ego_racecar/collision`, so the referee uses ground truth rather than guessing
@@ -137,7 +137,7 @@ The interval is `collision_interval_s` in
 
 ---
 
-## 4.5 Reading a result file
+## 5.5 Reading a result file
 
 ```jsonc
 {
@@ -177,7 +177,7 @@ The interval is `collision_interval_s` in
 
 ---
 
-## 4.6 Automated judging on every push
+## 5.6 Automated judging on every push
 
 [`.github/workflows/judge.yml`](../.github/workflows/judge.yml) races your
 entry on GitHub Actions whenever you push, and writes the result to the
@@ -186,7 +186,7 @@ means your entry will at least start on judging day.
 
 > **The workflow is for reference only. It never decides your result.**
 > Your score comes from the organisers' run on the judging machine
-> ([§4.8](#48-judging-day)) — three runs, best attempt, rule 23. A green
+> ([§5.8](#58-judging-day)) — three runs, best attempt, rule 23. A green
 > Judge run tells you the entry builds, starts and finishes; the times it
 > prints are an indication and nothing more. Nothing it reports is scored,
 > and a quick time here wins nothing.
@@ -240,14 +240,14 @@ Result JSONs are attached to the run as an artifact, so you can feed them to
 
 CI runs on a shared two-core runner with no GPU, so the simulator runs well
 below real time. That does **not** change your lap times — they are measured in
-simulated seconds (§4.3) — but it does mean a run takes a while, and a driver
+simulated seconds (§5.3) — but it does mean a run takes a while, and a driver
 that only just fits its control loop here may behave differently on the judging
 machine. Nothing CI reports is scored: the result that counts is the
-organisers' run on the machine in [§4.8](#48-judging-day).
+organisers' run on the machine in [§5.8](#58-judging-day).
 
 ---
 
-## 4.7 Watching a run
+## 5.7 Watching a run
 
 With RViz open you get, live:
 
@@ -259,7 +259,7 @@ The referee log prints each lap as it closes, with any penalty applied.
 
 ---
 
-## 4.8 Judging day
+## 5.8 Judging day
 
 ### The judging machine
 
@@ -292,7 +292,7 @@ control loop; a heavyweight network that misses scans costs more time than it
 gains.
 
 Because lap times are measured in simulated seconds, none of this affects
-fairness — see §4.3.
+fairness — see §5.3.
 
 For each submission the judges:
 
@@ -315,11 +315,11 @@ Identical referee settings for every team.
 
 A run that fails to build, fails to start, or never publishes a drive command
 scores zero for the timing component. Test from a clean clone before you
-submit — see [chapter 6](06-submission.md).
+submit — see [chapter 7](07-submission.md).
 
 ---
 
-## 4.9 Verifying your environment
+## 5.9 Verifying your environment
 
 ```sh
 ./scripts/verify_judging_env.sh
@@ -342,4 +342,4 @@ git submodule update --init --recursive
 
 ---
 
-Next: **[5. Rules](05-rules.md)**
+Next: **[6. Rules](06-rules.md)**
