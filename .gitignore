@@ -23,10 +23,13 @@ docker/.env
 docker/.x11-placeholder/
 
 # --- Evaluation output ---
-# Keep the folder, ignore the runs. Commit a result only if asked to.
+# Keep the folder, ignore the practice runs. The one exception is
+# results/submitted/, which is a required part of a submission: the runs you
+# recorded on your own machine. See docs/06-submission.md.
 results/*
 !results/.gitkeep
 !results/README.md
+!results/submitted/
 
 # --- Recordings ---
 *.bag
