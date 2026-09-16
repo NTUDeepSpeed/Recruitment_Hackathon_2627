@@ -19,12 +19,55 @@ A git repository containing this repository plus your work, with:
 4. A `SUBMISSION.md` at the repository root (template in §6.3).
 5. Nothing else changed in the judging environment or the AutoDRIVE Devkit —
    verify with `./scripts/verify_judging_env.sh`.
+6. **The results of your own judged runs**, in `results/submitted/` — the
+   result files `./scripts/evaluate.sh` wrote on your machine, unedited, with
+   the machine described in `SUBMISSION.md`. See below.
 
-Do **not** commit `results/`, `simulator/`, `race_ws/build/`,
-`race_ws/install/` or `race_ws/log/`. The `.gitignore` already handles this.
-The simulator in particular is 140 MB of binary that everyone fetches with
-`./scripts/fetch_simulator.sh`; committing it will make your repository
-unusable rather than helpful.
+Do **not** commit `simulator/`, `race_ws/build/`, `race_ws/install/`,
+`race_ws/log/`, or anything in `results/` other than `results/submitted/`. The
+`.gitignore` already handles this. The simulator in particular is 140 MB of
+binary that everyone fetches with `./scripts/fetch_simulator.sh`; committing it
+will make your repository unusable rather than helpful.
+
+### Your own judged runs
+
+We race every entry ourselves on the judging machine, and that run is the one
+that scores. Your own result files are the control: they record what the same
+code did on your hardware, which is what lets us tell a real difference from a
+broken one.
+
+```sh
+mkdir -p results/submitted
+./scripts/evaluate.sh --team <your_team> --runs 3
+cp results/<your_team>__*.json results/submitted/
+git add results/submitted
+```
+
+What is required:
+
+- **At least one run** with `"status": "COMPLETE"` and `"scored": true`. Commit
+  as many as you like — the more we have, the better we can tell ordinary
+  variation from something wrong.
+- **The files exactly as the referee wrote them.** Do not edit them, do not
+  assemble one by hand, do not rename a field. They are read against the format
+  in [§4.5](04-evaluation.md#45-reading-a-result-file) and against our own run,
+  and rule 50 applies to a result file as much as to a run.
+- **The machine that produced them**, described in `SUBMISSION.md`: CPU, GPU,
+  RAM, OS, and the `environment.real_time_factor` you usually saw.
+
+If nothing you have run reaches `COMPLETE`, commit the best attempt you have
+and say so in `SUBMISSION.md`. A `DNF` you are honest about costs you nothing
+here; a missing file leaves us guessing.
+
+**If our result and yours differ significantly, we will come to you.** A large
+gap is usually environmental — a dependency that resolved to a different
+version, a timing assumption that only holds on your hardware, a real-time
+factor a long way from 1.0 — and we would rather debug it with you than record
+a number neither of us believes. That is what this deliverable is for. It is
+not a second leaderboard: nothing you commit here is scored.
+
+The **Judge** workflow result is not a substitute. It runs on GitHub's
+hardware, which is neither your machine nor ours.
 
 ### Model weights
 
@@ -100,9 +143,20 @@ How you turn a desired speed into a throttle command, and how well it holds.
 just say so.
 
 ## Results on our own machine
+The runs committed in `results/submitted/`, summarised.
+
 | Best lap | 10-lap total | Collisions | Runs attempted |
 | --- | --- | --- | --- |
 | ... | ... | ... | ... |
+
+### The machine that produced them
+| CPU | GPU | RAM | OS | Typical real-time factor |
+| --- | --- | --- | --- | --- |
+| ... | ... | ... | ... | ... |
+
+Anything else that might explain a gap between your numbers and ours: a run
+that only works on the second attempt, a warning the referee logged, a result
+you cannot reproduce.
 
 ## Anything precomputed
 A map, a racing line, trained weights. What is computed offline, which script
@@ -173,8 +227,11 @@ affect the recruitment decision, not the leaderboard.
 - [ ] `./install/<os>/setup.sh --no-cache` succeeds from clean if you declared any
 - [ ] `./scripts/verify_judging_env.sh` reports the environment intact
 - [ ] `./scripts/evaluate.sh --team <team> --runs 1` gives `COMPLETE`
+- [ ] Your own judged runs committed in `results/submitted/`, unedited, with
+      the machine described in `SUBMISSION.md`
 - [ ] The **Judge** workflow is green on your submitted branch
-- [ ] No build artefacts, result files or the simulator committed
+- [ ] No build artefacts or simulator committed, and no result files outside
+      `results/submitted/`
 - [ ] Anything precomputed is committed, with the code that generated it
 - [ ] `SUBMISSION.md` filled in, including AI usage and attributions
 - [ ] Pushed, and the URL sent to the organisers, before 18 Oct 2026 23:59 SGT

@@ -16,6 +16,9 @@ with the same settings. There are no surprises on the day.
 That builds the workspace, starts the simulator and the devkit bridge, starts
 your driver, runs the full race format and writes a result file to `results/`.
 
+Keep the result files from your final runs. Committing them is part of a
+submission — see [§6.1](06-submission.md#61-what-to-submit).
+
 Useful variations:
 
 ```sh
