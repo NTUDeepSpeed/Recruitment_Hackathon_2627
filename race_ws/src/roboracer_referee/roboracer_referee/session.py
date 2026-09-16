@@ -40,13 +40,10 @@ class Rules:
     warmup_laps: int = 0               # ICRA runs a standing start; no lap is given away
     timed_laps: int = 10
     collision_penalty_s: float = 10.0  # added to the lap the collision happened on
-    # Negative means no limit, which is the ICRA format and the default. At
-    # 10 s a time - half a lap, on this circuit - the penalty is its own
-    # deterrent: a car that keeps hitting things finishes last rather than
-    # being thrown out, and a car that cannot recover at all runs into the
-    # session timeout instead. A positive value turns a hard limit back on for
-    # organisers who want one.
-    max_collisions: int = -1
+    max_collisions: int = 10           # strictly more than this disqualifies
+    # A negative value disables the limit entirely, for an organiser who wants
+    # a run to finish and be ranked however scruffy it was. Not the default:
+    # a car that has hit the boundary eleven times is not racing any more.
     min_lap_time_s: float = 1.0        # a "lap" quicker than this is telemetry noise
     session_timeout_s: float = 600.0
     stuck_speed_mps: float = 0.05

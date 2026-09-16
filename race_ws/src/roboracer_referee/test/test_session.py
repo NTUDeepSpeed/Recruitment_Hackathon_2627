@@ -313,12 +313,29 @@ def test_the_official_defaults_are_the_icra_format():
     assert rules.timed_laps == 10
     assert rules.collision_penalty_s == 10.0
     assert rules.warmup_laps == 0, "ICRA races a standing start"
-    assert rules.max_collisions < 0, "ICRA has no collision limit"
+    assert rules.max_collisions == 10, "more than ten contacts is a disqualification"
 
 
-def test_no_collision_limit_by_default():
-    """A scruffy run finishes and scores badly; it is not thrown out."""
-    session = RaceSession(Rules(timed_laps=2, warmup_laps=0))
+def test_the_default_limit_stops_a_scruffy_run():
+    """Eleven collisions ends the run there and then, mid-lap."""
+    session = RaceSession(Rules(timed_laps=10, warmup_laps=0))   # official defaults
+    sim = Simulator()
+    start(session, sim)
+    for i in range(1, 12):
+        sim.collide()
+        sim.feed(session)
+        if i <= 10:
+            assert session.status is Status.RUNNING, f"DQ fired early at {i}"
+    assert session.status is Status.DISQUALIFIED
+    assert session.collision_events == 11
+    assert session.timed_laps_done == 0, "the run ended before the lap closed"
+    assert not session.scored
+    assert session.result()["collision_limit"] == 10
+
+
+def test_a_negative_limit_disables_disqualification():
+    """The escape hatch: a scruffy run finishes and is ranked."""
+    session = RaceSession(Rules(timed_laps=2, warmup_laps=0, max_collisions=-1))
     sim = Simulator()
     start(session, sim)
     run_laps(session, sim, [20.0, 20.0], collisions_per_lap=[40, 40])

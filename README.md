@@ -70,7 +70,7 @@ interface.
 | **Localisation** | Ground-truth pose on `.../ips` and `.../odom` — **allowed and recommended** |
 | **Track** | The ICRA 2026 compete circuit, inside the simulator. A long, narrow loop about 6.3 × 18.2 m with a 54 m lap, bounded by 33 cm air ducts, roughly 2 m wide and under 1 m at its tightest. |
 | **Scored on** | Your single fastest lap, and your adjusted race time over 10 laps |
-| **Penalties** | +10 s on the lap for each collision, and no upper limit — the penalty is the deterrent |
+| **Penalties** | +10 s on the lap for each collision; more than 10 collisions is a disqualification |
 | **Judged on** | One machine: i9-14900HX, 32 GB, RTX 5060 Laptop. Times come from the simulator's own clock, so your hardware does not affect your score. |
 
 Reactive algorithms like follow-the-gap will get you round. Planning — against
@@ -162,9 +162,10 @@ counts. The short version:
   | Fastest single lap | 50 | `50 × (fastest lap of any team ÷ your fastest lap)` |
   | Adjusted race time | 50 | `50 × (fastest race time of any team ÷ your race time)` |
 
-  Ten laps from a standing start, as ICRA runs it. Each collision adds 10 s to
-  the lap it happened on — about half a lap on this circuit, which makes
-  contact the single biggest thing to optimise.
+  Ten laps from a standing start. Each collision adds 10 s to the lap it
+  happened on — about half a lap here — and more than 10 collisions in a run is
+  a disqualification. Both baselines we ship are disqualified before the flag,
+  so contact is the first problem to solve, not the last.
 
 - **Bonus marks** at the interview, for work you can explain properly:
   replacing the ground-truth pose with your own localisation; building a map of

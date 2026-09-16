@@ -62,18 +62,19 @@ rules 33 and 34, because they matter.
 15. Every collision adds a **10-second penalty** to the lap on which it
     happened. Penalties are included in both your fastest lap and your adjusted
     race time.
-16. **There is no collision limit.** As at ICRA, a run is never disqualified
-    for contact alone. The penalty is its own deterrent, and a car that keeps
-    hitting things finishing last is a more useful outcome than a zero. A car
-    that genuinely cannot recover ends under rule 13 or rule 14 instead.
+16. **More than 10 collisions in a run is a disqualification** for that run,
+    as on Track 1. The referee ends the run at the eleventh collision rather
+    than letting it continue. A disqualified run scores zero for both
+    components (rule 22).
 17. A collision is what the simulator counts as a collision. The referee reads
     `…/collision_count` and applies the penalty; it does not do its own contact
     detection and there is nothing to tune. See
     [§4.4](04-evaluation.md#44-how-collisions-are-counted).
 18. At 10 seconds against a lap in the low twenties, a single contact costs
-    about half a lap and three of them cost more than a whole one. **Clean laps
-    are worth more than fast ones.** This is not a rule so much as arithmetic,
-    but teams consistently discover it late, so it is written down.
+    about half a lap and three of them cost more than a whole one — and ten of
+    them end your run. **Clean laps are worth more than fast ones.** Both
+    shipped baselines are disqualified before the flag, so this is not a
+    theoretical margin: it is the first problem to solve.
 
 ---
 

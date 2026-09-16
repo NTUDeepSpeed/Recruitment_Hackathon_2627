@@ -51,7 +51,7 @@ inside the container directly.
 | Start | Standing start from the grid, as ICRA runs it. No out lap, no warm-up lap. |
 | Timed laps | 10 consecutive laps. |
 | Collision | +10 s added to the lap it happened on. |
-| Collision limit | None, as at ICRA. The penalty is its own deterrent. |
+| Disqualification | More than 10 collisions in a run. |
 
 Two numbers come out:
 
@@ -70,7 +70,7 @@ A run can also end early:
 | Status | Means |
 | --- | --- |
 | `COMPLETE` | All 10 laps finished. This is the only status that scores. |
-| `DISQUALIFIED` | A collision limit was configured and exceeded. Not used by default. |
+| `DISQUALIFIED` | More than 10 collisions. |
 | `DNF_TIMEOUT` | Ran out of session time (600 simulated seconds) before 10 laps. |
 | `DNF_STUCK` | The car did not move for 15 simulated seconds. |
 | `ABORTED` | Interrupted, or the referee never got as far as racing. |
@@ -142,10 +142,17 @@ follower spends nearly twice as long in penalties as it does driving
 ([§3.1](03-baselines.md#31-what-they-actually-do-on-this-circuit)). **Not
 hitting things is worth more than any amount of speed on this track.**
 
-**There is no collision limit**, which is how ICRA runs it. The penalty deters
-by itself: a car that keeps hitting things finishes last rather than being
-thrown out, which is a more useful result than a zero. A car that genuinely
-cannot recover ends on the stuck timer or the session timeout instead.
+**More than 10 collisions in a run is a disqualification**, and the referee
+ends the run the moment the eleventh lands rather than letting the car limp to
+the flag. A car that has hit the boundary eleven times is not racing any more,
+and the remaining laps tell nobody anything.
+
+That threshold is not far away. The shipped gap follower averages about four
+collisions a lap and is disqualified inside three laps; pure pursuit averages
+three and goes out on lap four
+([§3.1](03-baselines.md#31-what-they-actually-do-on-this-circuit)). **Both
+baselines are disqualified well before the flag**, which is the plainest
+possible statement of what this track is about.
 
 The counters do not necessarily read zero when a run starts — the simulator may
 have been driven already in the same session. The referee takes a baseline at
@@ -169,7 +176,7 @@ cannot cost you anything.
   "laps_completed": 10,
   "laps_required": 10,
   "collisions": 1,
-  "collision_limit": null,        // no limit, as at ICRA
+  "collision_limit": 10,
   "best_lap_time": 21.804,        // best lap AFTER penalties - what you are scored on
   "best_lap_time_raw": 21.804,    // that same lap, before its penalties
   "best_lap_number": 7,

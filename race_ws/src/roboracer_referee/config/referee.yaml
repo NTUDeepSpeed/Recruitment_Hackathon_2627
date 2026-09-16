@@ -21,12 +21,11 @@ referee:
     warmup_laps: 0
     timed_laps: 10
     collision_penalty_s: 10.0     # per contact with the track boundary
-    # Negative means no limit, which is how ICRA runs it. At 10 s a time - half
-    # a lap on this circuit - the penalty deters by itself: a car that keeps
-    # hitting things finishes last rather than being thrown out, and one that
-    # cannot recover at all hits the session timeout. Set a positive value to
-    # turn a hard limit back on.
-    max_collisions: -1
+    # Strictly more than this disqualifies the run, as on Track 1. The referee
+    # ends the run the moment it is exceeded rather than letting the car finish
+    # - a car that has hit the boundary eleven times is not racing any more.
+    # A negative value disables the limit and lets any run finish and be ranked.
+    max_collisions: 10
 
     # --- tolerances -----------------------------------------------------
     # A "lap" the simulator reports faster than this is telemetry noise, not a

@@ -92,7 +92,7 @@ class Referee(Node):
         self.declare_parameter("warmup_laps", 0)
         self.declare_parameter("timed_laps", 10)
         self.declare_parameter("collision_penalty_s", 10.0)
-        self.declare_parameter("max_collisions", -1)   # negative = no limit (ICRA format)
+        self.declare_parameter("max_collisions", 10)   # negative disables the limit
         self.declare_parameter("min_lap_time_s", 1.0)
         self.declare_parameter("session_timeout_s", 600.0)
         self.declare_parameter("stuck_speed_mps", 0.05)
