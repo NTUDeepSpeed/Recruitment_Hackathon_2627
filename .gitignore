@@ -18,6 +18,12 @@ workshop/ros2_ws/build/
 workshop/ros2_ws/install/
 workshop/ros2_ws/log/
 
+# --- AutoDRIVE Simulator ---
+# Not used on this track. It appears here only if you have switched branches
+# from track2, where scripts/fetch_simulator.sh downloads ~250 MB of Unity
+# binary. Ignored so it can never be committed to Track 1 by accident.
+simulator/
+
 # --- Docker helper state, written by install/<os>/run.sh ---
 docker/.env
 docker/.x11-placeholder/
