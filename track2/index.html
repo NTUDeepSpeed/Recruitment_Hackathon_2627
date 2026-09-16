@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RoboRacer Sim Racing — Track 2 &middot; Track 2 &middot; DeepSpeed Hackathon 26/27</title>
+<meta name="description" content="The compete phase of the RoboRacer Sim Racing League at ICRA 2026 — same vehicle, same sensors, same circuit the ICRA teams raced. You publish raw throttle, so the speed controller is yours to write.">
+<meta name="color-scheme" content="dark light">
+<meta property="og:title" content="RoboRacer Sim Racing — Track 2 &middot; Track 2 &middot; DeepSpeed Hackathon 26/27">
+<meta property="og:description" content="The compete phase of the RoboRacer Sim Racing League at ICRA 2026 — same vehicle, same sensors, same circuit the ICRA teams raced. You publish raw throttle, so the speed controller is yours to write.">
+<meta property="og:type" content="article">
+<script>
+/* Applied before paint so the page never flashes the wrong theme.
+   Dark is the brand default — the identity lives on black. */
+(function () {
+  try {
+    var saved = localStorage.getItem("ds-theme");
+    document.documentElement.setAttribute("data-theme", saved === "light" ? "light" : "dark");
+  } catch (e) { /* storage blocked */ }
+})();
+</script>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body>
+<a class="skip" href="#doc">Skip to content</a>
+<header class="hdr">
+  <a class="hdr-brand" href="../index.html">
+    <span class="wm">DeepSpeed</span>
+    <span class="sub">Hackathon 26/27</span>
+  </a>
+  <nav class="hdr-nav" aria-label="Tracks"><a class="" href="../track1/index.html">Track 1</a><a class="on" href="../track2/index.html">Track 2</a></nav>
+  <div class="hdr-right">
+    <span class="hdr-meta">Deadline <b>18 Oct 2026</b></span>
+    <a class="hdr-meta" href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">GitHub</a>
+    <button class="toggle" type="button" aria-label="Switch theme">
+      <span class="t-light">Light</span><span class="t-dark">Dark</span>
+    </button>
+    <button class="navbtn" type="button" aria-label="Contents" aria-expanded="false" aria-controls="sidenav">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+</header>
+<div class="scrim"></div>
+<div class="shell">
+  <aside class="nav" id="sidenav">
+  <div class="nav-lbl">Select track</div>
+  <div class="nav-switch"><a href="../track1/index.html"><span class="n">01</span><span>Autonomous Racing</span></a><a href="../track2/index.html" aria-current="true"><span class="n">02</span><span>Sim Racing · ICRA</span></a></div>
+  <div class="nav-lbl">Track 2 &middot; Contents</div>
+  <ul class="nav-list"><li><a href="index.html" aria-current="page"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-baselines.html"><span class="n">03</span><span>Baseline algorithms</span></a></li><li><a href="04-evaluation.html"><span class="n">04</span><span>Evaluation</span></a></li><li><a href="05-rules.html"><span class="n">05</span><span>Rules</span></a></li><li><a href="06-submission.html"><span class="n">06</span><span>Submission</span></a></li><li><a href="07-workshop.html"><span class="n">07</span><span>ROS 2 primer</span></a></li></ul>
+  <div class="nav-lbl">Elsewhere</div>
+  <div class="nav-out">
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/tree/track2">Branch <code>track2</code></a>
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/actions">Judging runs</a>
+    <a href="mailto:ntu-deepspeed@e.ntu.edu.sg">Ask a question</a>
+  </div>
+</aside>
+  <main class="main" id="doc">
+    <div class="crumb"><span class="red">Track 2</span><span class="sep">/</span><span>Overview</span></div>
+    <article class="prose">
+      <h1>RoboRacer Sim Racing — Track 2</h1>
+      <p><strong>NTU DeepSpeed Recruitment Hackathon 26/27</strong></p>
+<p>Write the software that drives a 1/10-scale racing car around a circuit it has
+never seen, as fast as it can, without hitting anything. This track runs the
+<strong>compete</strong> phase of the <a href="https://autodrive-ecosystem.github.io/competitions/roboracer-sim-racing-icra-2026/" data-ext="1">RoboRacer Sim Racing League @ ICRA 2026</a>
+on the AutoDRIVE Simulator — the same vehicle, the same sensors, the same
+circuit and the same devkit the ICRA teams raced.</p>
+<blockquote>
+<p><strong>Submission deadline: 18 October 2026, 23:59 (SGT)</strong></p>
+</blockquote>
+<hr>
+<h2 id="quick-start">Quick start<a class="hl" href="#quick-start" title="Link to this section">#</a></h2>
+<div class="code"><pre><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627.git
+<span class="nb">cd</span><span class="w"> </span>Recruitment_Hackathon_2627
+git<span class="w"> </span>checkout<span class="w"> </span>track2
+
+./scripts/fetch_simulator.sh<span class="w">      </span><span class="c1"># 140 MB, once</span>
+./install/linux/setup.sh<span class="w">          </span><span class="c1"># or install/macos, or install/windows from WSL</span>
+./install/linux/run.sh<span class="w">            </span><span class="c1"># builds if needed, then drops you into the container</span>
+</code></pre><span class="code-lang">shell</span></div>
+<p>Then, inside the container:</p>
+<div class="code"><pre><code><span class="nb">cd</span><span class="w"> </span>/hackathon/race_ws<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>colcon<span class="w"> </span>build<span class="w"> </span>--symlink-install
+<span class="nb">source</span><span class="w"> </span>install/local_setup.bash
+
+<span class="c1"># Terminal 1 — the simulator and the devkit bridge</span>
+ros2<span class="w"> </span>launch<span class="w"> </span>roboracer_referee<span class="w"> </span>simulator.launch.py
+
+<span class="c1"># Terminal 2 — your car</span>
+ros2<span class="w"> </span>run<span class="w"> </span>team_driver<span class="w"> </span>driver
+</code></pre><span class="code-lang">shell</span></div>
+<p>Watch it drive, then go make it faster. When you want a score:</p>
+<div class="code"><pre><code>./scripts/evaluate.sh<span class="w"> </span>--team<span class="w"> </span>your_team_name
+</code></pre><span class="code-lang">shell</span></div>
+<p>Pushing also races your entry on GitHub Actions and writes the result to the
+workflow summary. On an untouched template it races the baseline instead, so
+you can see the time to beat before writing a line of code.</p>
+<p>Full walkthrough: <strong><a href="01-setup.html">docs/01-setup.md</a></strong>.</p>
+<blockquote>
+<p>No submodules on this branch — a plain <code>git clone</code> is enough, and even a ZIP
+download works. The AutoDRIVE Devkit is committed to this repository; the
+simulator is a separate download that <code>./scripts/fetch_simulator.sh</code> handles.</p>
+</blockquote>
+<hr>
+<h2 id="the-challenge">The challenge<a class="hl" href="#the-challenge" title="Link to this section">#</a></h2>
+<p>You get a LiDAR scan, an IMU, wheel encoders, a camera and the car's exact
+position. You publish a throttle and a steering command. That is the whole
+interface.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Simulator</strong></td>
+<td>AutoDRIVE Simulator, <code>2026-icra</code> <strong>compete</strong> build</td>
+</tr>
+<tr>
+<td><strong>Car</strong></td>
+<td>RoboRacer digital twin. Ackermann steering, 0.324 m wheelbase, 0.27 × 0.50 m, 3.9 kg, steering limited to ±0.5236 rad</td>
+</tr>
+<tr>
+<td><strong>Sensor</strong></td>
+<td>1080-beam LiDAR, 270° field of view, 10 m range, 40 Hz — plus IMU, encoders and a front camera</td>
+</tr>
+<tr>
+<td><strong>Control</strong></td>
+<td><strong>Normalised throttle and steering, both in [−1, 1].</strong> Not a speed request — closing that loop is your problem</td>
+</tr>
+<tr>
+<td><strong>Localisation</strong></td>
+<td>Ground-truth pose on <code>.../ips</code> and <code>.../odom</code> — <strong>allowed and recommended</strong></td>
+</tr>
+<tr>
+<td><strong>Track</strong></td>
+<td>The ICRA 2026 compete circuit, inside the simulator. A long, narrow loop about 6.3 × 18.2 m with a 54 m lap, bounded by 33 cm air ducts, roughly 2 m wide and under 1 m at its tightest.</td>
+</tr>
+<tr>
+<td><strong>Scored on</strong></td>
+<td>Your single fastest lap, and your time for 10 consecutive laps</td>
+</tr>
+<tr>
+<td><strong>Penalties</strong></td>
+<td>+10 s on the lap for each collision; more than 10 collisions is a disqualification</td>
+</tr>
+<tr>
+<td><strong>Judged on</strong></td>
+<td>One machine: i9-14900HX, 32 GB, RTX 5060 Laptop. Times come from the simulator's own clock, so your hardware does not affect your score.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Reactive algorithms like follow-the-gap will get you round. Planning — against
+the map you build yourself, and against your own position — is where the lap
+time is. And you are not required to build on the baselines at all —
+<strong>replacing the approach outright is encouraged</strong>: reinforcement learning, MPC,
+a learned end-to-end policy, anything you can defend. See
+<a href="03-baselines.html">docs/03-baselines.md</a>.</p>
+<h3 id="what-is-different-from-track-1">What is different from Track 1<a class="hl" href="#what-is-different-from-track-1" title="Link to this section">#</a></h3>
+<p>Both tracks are RoboRacer, and the racing problem is the same. The environment
+is not, and four differences will bite you if you skim:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th></th>
+<th>Track 1</th>
+<th>Track 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Simulator</td>
+<td><code>f1tenth_gym</code> + ROS bridge</td>
+<td><strong>AutoDRIVE</strong>, a Unity binary you download</td>
+</tr>
+<tr>
+<td>Control</td>
+<td><code>AckermannDriveStamped</code> — ask for a speed</td>
+<td><strong><code>Float32</code> throttle in [−1, 1]</strong> — ask for torque</td>
+</tr>
+<tr>
+<td>Lap timing</td>
+<td>Our referee, against a finish line in <code>maps/</code></td>
+<td><strong>The simulator's</strong>, over the devkit bridge</td>
+</tr>
+<tr>
+<td>The map</td>
+<td>Shipped with the simulator</td>
+<td><strong>Traced off the simulator</strong> — it is in <code>maps/</code>, and a scored run ignores it</td>
+</tr>
+</tbody>
+</table></div>
+<p>The throttle one is the big one. There is no speed controller between your node
+and the motor any more, so "take this corner at 3 m/s" is a control problem you
+now own. <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/race_ws/src/roboracer_baselines/roboracer_baselines/control.py" data-ext="1"><code>control.py</code></a>
+has a worked example to copy.</p>
+<hr>
+<h2 id="where-things-are">Where things are<a class="hl" href="#where-things-are" title="Link to this section">#</a></h2>
+<div class="code"><pre><code>Recruitment_Hackathon_2627/
+├── install/                    Setup scripts, one folder per platform
+│   ├── linux/  macos/  windows/    setup.sh, run.sh, shell.sh, stop.sh
+│   └── common.sh
+├── race_ws/src/                The ROS 2 workspace, mounted into the container
+│   ├── team_driver/            ★ YOUR CODE GOES HERE
+│   ├── roboracer_baselines/      Reference algorithms to read, race and beat
+│   └── roboracer_referee/        The judging environment — do not modify
+├── external/autodrive_devkit/  The AutoDRIVE Devkit — do not modify
+├── simulator/                  The AutoDRIVE Simulator, fetched by script
+├── scripts/                    evaluate.sh, fetch_simulator.sh, leaderboard.py, …
+├── maps/                       Occupancy grid of the circuit, its centreline and metadata
+├── docker/                     Image definition (ROS 2 Humble) and compose files
+├── results/                    Where your run results land
+├── .github/workflows/          Automated judging on every push
+├── docs/                       This guide
+└── workshop/                   ROS 2 teaching material from the workshop
+</code></pre></div>
+<p>The one file you are meant to open first:
+<strong><a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/race_ws/src/team_driver/team_driver/driver.py" data-ext="1"><code>race_ws/src/team_driver/team_driver/driver.py</code></a></strong></p>
+<hr>
+<h2 id="the-guide">The guide<a class="hl" href="#the-guide" title="Link to this section">#</a></h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Chapter</th>
+<th>What is in it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><a href="01-setup.html">1. Setup</a></strong></td>
+<td>Installing Docker, fetching the simulator, building the image, first run, troubleshooting</td>
+</tr>
+<tr>
+<td><strong><a href="02-simulator.html">2. The simulator</a></strong></td>
+<td>AutoDRIVE, the bridge, every topic, the vehicle and sensor specifications</td>
+</tr>
+<tr>
+<td><strong><a href="03-baselines.html">3. Baseline algorithms</a></strong></td>
+<td>Wall following, follow-the-gap, pure pursuit, and the speed controller you now need</td>
+</tr>
+<tr>
+<td><strong><a href="04-evaluation.html">4. Evaluation</a></strong></td>
+<td>Scoring yourself, reading result files, how judging day runs</td>
+</tr>
+<tr>
+<td><strong><a href="05-rules.html">5. Rules</a></strong></td>
+<td>The rules, the scoring formula, and what gets you disqualified</td>
+</tr>
+<tr>
+<td><strong><a href="06-submission.html">6. Submission</a></strong></td>
+<td>What to hand in, how, and what the interview covers</td>
+</tr>
+<tr>
+<td><strong><a href="07-workshop.html">7. ROS 2 primer</a></strong></td>
+<td>Nodes, topics and the workshop slides, if ROS is new to you</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h2 id="rules-at-a-glance">Rules at a glance<a class="hl" href="#rules-at-a-glance" title="Link to this section">#</a></h2>
+<p>The full rules are in <strong><a href="05-rules.html">docs/05-rules.md</a></strong> and they are what
+counts. The short version:</p>
+<ul>
+<li><strong>Teams of 3 to 5.</strong></li>
+<li><strong>Deadline: 18 October 2026, 23:59 SGT.</strong> Late entries are not scored.</li>
+<li><strong>AI assistants are allowed.</strong> You will be asked to explain your code at the
+  interview, so do not submit anything you cannot defend.</li>
+<li><strong>Do not modify the judging environment, and do not modify the AutoDRIVE
+  Devkit.</strong> Check yourself with <code>./scripts/verify_judging_env.sh</code>.</li>
+<li><strong>Every sensor topic is open to you, including ground-truth pose.</strong> The
+  AutoDRIVE competition marks some of those "restricted at race time"; this
+  hackathon does not. The one thing you may not publish is
+  <code>/autodrive/reset_command</code> — that is the referee's.</li>
+<li><strong>Score (out of 100):</strong></li>
+</ul>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th></th>
+<th>Weight</th>
+<th>Formula</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fastest single lap</td>
+<td>50</td>
+<td><code>50 × (fastest lap of any team ÷ your fastest lap)</code></td>
+</tr>
+<tr>
+<td>10-lap total</td>
+<td>50</td>
+<td><code>50 × (fastest 10-lap total of any team ÷ your 10-lap total)</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>An out lap and one warm-up lap are granted before timing starts. Each
+  collision adds 10 s to the lap it happened on — about half a lap here — and
+  more than 10 collisions in a run is a disqualification. Both baselines we
+  ship are disqualified before the flag, so contact is the first problem to
+  solve, not the last.</p>
+<ul>
+<li><strong>Bonus marks</strong> at the interview, for work you can explain properly:
+  replacing the ground-truth pose with your own localisation; building a map of
+  the circuit and generating a racing line from it; or <strong>replacing the driving
+  algorithm entirely</strong> — reinforcement learning, MPC, imitation learning,
+  anything beyond tuning what we gave you.</li>
+</ul>
+<hr>
+<h2 id="getting-help">Getting help<a class="hl" href="#getting-help" title="Link to this section">#</a></h2>
+<ul>
+<li>Check the troubleshooting section at the end of
+  <a href="01-setup.html">docs/01-setup.md</a> first — most problems are there, and the
+  two most common ones (a bridge that connects and then publishes nothing, and
+  a simulator that cannot find the bridge) both look like something else.</li>
+<li>Bring the exact error text and what you ran to the team channel.</li>
+<li><code>./scripts/verify_judging_env.sh</code> will tell you if your environment has
+  drifted from the official one.</li>
+<li>You may email <code>ntu-deepspeed@e.ntu.edu.sg</code> for further inquiries if you cannot
+  solve the issues after troubleshooting.</li>
+</ul>
+<p>Good luck. Go fast.</p>
+    </article>
+    <nav class="pager"><a class="next" href="01-setup.html"><span><span class="k">Next</span><span class="t">Setup</span></span><span class="arw">&rarr;</span></a></nav>
+    <div class="src">Source &middot; <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/README.md">README.md</a></div>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="nav-lbl">On this page</div><ul><li><a href="#quick-start">Quick start</a></li><li><a href="#the-challenge">The challenge</a><ul><li><a href="#what-is-different-from-track-1">What is different from Track 1</a></li></ul></li><li><a href="#where-things-are">Where things are</a></li><li><a href="#the-guide">The guide</a></li><li><a href="#rules-at-a-glance">Rules at a glance</a></li><li><a href="#getting-help">Getting help</a></li></ul></nav>
+</div>
+<footer class="ft"><div class="ft-in">
+  <span>NTU DeepSpeed &middot; Recruitment Hackathon 26/27</span>
+  <nav>
+    <a href="../track1/index.html">Track 1</a>
+    <a href="../track2/index.html">Track 2</a>
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">Repository</a>
+    <a href="mailto:ntu-deepspeed@e.ntu.edu.sg">ntu-deepspeed@e.ntu.edu.sg</a>
+  </nav>
+</div></footer>
+<script src="../assets/app.js" defer></script>
+</body>
+</html>

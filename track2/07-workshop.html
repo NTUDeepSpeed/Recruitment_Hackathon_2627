@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>7. ROS 2 primer &middot; Track 2 &middot; DeepSpeed Hackathon 26/27</title>
+<meta name="description" content="The compete phase of the RoboRacer Sim Racing League at ICRA 2026 — same vehicle, same sensors, same circuit the ICRA teams raced. You publish raw throttle, so the speed controller is yours to write.">
+<meta name="color-scheme" content="dark light">
+<meta property="og:title" content="7. ROS 2 primer &middot; Track 2 &middot; DeepSpeed Hackathon 26/27">
+<meta property="og:description" content="The compete phase of the RoboRacer Sim Racing League at ICRA 2026 — same vehicle, same sensors, same circuit the ICRA teams raced. You publish raw throttle, so the speed controller is yours to write.">
+<meta property="og:type" content="article">
+<script>
+/* Applied before paint so the page never flashes the wrong theme.
+   Dark is the brand default — the identity lives on black. */
+(function () {
+  try {
+    var saved = localStorage.getItem("ds-theme");
+    document.documentElement.setAttribute("data-theme", saved === "light" ? "light" : "dark");
+  } catch (e) { /* storage blocked */ }
+})();
+</script>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body>
+<a class="skip" href="#doc">Skip to content</a>
+<header class="hdr">
+  <a class="hdr-brand" href="../index.html">
+    <span class="wm">DeepSpeed</span>
+    <span class="sub">Hackathon 26/27</span>
+  </a>
+  <nav class="hdr-nav" aria-label="Tracks"><a class="" href="../track1/index.html">Track 1</a><a class="on" href="../track2/index.html">Track 2</a></nav>
+  <div class="hdr-right">
+    <span class="hdr-meta">Deadline <b>18 Oct 2026</b></span>
+    <a class="hdr-meta" href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">GitHub</a>
+    <button class="toggle" type="button" aria-label="Switch theme">
+      <span class="t-light">Light</span><span class="t-dark">Dark</span>
+    </button>
+    <button class="navbtn" type="button" aria-label="Contents" aria-expanded="false" aria-controls="sidenav">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+</header>
+<div class="scrim"></div>
+<div class="shell">
+  <aside class="nav" id="sidenav">
+  <div class="nav-lbl">Select track</div>
+  <div class="nav-switch"><a href="../track1/index.html"><span class="n">01</span><span>Autonomous Racing</span></a><a href="../track2/index.html" aria-current="true"><span class="n">02</span><span>Sim Racing · ICRA</span></a></div>
+  <div class="nav-lbl">Track 2 &middot; Contents</div>
+  <ul class="nav-list"><li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-baselines.html"><span class="n">03</span><span>Baseline algorithms</span></a></li><li><a href="04-evaluation.html"><span class="n">04</span><span>Evaluation</span></a></li><li><a href="05-rules.html"><span class="n">05</span><span>Rules</span></a></li><li><a href="06-submission.html"><span class="n">06</span><span>Submission</span></a></li><li><a href="07-workshop.html" aria-current="page"><span class="n">07</span><span>ROS 2 primer</span></a></li></ul>
+  <div class="nav-lbl">Elsewhere</div>
+  <div class="nav-out">
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/tree/track2">Branch <code>track2</code></a>
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/actions">Judging runs</a>
+    <a href="mailto:ntu-deepspeed@e.ntu.edu.sg">Ask a question</a>
+  </div>
+</aside>
+  <main class="main" id="doc">
+    <div class="crumb"><span class="red">Track 2</span><span class="sep">/</span><a href="index.html">Overview</a><span class="sep">/</span><span>Chapter 07</span></div>
+    <article class="prose">
+      <h1>7. ROS 2 primer</h1>
+      <p>If ROS 2 is new to you, start here. If you sat through the workshop, skip to
+<a href="03-baselines.html">chapter 3</a>.</p>
+<p>You need surprisingly little ROS to win this. A node, a subscriber, a
+publisher, and parameters — that is the whole surface area of a competitive
+entry.</p>
+<hr>
+<h2 id="71-the-five-ideas">7.1 The five ideas<a class="hl" href="#71-the-five-ideas" title="Link to this section">#</a></h2>
+<p><strong>Node</strong> — one process doing one job. Your driver is a node. The AutoDRIVE
+bridge is a node. The referee is a node.</p>
+<p><strong>Topic</strong> — a named channel carrying one message type.
+<code>/autodrive/roboracer_1/lidar</code> carries LiDAR;
+<code>/autodrive/roboracer_1/throttle_command</code> carries throttle. Publishers and
+subscribers find each other automatically; neither knows the other exists.</p>
+<p><strong>Message</strong> — a typed struct. <code>sensor_msgs/LaserScan</code> has <code>ranges</code>,
+<code>angle_min</code>, <code>angle_increment</code>. Inspect any type with
+<code>ros2 interface show &lt;type&gt;</code>.</p>
+<p><strong>Parameter</strong> — a named value you can set at launch without editing code. This
+is how you tune without rebuilding, and it is worth using from day one.</p>
+<p><strong>Workspace</strong> — a folder of packages that <code>colcon build</code> compiles and
+<code>source install/local_setup.bash</code> puts on your path. Yours is
+<code>/hackathon/race_ws</code>.</p>
+<hr>
+<h2 id="72-the-whole-pattern">7.2 The whole pattern<a class="hl" href="#72-the-whole-pattern" title="Link to this section">#</a></h2>
+<div class="code"><pre><code><span class="kn">import</span><span class="w"> </span><span class="nn">rclpy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rclpy.node</span><span class="w"> </span><span class="kn">import</span> <span class="n">Node</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rclpy.qos</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">QoSDurabilityPolicy</span><span class="p">,</span> <span class="n">QoSHistoryPolicy</span><span class="p">,</span> <span class="n">QoSProfile</span><span class="p">,</span>
+                       <span class="n">QoSReliabilityPolicy</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sensor_msgs.msg</span><span class="w"> </span><span class="kn">import</span> <span class="n">LaserScan</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">std_msgs.msg</span><span class="w"> </span><span class="kn">import</span> <span class="n">Float32</span>
+
+<span class="n">NS</span> <span class="o">=</span> <span class="s1">'/autodrive/roboracer_1'</span>
+
+<span class="c1"># The AutoDRIVE bridge publishes RELIABLE / KEEP_LAST(1) / VOLATILE. Match it,</span>
+<span class="c1"># or your subscription silently receives nothing at all - see §7.5.</span>
+<span class="n">QOS</span> <span class="o">=</span> <span class="n">QoSProfile</span><span class="p">(</span><span class="n">durability</span><span class="o">=</span><span class="n">QoSDurabilityPolicy</span><span class="o">.</span><span class="n">VOLATILE</span><span class="p">,</span>
+                 <span class="n">reliability</span><span class="o">=</span><span class="n">QoSReliabilityPolicy</span><span class="o">.</span><span class="n">RELIABLE</span><span class="p">,</span>
+                 <span class="n">history</span><span class="o">=</span><span class="n">QoSHistoryPolicy</span><span class="o">.</span><span class="n">KEEP_LAST</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Driver</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">'driver'</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare_parameter</span><span class="p">(</span><span class="s1">'throttle'</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">throttle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span><span class="s1">'throttle'</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">throttle_pub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_publisher</span><span class="p">(</span><span class="n">Float32</span><span class="p">,</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">NS</span><span class="si">}</span><span class="s1">/throttle_command'</span><span class="p">,</span> <span class="n">QOS</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steering_pub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_publisher</span><span class="p">(</span><span class="n">Float32</span><span class="p">,</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">NS</span><span class="si">}</span><span class="s1">/steering_command'</span><span class="p">,</span> <span class="n">QOS</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_subscription</span><span class="p">(</span><span class="n">LaserScan</span><span class="p">,</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">NS</span><span class="si">}</span><span class="s1">/lidar'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_callback</span><span class="p">,</span> <span class="n">QOS</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">scan_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scan</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steering_pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">Float32</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">throttle_pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">Float32</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">throttle</span><span class="p">)))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">rclpy</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+    <span class="n">rclpy</span><span class="o">.</span><span class="n">spin</span><span class="p">(</span><span class="n">Driver</span><span class="p">())</span>
+</code></pre><span class="code-lang">python</span></div>
+<p>Everything else is the driving algorithm.</p>
+<hr>
+<h2 id="73-commands-worth-knowing">7.3 Commands worth knowing<a class="hl" href="#73-commands-worth-knowing" title="Link to this section">#</a></h2>
+<div class="code"><pre><code>ros2<span class="w"> </span>topic<span class="w"> </span>list<span class="w">                       </span><span class="c1"># what exists</span>
+ros2<span class="w"> </span>topic<span class="w"> </span><span class="nb">echo</span><span class="w"> </span>/autodrive/roboracer_1/lap_count<span class="w">      </span><span class="c1"># watch messages go by</span>
+ros2<span class="w"> </span>topic<span class="w"> </span>hz<span class="w"> </span>/autodrive/roboracer_1/lidar<span class="w">            </span><span class="c1"># rate - is anything alive?</span>
+ros2<span class="w"> </span>topic<span class="w"> </span>info<span class="w"> </span>/autodrive/roboracer_1/lidar<span class="w"> </span>--verbose<span class="w">   </span><span class="c1"># publishers, subscribers, QoS</span>
+ros2<span class="w"> </span>interface<span class="w"> </span>show<span class="w"> </span>sensor_msgs/msg/LaserScan
+ros2<span class="w"> </span>node<span class="w"> </span>list
+ros2<span class="w"> </span>param<span class="w"> </span>list<span class="w"> </span>/driver
+ros2<span class="w"> </span>param<span class="w"> </span><span class="nb">set</span><span class="w"> </span>/driver<span class="w"> </span>throttle<span class="w"> </span><span class="m">0</span>.3<span class="w">   </span><span class="c1"># retune a running node</span>
+ros2<span class="w"> </span>run<span class="w"> </span>&lt;package&gt;<span class="w"> </span>&lt;executable&gt;
+ros2<span class="w"> </span>launch<span class="w"> </span>&lt;package&gt;<span class="w"> </span>&lt;file.launch.py&gt;
+</code></pre><span class="code-lang">shell</span></div>
+<p>When something does not work, <code>ros2 topic hz</code> is almost always the fastest way
+to find out which link in the chain is dead.</p>
+<hr>
+<h2 id="74-building">7.4 Building<a class="hl" href="#74-building" title="Link to this section">#</a></h2>
+<div class="code"><pre><code><span class="nb">cd</span><span class="w"> </span>/hackathon/race_ws
+colcon<span class="w"> </span>build<span class="w"> </span>--symlink-install
+<span class="nb">source</span><span class="w"> </span>install/local_setup.bash
+</code></pre><span class="code-lang">shell</span></div>
+<p><code>--symlink-install</code> makes Python edits take effect immediately. You only need
+to rebuild after adding a new file or editing <code>setup.py</code>.</p>
+<p>Build one package only:</p>
+<div class="code"><pre><code>colcon<span class="w"> </span>build<span class="w"> </span>--symlink-install<span class="w"> </span>--packages-select<span class="w"> </span>team_driver
+</code></pre><span class="code-lang">shell</span></div>
+<hr>
+<h2 id="75-two-things-that-will-waste-an-afternoon">7.5 Two things that will waste an afternoon<a class="hl" href="#75-two-things-that-will-waste-an-afternoon" title="Link to this section">#</a></h2>
+<p>Both of these look like a broken simulator and are not.</p>
+<p><strong>Quality of Service.</strong> ROS 2 subscriptions and publishers negotiate a
+contract, and an incompatible pair simply never connects — no error, no
+warning. <code>ros2 topic list</code> still lists the topic and <code>ros2 topic info</code> still
+shows a publisher. The AutoDRIVE bridge is <code>RELIABLE</code>, <code>KEEP_LAST(1)</code>,
+<code>VOLATILE</code>; a <code>BEST_EFFORT</code> subscriber, which is the natural choice for sensor
+data and what most tutorials show, will never receive one message from it. Use
+the profile above, or <code>devkit_qos()</code> from
+<a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/race_ws/src/roboracer_baselines/roboracer_baselines/control.py" data-ext="1"><code>control.py</code></a>.</p>
+<p><strong>Start order.</strong> The bridge listens on port 4567 and the simulator dials out to
+it. If the simulator starts first it has nothing to connect to, and you get a
+full topic list with no data on any of it. <code>simulator.launch.py</code> handles the
+ordering for you; if you start them by hand, bridge first.</p>
+<hr>
+<h2 id="76-workshop-material">7.6 Workshop material<a class="hl" href="#76-workshop-material" title="Link to this section">#</a></h2>
+<p>The full workshop content is in <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/tree/track2/workshop" data-ext="1"><code>workshop/</code></a>:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/tree/track2/workshop/slides" data-ext="1"><code>workshop/slides/</code></a></td>
+<td>ROS 2 theory and practical slides, Docker, reactive navigation</td>
+</tr>
+<tr>
+<td><a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/tree/track2/workshop/ros2_ws" data-ext="1"><code>workshop/ros2_ws/</code></a></td>
+<td>Teaching packages: publishers, subscribers, services, actions, custom messages, bag recording</td>
+</tr>
+<tr>
+<td><a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/workshop/ros2_ws/README.md" data-ext="1"><code>workshop/ros2_ws/README.md</code></a></td>
+<td>Walkthrough for those packages</td>
+</tr>
+</tbody>
+</table></div>
+<p>The workshop workspace is separate from <code>race_ws</code> on purpose — it is reference
+material, and it is not built during evaluation. It was written against a
+different ROS distribution and uses <code>/scan</code> and <code>/drive</code> rather than the
+AutoDRIVE topics; the concepts carry over unchanged, the topic names do not.</p>
+<hr>
+<h2 id="77-further-reading">7.7 Further reading<a class="hl" href="#77-further-reading" title="Link to this section">#</a></h2>
+<ul>
+<li><a href="https://docs.ros.org/en/humble/Tutorials.html" data-ext="1">ROS 2 Humble tutorials</a> — the
+  official ones are good, and Humble is what this image runs. The beginner CLI
+  and client library sections are enough.</li>
+<li><a href="https://autodrive-ecosystem.github.io/competitions/roboracer-sim-racing-guide-2026" data-ext="1">AutoDRIVE technical guide</a> —
+  the simulator, the devkit, the vehicle and every sensor, from the people who
+  built it. Read it; this repository summarises it but does not replace it.</li>
+<li><a href="https://f1tenth-coursekit.readthedocs.io/" data-ext="1">RoboRacer (F1TENTH) course materials</a> —
+  lectures on reactive methods, pure pursuit and planning.</li>
+<li><a href="https://doi.org/10.3390/robotics12030077" data-ext="1">AutoDRIVE Ecosystem paper</a> — Samak
+  et al., <em>Robotics</em> 12(3), 2023, if you want the design rationale.</li>
+</ul>
+<hr>
+<p>Back to the <strong><a href="index.html">README</a></strong>.</p>
+    </article>
+    <nav class="pager"><a class="prev" href="06-submission.html"><span class="arw">&larr;</span><span><span class="k">Previous</span><span class="t">Submission</span></span></a></nav>
+    <div class="src">Source &middot; <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/docs/07-workshop.md">docs/07-workshop.md</a></div>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="nav-lbl">On this page</div><ul><li><a href="#71-the-five-ideas">7.1 The five ideas</a></li><li><a href="#72-the-whole-pattern">7.2 The whole pattern</a></li><li><a href="#73-commands-worth-knowing">7.3 Commands worth knowing</a></li><li><a href="#74-building">7.4 Building</a></li><li><a href="#75-two-things-that-will-waste-an-afternoon">7.5 Two things that will waste an afternoon</a></li><li><a href="#76-workshop-material">7.6 Workshop material</a></li><li><a href="#77-further-reading">7.7 Further reading</a></li></ul></nav>
+</div>
+<footer class="ft"><div class="ft-in">
+  <span>NTU DeepSpeed &middot; Recruitment Hackathon 26/27</span>
+  <nav>
+    <a href="../track1/index.html">Track 1</a>
+    <a href="../track2/index.html">Track 2</a>
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">Repository</a>
+    <a href="mailto:ntu-deepspeed@e.ntu.edu.sg">ntu-deepspeed@e.ntu.edu.sg</a>
+  </nav>
+</div></footer>
+<script src="../assets/app.js" defer></script>
+</body>
+</html>

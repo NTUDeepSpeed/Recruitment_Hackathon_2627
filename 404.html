@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Off track &middot; DeepSpeed Hackathon 26/27</title>
+<meta name="description" content="Page not found.">
+<meta name="color-scheme" content="dark light">
+<script>
+(function () {
+  try {
+    var saved = localStorage.getItem("ds-theme");
+    document.documentElement.setAttribute("data-theme", saved === "light" ? "light" : "dark");
+  } catch (e) { /* storage blocked */ }
+})();
+</script>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+<header class="hdr">
+  <a class="hdr-brand" href="index.html">
+    <span class="wm">DeepSpeed</span>
+    <span class="sub">Hackathon 26/27</span>
+  </a>
+  <nav class="hdr-nav" aria-label="Tracks"><a class="" href="track1/index.html">Track 1</a><a class="" href="track2/index.html">Track 2</a></nav>
+  <div class="hdr-right">
+    <span class="hdr-meta">Deadline <b>18 Oct 2026</b></span>
+    <a class="hdr-meta" href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">GitHub</a>
+    <button class="toggle" type="button" aria-label="Switch theme">
+      <span class="t-light">Light</span><span class="t-dark">Dark</span>
+    </button>
+    <button class="navbtn" type="button" aria-label="Contents" aria-expanded="false" aria-controls="sidenav">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+</header>
+<main class="page">
+  <section class="hero">
+    <div class="hero-grid" aria-hidden="true"></div>
+    <div class="eyebrow">Error 404 &middot; Off the racing line</div>
+    <h1 class="hero-display">Page <span class="red">not found</span></h1>
+    <p class="hero-sub">That URL is not part of the guide. Pick a track and start from the overview.</p>
+    <div class="hero-act">
+      <a class="btn accent" href="track1/index.html">Track 1</a>
+      <a class="btn ghost" href="track2/index.html">Track 2</a>
+      <a class="btn ghost" href="index.html">Home</a>
+    </div>
+  </section>
+</main>
+<footer class="ft"><div class="ft-in">
+  <span>NTU DeepSpeed &middot; Recruitment Hackathon 26/27</span>
+  <nav>
+    <a href="track1/index.html">Track 1</a>
+    <a href="track2/index.html">Track 2</a>
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">Repository</a>
+    <a href="mailto:ntu-deepspeed@e.ntu.edu.sg">ntu-deepspeed@e.ntu.edu.sg</a>
+  </nav>
+</div></footer>
+<script src="assets/app.js" defer></script>
+</body>
+</html>

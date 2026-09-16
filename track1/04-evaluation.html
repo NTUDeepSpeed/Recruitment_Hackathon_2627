@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4. Evaluation &middot; Track 1 &middot; DeepSpeed Hackathon 26/27</title>
+<meta name="description" content="Everything in one repository — simulator, judging environment, reference algorithms and every official track. Ask the car for a speed and a steering angle; the sim closes the loop for you.">
+<meta name="color-scheme" content="dark light">
+<meta property="og:title" content="4. Evaluation &middot; Track 1 &middot; DeepSpeed Hackathon 26/27">
+<meta property="og:description" content="Everything in one repository — simulator, judging environment, reference algorithms and every official track. Ask the car for a speed and a steering angle; the sim closes the loop for you.">
+<meta property="og:type" content="article">
+<script>
+/* Applied before paint so the page never flashes the wrong theme.
+   Dark is the brand default — the identity lives on black. */
+(function () {
+  try {
+    var saved = localStorage.getItem("ds-theme");
+    document.documentElement.setAttribute("data-theme", saved === "light" ? "light" : "dark");
+  } catch (e) { /* storage blocked */ }
+})();
+</script>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body>
+<a class="skip" href="#doc">Skip to content</a>
+<header class="hdr">
+  <a class="hdr-brand" href="../index.html">
+    <span class="wm">DeepSpeed</span>
+    <span class="sub">Hackathon 26/27</span>
+  </a>
+  <nav class="hdr-nav" aria-label="Tracks"><a class="on" href="../track1/index.html">Track 1</a><a class="" href="../track2/index.html">Track 2</a></nav>
+  <div class="hdr-right">
+    <span class="hdr-meta">Deadline <b>18 Oct 2026</b></span>
+    <a class="hdr-meta" href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">GitHub</a>
+    <button class="toggle" type="button" aria-label="Switch theme">
+      <span class="t-light">Light</span><span class="t-dark">Dark</span>
+    </button>
+    <button class="navbtn" type="button" aria-label="Contents" aria-expanded="false" aria-controls="sidenav">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+</header>
+<div class="scrim"></div>
+<div class="shell">
+  <aside class="nav" id="sidenav">
+  <div class="nav-lbl">Select track</div>
+  <div class="nav-switch"><a href="../track1/index.html" aria-current="true"><span class="n">01</span><span>Autonomous Racing</span></a><a href="../track2/index.html"><span class="n">02</span><span>Sim Racing · ICRA</span></a></div>
+  <div class="nav-lbl">Track 1 &middot; Contents</div>
+  <ul class="nav-list"><li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-baselines.html"><span class="n">03</span><span>Baseline algorithms</span></a></li><li><a href="04-evaluation.html" aria-current="page"><span class="n">04</span><span>Evaluation</span></a></li><li><a href="05-rules.html"><span class="n">05</span><span>Rules</span></a></li><li><a href="06-submission.html"><span class="n">06</span><span>Submission</span></a></li><li><a href="07-workshop.html"><span class="n">07</span><span>ROS 2 primer</span></a></li></ul>
+  <div class="nav-lbl">Elsewhere</div>
+  <div class="nav-out">
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/tree/track1">Branch <code>track1</code></a>
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/actions">Judging runs</a>
+    <a href="mailto:ntu-deepspeed@e.ntu.edu.sg">Ask a question</a>
+  </div>
+</aside>
+  <main class="main" id="doc">
+    <div class="crumb"><span class="red">Track 1</span><span class="sep">/</span><a href="index.html">Overview</a><span class="sep">/</span><span>Chapter 04</span></div>
+    <article class="prose">
+      <h1>4. Evaluation</h1>
+      <p>The judging environment is in this repository. The script that scores you on
+judging day is the same one you can run right now, against the same referee
+with the same settings. There are no surprises on the day — only a track you
+have not seen.</p>
+<hr>
+<h2 id="41-score-yourself">4.1 Score yourself<a class="hl" href="#41-score-yourself" title="Link to this section">#</a></h2>
+<div class="code"><pre><code><span class="c1"># From the host, with the container running</span>
+./scripts/evaluate.sh<span class="w"> </span>--team<span class="w"> </span>your_team_name
+</code></pre><span class="code-lang">shell</span></div>
+<p>That builds the workspace, starts the simulator, starts your driver, runs the
+full race format and writes a result file to <code>results/</code>.</p>
+<p>Useful variations:</p>
+<div class="code"><pre><code><span class="c1"># Three runs, keep the best — this is what the judges do</span>
+./scripts/evaluate.sh<span class="w"> </span>--team<span class="w"> </span>your_team<span class="w"> </span>--runs<span class="w"> </span><span class="m">3</span><span class="w"> </span>--headless
+
+<span class="c1"># A short run while you are iterating</span>
+./scripts/evaluate.sh<span class="w"> </span>--team<span class="w"> </span>your_team<span class="w"> </span>--laps<span class="w"> </span><span class="m">3</span>
+
+<span class="c1"># Score a baseline for comparison</span>
+./scripts/evaluate.sh<span class="w"> </span>--team<span class="w"> </span>baseline<span class="w"> </span>--driver-pkg<span class="w"> </span>roboracer_baselines<span class="w"> </span>--driver-exec<span class="w"> </span>gap_follower
+</code></pre><span class="code-lang">shell</span></div>
+<p><code>--headless</code> skips RViz and is much faster. <code>./scripts/evaluate.sh --help</code>
+lists every option.</p>
+<p>The script works from your host (it hops into the container for you) or from
+inside the container directly.</p>
+<hr>
+<h2 id="42-the-race-format">4.2 The race format<a class="hl" href="#42-the-race-format" title="Link to this section">#</a></h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Out lap</td>
+<td>From the grid slot to the start/finish line. Not timed.</td>
+</tr>
+<tr>
+<td>Warm-up lap</td>
+<td>One full lap, granted, not scored.</td>
+</tr>
+<tr>
+<td>Timed laps</td>
+<td>10 consecutive laps.</td>
+</tr>
+<tr>
+<td>Collision</td>
+<td>+10 s added to the lap it happened on.</td>
+</tr>
+<tr>
+<td>Disqualification</td>
+<td>More than 10 collisions in a run.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Two numbers come out:</p>
+<ul>
+<li><strong>Best lap</strong> — your fastest single timed lap, including its penalties.</li>
+<li><strong>10-lap total</strong> — the sum of all ten timed laps, including penalties.</li>
+</ul>
+<p>The scoring formula that turns those into leaderboard points is in
+<a href="05-rules.html">chapter 5</a>.</p>
+<p>A run can also end early:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>COMPLETE</code></td>
+<td>All 10 laps finished. This is the only status that scores.</td>
+</tr>
+<tr>
+<td><code>DISQUALIFIED</code></td>
+<td>More than 10 collisions.</td>
+</tr>
+<tr>
+<td><code>DNF_TIMEOUT</code></td>
+<td>Ran out of session time (900 simulated seconds) before 10 laps.</td>
+</tr>
+<tr>
+<td><code>DNF_STUCK</code></td>
+<td>The car did not move for 15 simulated seconds.</td>
+</tr>
+<tr>
+<td><code>ABORTED</code></td>
+<td>Interrupted, or the referee never got as far as racing.</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h2 id="43-everything-is-measured-in-simulated-time">4.3 Everything is measured in simulated time<a class="hl" href="#43-everything-is-measured-in-simulated-time" title="Link to this section">#</a></h2>
+<p><strong>This is the most important thing in this chapter.</strong> Lap times come from the
+simulator's own clock, not the wall clock.</p>
+<p>The physics runs at 100 Hz on a ROS timer. On a machine that cannot keep up,
+that timer fires late and the simulation runs at, say, 0.6× real time. Timed
+against a wall clock, an identical car would appear 67% slower on a tired
+laptop than on a fast desktop.</p>
+<p>So the bridge publishes a simulated clock on <code>/clock</code>, and the referee times
+against that. The consequences:</p>
+<ul>
+<li><strong>Your hardware does not affect your score.</strong> An Apple Silicon Mac scores the
+  same as a gaming PC.</li>
+<li><strong>Results are reproducible.</strong> The same submission gives the same number twice.</li>
+<li><strong><code>--headless</code> does not make you faster</strong> in score terms, only in how long you
+  wait.</li>
+</ul>
+<p>The result file records <code>real_time_factor</code> so you can see how hard your machine
+was working. A value below 0.8 means it was struggling; your times are still
+valid.</p>
+<p>What it does <em>not</em> protect you from: a control loop so slow that your node
+misses scans. That is your code's problem, and it is a real one — keep the
+per-scan work bounded.</p>
+<hr>
+<h2 id="44-how-collisions-are-counted">4.4 How collisions are counted<a class="hl" href="#44-how-collisions-are-counted" title="Link to this section">#</a></h2>
+<p>The bridge publishes the simulator's own collision flag on
+<code>/ego_racecar/collision</code>, so the referee uses ground truth rather than guessing
+from "the car seems to have stopped".</p>
+<p>The flag is raised on every physics step the car is in contact, about a
+hundred times a second, which is too fine-grained to score directly. So a
+collision is counted <strong>at most once per second</strong> of simulated time.</p>
+<p>The important part: that clock runs from the last <em>counted</em> collision, not from
+the last contact. <strong>Staying on a barrier keeps costing you.</strong> A car that
+scrapes along a wall accrues a fresh collision, and a fresh 10-second penalty,
+every second it stays there.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>What happens</th>
+<th>Collisions counted</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A clean tap and away</td>
+<td>1 (+10 s)</td>
+</tr>
+<tr>
+<td>Scraping a wall for 3 seconds</td>
+<td>3 (+30 s)</td>
+</tr>
+<tr>
+<td>Bouncing off the same wall a second apart</td>
+<td>1 each</td>
+</tr>
+<tr>
+<td>Ending up wedged against a barrier</td>
+<td>1 per second until the run is disqualified</td>
+</tr>
+</tbody>
+</table></div>
+<p>That last row matters. At one per second against a limit of 10, a car that gets
+stuck on a wall and never recovers is disqualified after about 11 seconds of
+contact. It will normally hit that before the 15-second stuck timer fires, so
+a car wedged on a barrier is disqualified rather than recorded as DNF; a car
+that simply stops in open track is still a DNF.</p>
+<p>Collisions during the out lap or the warm-up lap count towards the
+disqualification limit but add no time penalty, because there is no scored lap
+to add it to.</p>
+<p>The interval is <code>collision_interval_s</code> in
+<a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track1/race_ws/src/roboracer_referee/config/referee.yaml" data-ext="1"><code>config/referee.yaml</code></a>.</p>
+<hr>
+<h2 id="45-reading-a-result-file">4.5 Reading a result file<a class="hl" href="#45-reading-a-result-file" title="Link to this section">#</a></h2>
+<div class="code"><pre><code>{
+  &quot;schema_version&quot;: 2,
+  &quot;team&quot;: &quot;your_team_name&quot;,
+  &quot;run_id&quot;: &quot;20261018T143000Z&quot;,
+  &quot;track&quot;: &quot;icra26&quot;,
+  &quot;status&quot;: &quot;COMPLETE&quot;,
+  &quot;scored&quot;: true,
+  &quot;laps_completed&quot;: 10,
+  &quot;laps_required&quot;: 10,
+  &quot;collisions&quot;: 1,
+  &quot;collision_limit&quot;: 10,
+  &quot;best_lap_time&quot;: 21.804,        // what you are scored on
+  &quot;best_lap_time_raw&quot;: 21.804,    // before penalties
+  &quot;best_lap_number&quot;: 7,
+  &quot;total_time&quot;: 238.912,          // what you are scored on
+  &quot;total_time_raw&quot;: 228.912,      // before penalties
+  &quot;total_penalty_s&quot;: 10.0,
+  &quot;laps&quot;: [
+    { &quot;number&quot;: 1, &quot;raw_time&quot;: 23.441, &quot;collisions&quot;: 0, &quot;penalty_s&quot;: 0.0, &quot;net_time&quot;: 23.441 },
+    { &quot;number&quot;: 2, &quot;raw_time&quot;: 22.108, &quot;collisions&quot;: 1, &quot;penalty_s&quot;: 10.0, &quot;net_time&quot;: 32.108 }
+  ],
+  &quot;environment&quot;: { &quot;real_time_factor&quot;: 0.94, &quot;wall_duration_s&quot;: 262.1 }
+}
+</code></pre><span class="code-lang">jsonc</span></div>
+<p><code>best_lap_time</code> and <code>total_time</code> are <code>null</code> unless <code>scored</code> is <code>true</code>.</p>
+<div class="code"><pre><code><span class="c1"># Summarise your recent runs</span>
+./scripts/leaderboard.py<span class="w"> </span>summarise<span class="w"> </span>results/
+
+<span class="c1"># Full leaderboard across teams</span>
+./scripts/leaderboard.py<span class="w"> </span>rank<span class="w"> </span>results/<span class="w"> </span>--csv<span class="w"> </span>leaderboard.csv
+</code></pre><span class="code-lang">shell</span></div>
+<hr>
+<h2 id="46-automated-judging-on-every-push">4.6 Automated judging on every push<a class="hl" href="#46-automated-judging-on-every-push" title="Link to this section">#</a></h2>
+<p><a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track1/.github/workflows/judge.yml" data-ext="1"><code>.github/workflows/judge.yml</code></a> races your
+entry on GitHub Actions whenever you push, and writes the result to the
+workflow summary. It is the same referee with the same settings, so a green run
+means your entry will at least start on judging day.</p>
+<p>It runs in two stages:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Checks</strong></td>
+<td>Referee rule tests, track validation, and <code>verify_judging_env.sh</code>. About a minute.</td>
+</tr>
+<tr>
+<td><strong>Race</strong></td>
+<td>Builds the image and races, headless. 30 to 90 minutes, mostly the build.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Checks failing blocks the race.</strong> That is deliberate: the one most likely to
+trip is the judging-environment check, and an entry that modifies it is not
+scored (rule 27), so there is no point racing it.</p>
+<h3 id="entry-or-template">Entry or template?<a class="hl" href="#entry-or-template" title="Link to this section">#</a></h3>
+<p>Before racing, the workflow asks whether there is anything to score:</p>
+<div class="code"><pre><code>./scripts/detect_submission.sh<span class="w"> </span>--explain
+</code></pre><span class="code-lang">shell</span></div>
+<p>It compares <code>race_ws/src/team_driver/</code> against the recorded template. Edit any
+file, or add one, and it reports <code>submission</code> and your driver is raced. Leave it
+untouched — as on the template repository — and it reports <code>template</code>, and
+the workflow races the baselines instead. That keeps the pipeline exercised,
+and the numbers it prints are the ones to beat.</p>
+<blockquote>
+<p>[!NOTE]
+<strong>Organisers:</strong> the reference is <code>scripts/template_manifest.sha256</code>. If you
+change anything under <code>race_ws/src/team_driver/</code> — even a comment — re-record
+it with <code>./scripts/detect_submission.sh --update</code>, or the template repository
+starts reporting itself as a submission and CI races the stub driver.</p>
+</blockquote>
+<h3 id="running-it-by-hand">Running it by hand<a class="hl" href="#running-it-by-hand" title="Link to this section">#</a></h3>
+<p>Use <strong>Actions — Judge — Run workflow</strong> to set the number of laps and runs, or
+to force the baselines even when you have an entry:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Input</th>
+<th>Default</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>laps</code></td>
+<td>10</td>
+<td>Scored laps per run. Drop it to 3 for a quick check.</td>
+</tr>
+<tr>
+<td><code>runs</code></td>
+<td>1</td>
+<td>Runs per driver; the best counts.</td>
+</tr>
+<tr>
+<td><code>force_baselines</code></td>
+<td>false</td>
+<td>Race the baselines even though you have an entry.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Result JSONs are attached to the run as an artifact, so you can feed them to
+<code>leaderboard.py</code> locally.</p>
+<h3 id="what-it-is-not">What it is not<a class="hl" href="#what-it-is-not" title="Link to this section">#</a></h3>
+<p>CI runs on a shared two-core runner with no GPU, so the simulator runs well
+below real time. That does <strong>not</strong> change your lap times — they are measured in
+simulated seconds (§4.3) — but it does mean a run takes a while, and a driver
+that only just fits its control loop here may behave differently on the judging
+machine. The real result is a scored run on the machine in §4.8.</p>
+<hr>
+<h2 id="47-watching-a-run">4.7 Watching a run<a class="hl" href="#47-watching-a-run" title="Link to this section">#</a></h2>
+<p>With RViz open you get, live:</p>
+<ul>
+<li>the <strong>finish line</strong> in yellow, exactly as the referee sees it;</li>
+<li>a <strong>status line</strong> above it: laps done, collisions, best lap so far;</li>
+<li><code>/driver/markers</code>, for whatever your own node draws.</li>
+</ul>
+<p>The referee log prints each lap as it closes, with any penalty applied.</p>
+<hr>
+<h2 id="48-judging-day">4.8 Judging day<a class="hl" href="#48-judging-day" title="Link to this section">#</a></h2>
+<h3 id="the-judging-machine">The judging machine<a class="hl" href="#the-judging-machine" title="Link to this section">#</a></h3>
+<p>Every submission is scored on one machine, so nobody is advantaged by hardware:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU</td>
+<td>Intel Core i9-14900HX, 16 cores / 32 threads</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>32 GB, of which about 16 GB is visible inside WSL by default</td>
+</tr>
+<tr>
+<td>GPU</td>
+<td>NVIDIA GeForce RTX 5060 Laptop, 8 GB, driver 616.64, compute capability 12.0</td>
+</tr>
+<tr>
+<td>OS</td>
+<td>Windows 11 with WSL 2 (Ubuntu 24.04, kernel 6.18)</td>
+</tr>
+<tr>
+<td>Docker</td>
+<td>Docker Desktop, WSL 2 backend</td>
+</tr>
+</tbody>
+</table></div>
+<p>The GPU is attached to the container when one is available — <code>install/&lt;os&gt;/run.sh</code>
+detects it and merges <code>docker/docker-compose.gpu.yml</code>, falling back to CPU-only
+if Docker cannot attach it. <code>--gpu</code> forces it on, <code>--no-gpu</code> off.</p>
+<p><strong>The GPU is usable.</strong> The container is ROS 2 Jazzy on Ubuntu 24.04, so Python
+3.12, and CUDA builds of PyTorch, JAX and CuPy all support a compute capability
+12.0 card. Declare what you need in <code>requirements.txt</code> (rule 33) and it is
+installed into the image.</p>
+<p>The simulator itself deliberately stays on the CPU (<code>JAX_PLATFORMS=cpu</code>): it is
+small, and CPU execution keeps a run reproducible. The GPU is there for your
+code — a learned policy, a planner, whatever you build.</p>
+<p>Two practical notes. The card has 8 GB, shared with the desktop, so a model
+needing more will not fit. And your node still has to keep up with a ~40 Hz
+control loop; a heavyweight network that misses scans costs more time than it
+gains.</p>
+<p>Because lap times are measured in simulated seconds, none of this affects
+fairness — see §4.3.</p>
+<p>For each submission the judges:</p>
+<ol>
+<li>Check out the entry, verify the judging environment is intact
+   (<code>./scripts/verify_judging_env.sh</code>), and confirm it builds from clean.</li>
+<li>Build the image from this repository, which installs whatever the team
+   declared in <code>requirements.txt</code> and <code>apt-packages.txt</code>. That step is the last
+   layer in the Dockerfile, so it is quick per submission.</li>
+<li>Run three scored attempts, headless:
+   <code>sh
+   ./scripts/evaluate.sh --team &lt;team&gt; --runs 3 --headless</code></li>
+<li>Take the <strong>best</strong> of the three. Anything that never completes is a DNF.</li>
+<li>Feed every team's best run into <code>leaderboard.py rank</code>, which produces the
+   final ranking.</li>
+</ol>
+<p>No internet access during a run — anything a team needs must be declared so
+it lands in the image at build time. No manual intervention once a run starts.
+Identical referee settings for every team.</p>
+<p>A run that fails to build, fails to start, or never publishes a drive command
+scores zero for the timing component. Test from a clean clone before you
+submit — see <a href="06-submission.html">chapter 6</a>.</p>
+<hr>
+<h2 id="49-verifying-your-environment">4.9 Verifying your environment<a class="hl" href="#49-verifying-your-environment" title="Link to this section">#</a></h2>
+<div class="code"><pre><code>./scripts/verify_judging_env.sh
+</code></pre><span class="code-lang">shell</span></div>
+<p>It hashes every file a scored run depends on — the referee package, the
+Dockerfile, the compose files, <code>maps/</code>, the evaluation scripts — compares
+against a manifest, checks for files added into those directories, and confirms
+the submodules are at their pinned commits.</p>
+<p>A clean report means your entry will be judged. If it flags something you
+changed by accident:</p>
+<div class="code"><pre><code>git<span class="w"> </span>checkout<span class="w"> </span>--<span class="w"> </span>race_ws/src/roboracer_referee<span class="w"> </span>docker<span class="w"> </span>maps/tracks.yaml<span class="w"> </span>scripts<span class="w"> </span>install
+git<span class="w"> </span>submodule<span class="w"> </span>update<span class="w"> </span>--init<span class="w"> </span>--recursive
+</code></pre><span class="code-lang">shell</span></div>
+<p><code>race_ws/src/team_driver/</code> is deliberately not protected. That is yours.</p>
+<hr>
+<p>Next: <strong><a href="05-rules.html">5. Rules</a></strong></p>
+    </article>
+    <nav class="pager"><a class="prev" href="03-baselines.html"><span class="arw">&larr;</span><span><span class="k">Previous</span><span class="t">Baseline algorithms</span></span></a><a class="next" href="05-rules.html"><span><span class="k">Next</span><span class="t">Rules</span></span><span class="arw">&rarr;</span></a></nav>
+    <div class="src">Source &middot; <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track1/docs/04-evaluation.md">docs/04-evaluation.md</a></div>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="nav-lbl">On this page</div><ul><li><a href="#41-score-yourself">4.1 Score yourself</a></li><li><a href="#42-the-race-format">4.2 The race format</a></li><li><a href="#43-everything-is-measured-in-simulated-time">4.3 Everything is measured in simulated time</a></li><li><a href="#44-how-collisions-are-counted">4.4 How collisions are counted</a></li><li><a href="#45-reading-a-result-file">4.5 Reading a result file</a></li><li><a href="#46-automated-judging-on-every-push">4.6 Automated judging on every push</a><ul><li><a href="#entry-or-template">Entry or template?</a></li><li><a href="#running-it-by-hand">Running it by hand</a></li><li><a href="#what-it-is-not">What it is not</a></li></ul></li><li><a href="#47-watching-a-run">4.7 Watching a run</a></li><li><a href="#48-judging-day">4.8 Judging day</a><ul><li><a href="#the-judging-machine">The judging machine</a></li></ul></li><li><a href="#49-verifying-your-environment">4.9 Verifying your environment</a></li></ul></nav>
+</div>
+<footer class="ft"><div class="ft-in">
+  <span>NTU DeepSpeed &middot; Recruitment Hackathon 26/27</span>
+  <nav>
+    <a href="../track1/index.html">Track 1</a>
+    <a href="../track2/index.html">Track 2</a>
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">Repository</a>
+    <a href="mailto:ntu-deepspeed@e.ntu.edu.sg">ntu-deepspeed@e.ntu.edu.sg</a>
+  </nav>
+</div></footer>
+<script src="../assets/app.js" defer></script>
+</body>
+</html>

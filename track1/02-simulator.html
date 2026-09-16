@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2. The simulator &middot; Track 1 &middot; DeepSpeed Hackathon 26/27</title>
+<meta name="description" content="Everything in one repository — simulator, judging environment, reference algorithms and every official track. Ask the car for a speed and a steering angle; the sim closes the loop for you.">
+<meta name="color-scheme" content="dark light">
+<meta property="og:title" content="2. The simulator &middot; Track 1 &middot; DeepSpeed Hackathon 26/27">
+<meta property="og:description" content="Everything in one repository — simulator, judging environment, reference algorithms and every official track. Ask the car for a speed and a steering angle; the sim closes the loop for you.">
+<meta property="og:type" content="article">
+<script>
+/* Applied before paint so the page never flashes the wrong theme.
+   Dark is the brand default — the identity lives on black. */
+(function () {
+  try {
+    var saved = localStorage.getItem("ds-theme");
+    document.documentElement.setAttribute("data-theme", saved === "light" ? "light" : "dark");
+  } catch (e) { /* storage blocked */ }
+})();
+</script>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body>
+<a class="skip" href="#doc">Skip to content</a>
+<header class="hdr">
+  <a class="hdr-brand" href="../index.html">
+    <span class="wm">DeepSpeed</span>
+    <span class="sub">Hackathon 26/27</span>
+  </a>
+  <nav class="hdr-nav" aria-label="Tracks"><a class="on" href="../track1/index.html">Track 1</a><a class="" href="../track2/index.html">Track 2</a></nav>
+  <div class="hdr-right">
+    <span class="hdr-meta">Deadline <b>18 Oct 2026</b></span>
+    <a class="hdr-meta" href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">GitHub</a>
+    <button class="toggle" type="button" aria-label="Switch theme">
+      <span class="t-light">Light</span><span class="t-dark">Dark</span>
+    </button>
+    <button class="navbtn" type="button" aria-label="Contents" aria-expanded="false" aria-controls="sidenav">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+</header>
+<div class="scrim"></div>
+<div class="shell">
+  <aside class="nav" id="sidenav">
+  <div class="nav-lbl">Select track</div>
+  <div class="nav-switch"><a href="../track1/index.html" aria-current="true"><span class="n">01</span><span>Autonomous Racing</span></a><a href="../track2/index.html"><span class="n">02</span><span>Sim Racing · ICRA</span></a></div>
+  <div class="nav-lbl">Track 1 &middot; Contents</div>
+  <ul class="nav-list"><li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html" aria-current="page"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-baselines.html"><span class="n">03</span><span>Baseline algorithms</span></a></li><li><a href="04-evaluation.html"><span class="n">04</span><span>Evaluation</span></a></li><li><a href="05-rules.html"><span class="n">05</span><span>Rules</span></a></li><li><a href="06-submission.html"><span class="n">06</span><span>Submission</span></a></li><li><a href="07-workshop.html"><span class="n">07</span><span>ROS 2 primer</span></a></li></ul>
+  <div class="nav-lbl">Elsewhere</div>
+  <div class="nav-out">
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/tree/track1">Branch <code>track1</code></a>
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/actions">Judging runs</a>
+    <a href="mailto:ntu-deepspeed@e.ntu.edu.sg">Ask a question</a>
+  </div>
+</aside>
+  <main class="main" id="doc">
+    <div class="crumb"><span class="red">Track 1</span><span class="sep">/</span><a href="index.html">Overview</a><span class="sep">/</span><span>Chapter 02</span></div>
+    <article class="prose">
+      <h1>2. The simulator</h1>
+      <p>The simulator is <a href="https://github.com/f1tenth/f1tenth_gym" data-ext="1">f1tenth_gym</a> behind a
+ROS 2 bridge. It models a single-track (bicycle) vehicle with slip, simulates a
+819-beam LiDAR by ray-casting against the map, and detects collisions against
+the car's actual footprint. The physics runs on JAX.</p>
+<p>Both upstream repositories are vendored in <code>external/</code> as pinned git
+submodules. The bridge publishes collisions and a simulated clock itself, so
+nothing here is patched; see <a href="04-evaluation.html">chapter 4</a> for why both matter
+to judging.</p>
+<blockquote>
+<p><strong>A note on names.</strong> The competition is now called RoboRacer; it was F1TENTH
+until 2025. The upstream simulator repositories are still published under the
+old name, so <code>f1tenth_gym</code> and <code>f1tenth_gym_ros</code> appear throughout the code
+and are correct. Anything written by us is <code>roboracer_*</code>.</p>
+</blockquote>
+<hr>
+<h2 id="21-running-it">2.1 Running it<a class="hl" href="#21-running-it" title="Link to this section">#</a></h2>
+<div class="code"><pre><code>ros2<span class="w"> </span>launch<span class="w"> </span>roboracer_referee<span class="w"> </span>simulator.launch.py
+
+<span class="c1"># without RViz — noticeably faster</span>
+ros2<span class="w"> </span>launch<span class="w"> </span>roboracer_referee<span class="w"> </span>simulator.launch.py<span class="w"> </span>rviz:<span class="o">=</span><span class="nb">false</span>
+</code></pre><span class="code-lang">shell</span></div>
+<p>The launch file reads <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track1/maps/tracks.yaml" data-ext="1"><code>maps/tracks.yaml</code></a> and passes the
+map path and grid position straight to the bridge, so you never edit the
+simulator's own configuration and never rebuild it.</p>
+<h3 id="the-circuit">The circuit<a class="hl" href="#the-circuit" title="Link to this section">#</a></h3>
+<p>There is one circuit — <code>icra26</code>, the official hackathon track — and it is in
+this repository.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Map</td>
+<td><a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track1/maps/icra26.pgm" data-ext="1"><code>maps/icra26.pgm</code></a> + <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track1/maps/icra26.yaml" data-ext="1"><code>maps/icra26.yaml</code></a></td>
+</tr>
+<tr>
+<td>Size</td>
+<td>17.0 × 18.2 m at 5 cm per pixel</td>
+</tr>
+<tr>
+<td>Lap</td>
+<td>about 78 m down the middle of the track</td>
+</tr>
+<tr>
+<td>Start/finish</td>
+<td>1.80 m wide straight, the line at <code>x = +1.32</code></td>
+</tr>
+<tr>
+<td>Grid slot</td>
+<td><code>(-1.68, -0.01)</code> facing <code>+x</code>, 3 m before the line</td>
+</tr>
+<tr>
+<td>Direction</td>
+<td>Counter-clockwise: east along the bottom straight, north up the right-hand side, west across the top, south down the left</td>
+</tr>
+<tr>
+<td>Features</td>
+<td>Two cone slaloms on the right-hand side, a hairpin complex in the infield, a tight left-hander at the top</td>
+</tr>
+</tbody>
+</table></div>
+<p>A traced centreline ships in
+<a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track1/maps/icra26_centerline.csv" data-ext="1"><code>maps/icra26_centerline.csv</code></a> — see §2.7.</p>
+<hr>
+<h2 id="22-topics">2.2 Topics<a class="hl" href="#22-topics" title="Link to this section">#</a></h2>
+<div class="code"><pre><code>ros2<span class="w"> </span>topic<span class="w"> </span>list
+ros2<span class="w"> </span>topic<span class="w"> </span>info<span class="w"> </span>/scan
+ros2<span class="w"> </span>interface<span class="w"> </span>show<span class="w"> </span>ackermann_msgs/msg/AckermannDriveStamped
+</code></pre><span class="code-lang">shell</span></div>
+<h3 id="what-you-read">What you read<a class="hl" href="#what-you-read" title="Link to this section">#</a></h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Type</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/scan</code></td>
+<td><code>sensor_msgs/LaserScan</code></td>
+<td>819 beams over 270°, range 0.05–25 m</td>
+</tr>
+<tr>
+<td><code>/ego_racecar/odom</code></td>
+<td><code>nav_msgs/Odometry</code></td>
+<td><strong>Ground-truth</strong> pose and velocity in the <code>map</code> frame</td>
+</tr>
+<tr>
+<td><code>/map</code></td>
+<td><code>nav_msgs/OccupancyGrid</code></td>
+<td>The static track map</td>
+</tr>
+<tr>
+<td><code>/tf</code>, <code>/tf_static</code></td>
+<td><code>tf2_msgs/TFMessage</code></td>
+<td><code>map</code> → <code>ego_racecar/base_link</code> → <code>ego_racecar/laser</code></td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="what-you-write">What you write<a class="hl" href="#what-you-write" title="Link to this section">#</a></h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Type</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/drive</code></td>
+<td><code>ackermann_msgs/AckermannDriveStamped</code></td>
+<td>Steering angle (rad) and speed (m/s)</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="what-the-referee-uses">What the referee uses<a class="hl" href="#what-the-referee-uses" title="Link to this section">#</a></h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/ego_racecar/collision</code></td>
+<td><code>std_msgs/Bool</code></td>
+<td>True while the car is in contact</td>
+</tr>
+<tr>
+<td><code>/clock</code></td>
+<td><code>rosgraph_msgs/Clock</code></td>
+<td>Simulated time, the only clock judging trusts</td>
+</tr>
+<tr>
+<td><code>/initialpose</code></td>
+<td><code>geometry_msgs/PoseWithCovarianceStamped</code></td>
+<td>Teleports the car. <strong>Off limits during a scored run.</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>The bridge also publishes <code>/ego_racecar/lap_count</code> and <code>/ego_racecar/lap_time</code>.
+The referee ignores both: it counts laps against the finish line defined in
+<code>maps/tracks.yaml</code>, in the racing direction, with its own minimum-lap-time
+guard. Those are the numbers the rules describe, so do not use the bridge's
+counter to predict your score.</p>
+<hr>
+<h2 id="23-the-lidar-scan">2.3 The LiDAR scan<a class="hl" href="#23-the-lidar-scan" title="Link to this section">#</a></h2>
+<div class="code"><pre><code><span class="n">angles</span> <span class="o">=</span> <span class="n">scan</span><span class="o">.</span><span class="n">angle_min</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">ranges</span><span class="p">))</span> <span class="o">*</span> <span class="n">scan</span><span class="o">.</span><span class="n">angle_increment</span>
+</code></pre><span class="code-lang">python</span></div>
+<ul>
+<li><code>angle_min</code> is about −2.35 rad (−135°), <code>angle_max</code> about +2.35 rad.</li>
+<li>Index 0 is hard right, the middle index is straight ahead, the last is hard
+  left. Take the count from <code>len(scan.ranges)</code> rather than hard-coding it.</li>
+<li>Positive angles are to the <strong>left</strong>, matching the steering sign convention.</li>
+<li>Beams that hit nothing come back as <code>inf</code>. Always clean the array:</li>
+</ul>
+<div class="code"><pre><code><span class="n">ranges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">ranges</span><span class="p">),</span> <span class="n">nan</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">posinf</span><span class="o">=</span><span class="mf">25.0</span><span class="p">,</span> <span class="n">neginf</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+</code></pre><span class="code-lang">python</span></div>
+<p>The scanner sits 0.275 m ahead of <code>base_link</code>, so a range of 0.3 m in front is
+already a scrape, not 0.3 m of clearance.</p>
+<hr>
+<h2 id="24-ground-truth-odometry--use-it">2.4 Ground-truth odometry — use it<a class="hl" href="#24-ground-truth-odometry--use-it" title="Link to this section">#</a></h2>
+<p><code>/ego_racecar/odom</code> gives you the car's exact pose and velocity, with no noise
+and no drift. <strong>The rules allow this and we recommend it.</strong></p>
+<div class="code"><pre><code><span class="kn">from</span><span class="w"> </span><span class="nn">nav_msgs.msg</span><span class="w"> </span><span class="kn">import</span> <span class="n">Odometry</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">odom_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">yaw</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">w</span> <span class="o">*</span> <span class="n">q</span><span class="o">.</span><span class="n">z</span> <span class="o">+</span> <span class="n">q</span><span class="o">.</span><span class="n">x</span> <span class="o">*</span> <span class="n">q</span><span class="o">.</span><span class="n">y</span><span class="p">),</span>
+                          <span class="mf">1.0</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">y</span> <span class="o">*</span> <span class="n">q</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">q</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="n">q</span><span class="o">.</span><span class="n">z</span><span class="p">))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">speed</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">twist</span><span class="o">.</span><span class="n">twist</span><span class="o">.</span><span class="n">linear</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">twist</span><span class="o">.</span><span class="n">twist</span><span class="o">.</span><span class="n">linear</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+</code></pre><span class="code-lang">python</span></div>
+<p>Why it matters: a purely reactive driver sees only the next few metres, so it
+has to slow down for a corner it has not yet reached. Knowing where you are on
+the track lets you brake for a corner you already know is coming, and pick up
+the throttle before you can see the exit. That is most of the lap time.</p>
+<p>Writing your own localisation — a particle filter against <code>/map</code>, or scan
+matching — is <strong>not required</strong>, and it is genuinely hard. If you do build one
+and can explain it properly, it is worth bonus marks at the interview. The easy
+way to try: publish your estimate on your own topic and point
+<code>roboracer_baselines/pure_pursuit</code> at it with <code>-p odom_topic:=/my_localisation</code>.</p>
+<hr>
+<h2 id="25-driving-by-hand">2.5 Driving by hand<a class="hl" href="#25-driving-by-hand" title="Link to this section">#</a></h2>
+<p>Useful for feeling out a track or checking a corner.</p>
+<div class="code"><pre><code><span class="c1"># One-off command</span>
+ros2<span class="w"> </span>topic<span class="w"> </span>pub<span class="w"> </span>--once<span class="w"> </span>/drive<span class="w"> </span>ackermann_msgs/msg/AckermannDriveStamped<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"{drive: {speed: 2.0, steering_angle: 0.2}}"</span>
+
+<span class="c1"># Keyboard teleoperation</span>
+ros2<span class="w"> </span>run<span class="w"> </span>teleop_twist_keyboard<span class="w"> </span>teleop_twist_keyboard
+
+<span class="c1"># Watch the odometry (--no-arr hides the covariance matrices)</span>
+ros2<span class="w"> </span>topic<span class="w"> </span><span class="nb">echo</span><span class="w"> </span>/ego_racecar/odom<span class="w"> </span>--no-arr
+</code></pre><span class="code-lang">shell</span></div>
+<p>Reset the car to the start line at any time by clicking <strong>2D Pose Estimate</strong> in
+RViz, or:</p>
+<div class="code"><pre><code>ros2<span class="w"> </span>topic<span class="w"> </span>pub<span class="w"> </span>--once<span class="w"> </span>/initialpose<span class="w"> </span>geometry_msgs/msg/PoseWithCovarianceStamped<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"{header: {frame_id: map}, pose: {pose: {position: {x: 0.0, y: 0.0}, orientation: {w: 1.0}}}}"</span>
+</code></pre><span class="code-lang">shell</span></div>
+<hr>
+<h2 id="26-rviz">2.6 RViz<a class="hl" href="#26-rviz" title="Link to this section">#</a></h2>
+<p>The bundled layout already shows the map, the LiDAR, the car, the referee's
+finish line and live status, plus <code>/driver/markers</code> for anything your own node
+publishes.</p>
+<p>To draw your own debug geometry, publish a <code>visualization_msgs/MarkerArray</code> on
+<code>/driver/markers</code> — the template driver and every baseline show how. Seeing
+where your algorithm thinks it is aiming is by far the fastest way to work out
+why it just hit a wall.</p>
+<p>To add a topic by hand: <strong>Add → By topic →</strong> pick it → <strong>OK</strong>.</p>
+<hr>
+<h2 id="27-the-centreline-and-making-your-own-line">2.7 The centreline, and making your own line<a class="hl" href="#27-the-centreline-and-making-your-own-line" title="Link to this section">#</a></h2>
+<div class="code"><pre><code><span class="c1"># On the host</span>
+./scripts/track_tool.py<span class="w"> </span>validate<span class="w">      </span><span class="c1"># check the track against the map image</span>
+./scripts/track_tool.py<span class="w"> </span>centerline<span class="w">    </span><span class="c1"># (re)write maps/icra26_centerline.csv</span>
+</code></pre><span class="code-lang">shell</span></div>
+<p><code>validate</code> is worth running if you touch <code>maps/</code>. It checks that the grid slot
+is in open track, that the finish line spans the corridor wall to wall — a line
+that stops short lets a car slip past an end and never complete a lap — and
+that a closed lap actually exists through it for a car of real width.</p>
+<p><code>centerline</code> traces the cheapest closed lap through the finish line, smooths
+it, pushes it back off the walls and writes a CSV of <code>x, y</code> points. That file
+is the <strong>middle of the track</strong>, which is not the fast way round. A racing line
+runs wide into a corner, clips the apex and runs wide again; it is usually
+shorter and always faster. Turning the centreline into a racing line is exactly
+the work this hackathon is about.</p>
+<p><code>pure_pursuit</code> reads the CSV, so you can point it at your own:</p>
+<div class="code"><pre><code>ros2<span class="w"> </span>run<span class="w"> </span>roboracer_baselines<span class="w"> </span>pure_pursuit<span class="w"> </span>--ros-args<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-p<span class="w"> </span>raceline_csv:<span class="o">=</span>/hackathon/maps/my_line.csv
+</code></pre><span class="code-lang">shell</span></div>
+<p>Your file may also carry a speed per point, in the
+<code>s; x; y; psi; kappa; vx; ax</code> layout; otherwise the node computes speeds from
+the curvature.</p>
+<p>Track definitions in <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track1/maps/tracks.yaml" data-ext="1"><code>maps/tracks.yaml</code></a> look like this:</p>
+<div class="code"><pre><code><span class="nt">icra26</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">map_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/hackathon/maps/icra26</span><span class="w">          </span><span class="c1"># /hackathon is this repository</span>
+<span class="w">  </span><span class="nt">map_image_ext</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.pgm</span>
+<span class="w">  </span><span class="nt">start_pose</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-1.68</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-0.01</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.0</span><span class="p p-Indicator">]</span><span class="w">              </span><span class="c1"># x, y, theta — behind the line</span>
+<span class="w">  </span><span class="nt">finish_line</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[[</span><span class="nv">1.32</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-0.76</span><span class="p p-Indicator">],</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">1.32</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.89</span><span class="p p-Indicator">]]</span>
+<span class="w">  </span><span class="nt">crossing_direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-1</span>
+</code></pre><span class="code-lang">yaml</span></div>
+<hr>
+<h2 id="28-vehicle-limits">2.8 Vehicle limits<a class="hl" href="#28-vehicle-limits" title="Link to this section">#</a></h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wheelbase</td>
+<td>0.33 m</td>
+</tr>
+<tr>
+<td>Width</td>
+<td>0.31 m</td>
+</tr>
+<tr>
+<td>Length</td>
+<td>0.58 m</td>
+</tr>
+<tr>
+<td>Max steering angle</td>
+<td>±0.4189 rad (±24°)</td>
+</tr>
+<tr>
+<td>Max steering rate</td>
+<td>3.2 rad/s</td>
+</tr>
+<tr>
+<td>Max speed</td>
+<td>20 m/s (you will not get near this)</td>
+</tr>
+<tr>
+<td>Max acceleration</td>
+<td>9.51 m/s²</td>
+</tr>
+<tr>
+<td>Physics step</td>
+<td>0.01 s (100 Hz)</td>
+</tr>
+</tbody>
+</table></div>
+<p>The templates all clamp steering to ±0.34 rad, which is a deliberately
+conservative default, not the car's limit. You can go to ±0.4189 rad and the
+simulator will honour it — but a sharper angle at speed is also how you spin.
+Beyond that it is clamped, and a speed the car cannot reach in time will not
+arrive any sooner; drive commands are targets for the actuator model, not
+teleports.</p>
+<hr>
+<p>Next: <strong><a href="03-baselines.html">3. Baseline algorithms</a></strong></p>
+    </article>
+    <nav class="pager"><a class="prev" href="01-setup.html"><span class="arw">&larr;</span><span><span class="k">Previous</span><span class="t">Setup</span></span></a><a class="next" href="03-baselines.html"><span><span class="k">Next</span><span class="t">Baseline algorithms</span></span><span class="arw">&rarr;</span></a></nav>
+    <div class="src">Source &middot; <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track1/docs/02-simulator.md">docs/02-simulator.md</a></div>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="nav-lbl">On this page</div><ul><li><a href="#21-running-it">2.1 Running it</a><ul><li><a href="#the-circuit">The circuit</a></li></ul></li><li><a href="#22-topics">2.2 Topics</a><ul><li><a href="#what-you-read">What you read</a></li><li><a href="#what-you-write">What you write</a></li><li><a href="#what-the-referee-uses">What the referee uses</a></li></ul></li><li><a href="#23-the-lidar-scan">2.3 The LiDAR scan</a></li><li><a href="#24-ground-truth-odometry--use-it">2.4 Ground-truth odometry — use it</a></li><li><a href="#25-driving-by-hand">2.5 Driving by hand</a></li><li><a href="#26-rviz">2.6 RViz</a></li><li><a href="#27-the-centreline-and-making-your-own-line">2.7 The centreline, and making your own line</a></li><li><a href="#28-vehicle-limits">2.8 Vehicle limits</a></li></ul></nav>
+</div>
+<footer class="ft"><div class="ft-in">
+  <span>NTU DeepSpeed &middot; Recruitment Hackathon 26/27</span>
+  <nav>
+    <a href="../track1/index.html">Track 1</a>
+    <a href="../track2/index.html">Track 2</a>
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">Repository</a>
+    <a href="mailto:ntu-deepspeed@e.ntu.edu.sg">ntu-deepspeed@e.ntu.edu.sg</a>
+  </nav>
+</div></footer>
+<script src="../assets/app.js" defer></script>
+</body>
+</html>

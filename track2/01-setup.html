@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1. Setup &middot; Track 2 &middot; DeepSpeed Hackathon 26/27</title>
+<meta name="description" content="The compete phase of the RoboRacer Sim Racing League at ICRA 2026 — same vehicle, same sensors, same circuit the ICRA teams raced. You publish raw throttle, so the speed controller is yours to write.">
+<meta name="color-scheme" content="dark light">
+<meta property="og:title" content="1. Setup &middot; Track 2 &middot; DeepSpeed Hackathon 26/27">
+<meta property="og:description" content="The compete phase of the RoboRacer Sim Racing League at ICRA 2026 — same vehicle, same sensors, same circuit the ICRA teams raced. You publish raw throttle, so the speed controller is yours to write.">
+<meta property="og:type" content="article">
+<script>
+/* Applied before paint so the page never flashes the wrong theme.
+   Dark is the brand default — the identity lives on black. */
+(function () {
+  try {
+    var saved = localStorage.getItem("ds-theme");
+    document.documentElement.setAttribute("data-theme", saved === "light" ? "light" : "dark");
+  } catch (e) { /* storage blocked */ }
+})();
+</script>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body>
+<a class="skip" href="#doc">Skip to content</a>
+<header class="hdr">
+  <a class="hdr-brand" href="../index.html">
+    <span class="wm">DeepSpeed</span>
+    <span class="sub">Hackathon 26/27</span>
+  </a>
+  <nav class="hdr-nav" aria-label="Tracks"><a class="" href="../track1/index.html">Track 1</a><a class="on" href="../track2/index.html">Track 2</a></nav>
+  <div class="hdr-right">
+    <span class="hdr-meta">Deadline <b>18 Oct 2026</b></span>
+    <a class="hdr-meta" href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">GitHub</a>
+    <button class="toggle" type="button" aria-label="Switch theme">
+      <span class="t-light">Light</span><span class="t-dark">Dark</span>
+    </button>
+    <button class="navbtn" type="button" aria-label="Contents" aria-expanded="false" aria-controls="sidenav">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+</header>
+<div class="scrim"></div>
+<div class="shell">
+  <aside class="nav" id="sidenav">
+  <div class="nav-lbl">Select track</div>
+  <div class="nav-switch"><a href="../track1/index.html"><span class="n">01</span><span>Autonomous Racing</span></a><a href="../track2/index.html" aria-current="true"><span class="n">02</span><span>Sim Racing · ICRA</span></a></div>
+  <div class="nav-lbl">Track 2 &middot; Contents</div>
+  <ul class="nav-list"><li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html" aria-current="page"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-baselines.html"><span class="n">03</span><span>Baseline algorithms</span></a></li><li><a href="04-evaluation.html"><span class="n">04</span><span>Evaluation</span></a></li><li><a href="05-rules.html"><span class="n">05</span><span>Rules</span></a></li><li><a href="06-submission.html"><span class="n">06</span><span>Submission</span></a></li><li><a href="07-workshop.html"><span class="n">07</span><span>ROS 2 primer</span></a></li></ul>
+  <div class="nav-lbl">Elsewhere</div>
+  <div class="nav-out">
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/tree/track2">Branch <code>track2</code></a>
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/actions">Judging runs</a>
+    <a href="mailto:ntu-deepspeed@e.ntu.edu.sg">Ask a question</a>
+  </div>
+</aside>
+  <main class="main" id="doc">
+    <div class="crumb"><span class="red">Track 2</span><span class="sep">/</span><a href="index.html">Overview</a><span class="sep">/</span><span>Chapter 01</span></div>
+    <article class="prose">
+      <h1>1. Setup</h1>
+      <p>There are two pieces to install, and they are installed in different ways.</p>
+<p><strong>The container</strong> holds ROS 2 Humble, the AutoDRIVE Devkit, the reference
+algorithms and the judging environment. You build it once from this repository.</p>
+<p><strong>The AutoDRIVE Simulator</strong> is a Unity binary — about 140 MB — that is not in
+this repository and not in the image. One script downloads it.</p>
+<p>Your code lives on your own machine and is mounted into the container at
+<code>/hackathon</code>, so you edit files in your normal editor and nothing is lost when
+the container stops.</p>
+<hr>
+<h2 id="11-get-the-repository">1.1 Get the repository<a class="hl" href="#11-get-the-repository" title="Link to this section">#</a></h2>
+<div class="code"><pre><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627.git<span class="w"> </span>~/Recruitment_Hackathon_2627
+<span class="nb">cd</span><span class="w"> </span>~/Recruitment_Hackathon_2627
+git<span class="w"> </span>checkout<span class="w"> </span>track2
+</code></pre><span class="code-lang">shell</span></div>
+<p>No <code>--recurse-submodules</code> on this branch and no submodules to forget: the
+AutoDRIVE Devkit is committed into <code>external/autodrive_devkit/</code>. A ZIP download
+works too, though a real clone is easier to submit from later.</p>
+<hr>
+<h2 id="12-install-docker">1.2 Install Docker<a class="hl" href="#12-install-docker" title="Link to this section">#</a></h2>
+<h3 id="windows-1011">Windows 10/11<a class="hl" href="#windows-1011" title="Link to this section">#</a></h3>
+<ol>
+<li>Install <a href="https://www.docker.com/products/docker-desktop/" data-ext="1">Docker Desktop for Windows</a>.</li>
+<li>Install WSL 2. Open <strong>PowerShell as Administrator</strong>:
+   <code>powershell
+   wsl --install</code>
+   Reboot when it asks.</li>
+<li>In Docker Desktop, go to <strong>Settings → Resources → WSL integration</strong>, enable
+   your Ubuntu distro, and click <strong>Apply &amp; Restart</strong>.</li>
+<li>From then on, work in a WSL terminal:
+   <code>powershell
+   wsl --set-default Ubuntu
+   wsl ~</code></li>
+</ol>
+<blockquote>
+<p>Everything after this point happens <strong>inside WSL</strong>, not in PowerShell. If you
+run the scripts from PowerShell they will tell you so and stop.</p>
+<p>Cannot paste into the terminal? Right-click the window title → <em>Properties</em> →
+tick <em>Use Ctrl+Shift+C/V as Copy/Paste</em>.</p>
+</blockquote>
+<h3 id="macos">macOS<a class="hl" href="#macos" title="Link to this section">#</a></h3>
+<ol>
+<li>Install the Xcode command line tools if you have not already:
+   <code>sh
+   xcode-select --install</code></li>
+<li>Install <a href="https://docs.docker.com/desktop/install/mac-install/" data-ext="1">Docker Desktop for Mac</a>
+   — pick the Apple Silicon or Intel build to match your machine.</li>
+<li>Launch Docker Desktop and wait for the whale icon to stop animating.</li>
+</ol>
+<p>Apple Silicon works, with one wrinkle: the simulator is a native macOS build and
+runs on your Mac rather than in the container. See §1.6.</p>
+<h3 id="ubuntu--debian-linux">Ubuntu / Debian Linux<a class="hl" href="#ubuntu--debian-linux" title="Link to this section">#</a></h3>
+<ol>
+<li>Install <a href="https://docs.docker.com/engine/install/ubuntu/" data-ext="1">Docker Engine</a>.
+   Do <strong>not</strong> use Docker Desktop on Linux — it runs a VM you do not need and it
+   is the usual reason a container cannot see a GPU.</li>
+<li>Add yourself to the <code>docker</code> group so you do not need <code>sudo</code>:
+   <code>sh
+   sudo usermod -aG docker "$USER"
+   newgrp docker</code>
+   (Full instructions: <a href="https://docs.docker.com/engine/install/linux-postinstall/" data-ext="1">post-install steps</a>.)</li>
+<li>Check it works:
+   <code>sh
+   docker run --rm hello-world</code></li>
+</ol>
+<hr>
+<h2 id="13-fetch-the-simulator">1.3 Fetch the simulator<a class="hl" href="#13-fetch-the-simulator" title="Link to this section">#</a></h2>
+<div class="code"><pre><code>./scripts/fetch_simulator.sh
+</code></pre><span class="code-lang">shell</span></div>
+<p>It works out which build you need, downloads it from the AutoDRIVE release and
+unpacks it into <code>simulator/</code>. That folder is in <code>.gitignore</code>: it is never
+committed, and the script is how everyone — including the judges and CI — gets
+the same binary.</p>
+<div class="code"><pre><code>./scripts/fetch_simulator.sh<span class="w"> </span>--check<span class="w">      </span><span class="c1"># what is installed?</span>
+./scripts/fetch_simulator.sh<span class="w"> </span>--force<span class="w">      </span><span class="c1"># download it again</span>
+./scripts/fetch_simulator.sh<span class="w"> </span>--platform<span class="w"> </span>macos
+</code></pre><span class="code-lang">shell</span></div>
+<p>On Linux and WSL you want the Linux build, which is the default: it runs inside
+the container and that is what a scored run drives. On macOS and Windows you
+want the native build, which runs on your host — §1.6.</p>
+<blockquote>
+<p>The download is about 140 MB and the release carries no checksum, so the
+script's only integrity check is that what came back is a readable archive of
+roughly the right size. If it complains that the download is a few kilobytes,
+something on your network handed back a login page; try again, or fetch the
+URL it prints in a browser and unzip it into <code>simulator/</code> yourself.</p>
+</blockquote>
+<hr>
+<h2 id="14-build-the-image">1.4 Build the image<a class="hl" href="#14-build-the-image" title="Link to this section">#</a></h2>
+<p>Pick the folder for your platform. The commands below use Linux; swap in
+<code>macos</code> or <code>windows</code> as appropriate.</p>
+<div class="code"><pre><code><span class="nb">cd</span><span class="w"> </span>~/Recruitment_Hackathon_2627
+./install/linux/setup.sh
+</code></pre><span class="code-lang">shell</span></div>
+<p>This takes <strong>10 to 20 minutes</strong> the first time: it pulls the ROS 2 Humble base
+image and installs RViz, the devkit's dependencies and the graphics libraries
+the simulator links against. Later builds are cached and take seconds.</p>
+<p>If a build step fails, read the last few lines of output — the Dockerfile
+checks its own work and says which step broke and why.
+<code>./install/linux/setup.sh --no-cache</code> forces a clean rebuild.</p>
+<blockquote>
+<p><strong>ROS 2 Humble, not Jazzy.</strong> That is deliberate: the official AutoDRIVE
+competition image is <code>ros:humble</code>, and the devkit's websocket stack only
+works on the versions that ship with it. Track 1 was Jazzy; this is not.</p>
+</blockquote>
+<hr>
+<h2 id="15-start-the-container">1.5 Start the container<a class="hl" href="#15-start-the-container" title="Link to this section">#</a></h2>
+<div class="code"><pre><code>./install/linux/run.sh
+</code></pre><span class="code-lang">shell</span></div>
+<p>You land in a shell inside the container, at <code>/hackathon</code>. ROS is already
+sourced.</p>
+<p>For more terminals — and you will want three or four — open new host terminals
+and run:</p>
+<div class="code"><pre><code>./install/linux/shell.sh
+</code></pre><span class="code-lang">shell</span></div>
+<p>To shut everything down:</p>
+<div class="code"><pre><code>./install/linux/stop.sh
+</code></pre><span class="code-lang">shell</span></div>
+<h3 id="where-the-simulator-window-appears">Where the simulator window appears<a class="hl" href="#where-the-simulator-window-appears" title="Link to this section">#</a></h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Linux</td>
+<td>Directly on your desktop, via the host X server</td>
+</tr>
+<tr>
+<td>Windows / WSL</td>
+<td>Directly on your desktop, via WSLg</td>
+</tr>
+<tr>
+<td>macOS</td>
+<td>On your Mac — the simulator runs natively, see §1.6</td>
+</tr>
+</tbody>
+</table></div>
+<p>If nothing appears on Linux or WSL, fall back to the browser:</p>
+<div class="code"><pre><code>./install/linux/run.sh<span class="w"> </span>--novnc
+</code></pre><span class="code-lang">shell</span></div>
+<p>and open <a href="http://localhost:8080/vnc.html" data-ext="1">http://localhost:8080/vnc.html</a>.</p>
+<p>You do not need a window at all to race. A scored run is headless.</p>
+<h3 id="gpu">GPU<a class="hl" href="#gpu" title="Link to this section">#</a></h3>
+<p>If an NVIDIA GPU is visible, <code>run.sh</code> attaches it automatically and falls back
+to CPU-only if Docker cannot. Force it either way with <code>--gpu</code> or <code>--no-gpu</code>.</p>
+<p>The GPU is there for <strong>your</strong> code — a learned policy, a planner — and for
+rendering the simulator when you want to watch it. A scored run uses
+<code>-batchmode -nographics</code>, which creates no graphics device at all, so judging
+does not depend on it. The container is Python 3.10, so CUDA builds of PyTorch
+and friends install and run; see <a href="04-evaluation.html#48-judging-day">chapter 4</a>.</p>
+<hr>
+<h2 id="16-running-the-simulator-on-your-host-macos-windows">1.6 Running the simulator on your host (macOS, Windows)<a class="hl" href="#16-running-the-simulator-on-your-host-macos-windows" title="Link to this section">#</a></h2>
+<p>The container cannot run a native macOS or Windows simulator, so on those
+platforms the simulator runs on your machine and the devkit runs in the
+container. They talk over port 4567, which <code>docker-compose.yml</code> publishes.</p>
+<p><strong>The direction of that connection is the opposite of what people expect, and
+getting it backwards is the single most common setup failure.</strong> The bridge
+inside the container is the <em>server</em>: it listens on 4567. The simulator is the
+<em>client</em>: you tell it where the bridge is and it dials out.</p>
+<p>So the order is fixed:</p>
+<ol>
+<li>Start the container and, inside it, the bridge:
+   <code>sh
+   ros2 launch roboracer_referee simulator.launch.py simulator:=false rviz:=false</code></li>
+<li>Then start the simulator on your host, by double-clicking it or:
+   <code>sh
+   ./scripts/run_simulator.sh</code></li>
+<li>In the simulator's <strong>Menu Panel</strong>, set the IP to <code>127.0.0.1</code> and the port to
+   <code>4567</code>, and press <strong>Connect</strong>. Set the vehicle to <strong>Autonomous</strong>.</li>
+</ol>
+<p>Topics appear the moment that connection lands. If they do not, nothing is
+listening on 4567 — start the bridge first.</p>
+<p>To score a run this way, tell <code>evaluate.sh</code> not to start a simulator of its own:</p>
+<div class="code"><pre><code>./scripts/evaluate.sh<span class="w"> </span>--team<span class="w"> </span>my_team<span class="w"> </span>--no-simulator
+</code></pre><span class="code-lang">shell</span></div>
+<p>Linux and WSL users can do this too — it is a reasonable way to watch a run at
+full graphics while everything else stays in the container — but the default
+path, with both in the container, is simpler and is what judging uses.</p>
+<hr>
+<h2 id="17-build-the-workspace-and-drive">1.7 Build the workspace and drive<a class="hl" href="#17-build-the-workspace-and-drive" title="Link to this section">#</a></h2>
+<p>Inside the container:</p>
+<div class="code"><pre><code><span class="nb">cd</span><span class="w"> </span>/hackathon/race_ws
+colcon<span class="w"> </span>build<span class="w"> </span>--symlink-install
+<span class="nb">source</span><span class="w"> </span>install/local_setup.bash
+</code></pre><span class="code-lang">shell</span></div>
+<p><code>--symlink-install</code> means Python edits take effect without rebuilding. You only
+need to re-run <code>colcon build</code> after adding a new file or changing <code>setup.py</code>.</p>
+<p>Now, in two separate container shells:</p>
+<div class="code"><pre><code><span class="c1"># Terminal 1 — simulator and bridge</span>
+ros2<span class="w"> </span>launch<span class="w"> </span>roboracer_referee<span class="w"> </span>simulator.launch.py
+
+<span class="c1"># Terminal 2 — your car</span>
+ros2<span class="w"> </span>run<span class="w"> </span>team_driver<span class="w"> </span>driver
+</code></pre><span class="code-lang">shell</span></div>
+<p>A car should set off round the track. That is the template driver in
+<a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/race_ws/src/team_driver/team_driver/driver.py" data-ext="1"><code>race_ws/src/team_driver/team_driver/driver.py</code></a> —
+slow, cautious, and yours to replace.</p>
+<p>Try a stronger baseline for comparison:</p>
+<div class="code"><pre><code>ros2<span class="w"> </span>run<span class="w"> </span>roboracer_baselines<span class="w"> </span>gap_follower
+</code></pre><span class="code-lang">shell</span></div>
+<hr>
+<h2 id="18-check-your-environment-is-sane">1.8 Check your environment is sane<a class="hl" href="#18-check-your-environment-is-sane" title="Link to this section">#</a></h2>
+<div class="code"><pre><code>./scripts/verify_judging_env.sh
+</code></pre><span class="code-lang">shell</span></div>
+<p>This confirms the judging environment and the vendored devkit match the
+official ones. Run it before you submit; an entry with a modified referee,
+devkit or Dockerfile is not scored.</p>
+<hr>
+<h2 id="19-troubleshooting">1.9 Troubleshooting<a class="hl" href="#19-troubleshooting" title="Link to this section">#</a></h2>
+<p><strong>Every topic is listed, but nothing ever publishes</strong>
+This is the one to know about. Check the socket:</p>
+<div class="code"><pre><code>netstat<span class="w"> </span>-tnp<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="m">4567</span>
+</code></pre><span class="code-lang">shell</span></div>
+<p><em>Nothing at all</em> — the simulator never reached the bridge. Is the bridge
+running? Did you start the simulator first? Is the IP right?</p>
+<p><em>An <code>ESTABLISHED</code> connection and still no messages</em> — the TCP connection is up
+but the Socket.IO handshake is not completing, which almost always means the
+devkit's Python dependencies were replaced with newer ones. The pins in
+<code>docker/devkit-requirements.txt</code> look absurdly old and are load-bearing; the
+simulator advertises Engine.IO v4 in its handshake URL and then speaks v3
+framing, so a modern <code>python-socketio</code> connects and then waits for ever.
+Rebuild with <code>./install/&lt;os&gt;/setup.sh --no-cache</code>.</p>
+<p><strong><code>docker: command not found</code>, or "cannot connect to the Docker daemon"</strong>
+Docker Desktop is not running, or on Linux your user is not in the <code>docker</code>
+group. On Windows, check Settings → Resources → WSL integration.</p>
+<p><strong><code>The AutoDRIVE Simulator is not installed</code></strong>
+Run <code>./scripts/fetch_simulator.sh</code> on your <strong>host</strong>, not inside the container.
+It lands in <code>simulator/</code>, which is bind-mounted, so the container sees it
+immediately — no rebuild needed.</p>
+<p><strong>The build fails at <code>apt-get</code> or <code>pip</code></strong>
+Force a clean rebuild: <code>./install/linux/setup.sh --no-cache</code>. A half-cached
+layer from an interrupted attempt is the usual cause.</p>
+<p><strong>No simulator window</strong>
+Use <code>--novnc</code> and open <a href="http://localhost:8080/vnc.html" data-ext="1">http://localhost:8080/vnc.html</a>. On Linux also check
+<code>echo $DISPLAY</code> is set and try <code>xhost +local:root</code>. Remember you do not need a
+window to race.</p>
+<p><strong>The simulator prints pages of <code>Shader ... is not supported on this GPU</code></strong>
+Normal and harmless in headless mode. <code>-nographics</code> means there is no GPU to
+compile shaders for; the physics, the LiDAR and the lap timing are unaffected.
+The ALSA and FMOD audio errors underneath them are the same story.</p>
+<p><strong>The car does not move</strong>
+Check something is publishing:</p>
+<div class="code"><pre><code>ros2<span class="w"> </span>topic<span class="w"> </span>hz<span class="w"> </span>/autodrive/roboracer_1/throttle_command
+ros2<span class="w"> </span>topic<span class="w"> </span><span class="nb">echo</span><span class="w"> </span>/autodrive/roboracer_1/throttle_command<span class="w"> </span>--once
+</code></pre><span class="code-lang">shell</span></div>
+<p>No output means your driver node is not running or crashed — look at its
+terminal. If it <em>is</em> publishing and the car still does not move, check that the
+simulator is in <strong>Autonomous</strong> mode, not Manual.</p>
+<p><strong>A topic exists, <code>ros2 topic info</code> shows a publisher, and <code>echo</code> shows nothing</strong>
+Quality-of-Service mismatch. The bridge publishes <code>RELIABLE</code> with a queue depth
+of 1; a <code>BEST_EFFORT</code> subscriber — which is what people reach for with sensor
+data — will never receive one message from it, silently. Use the profile in
+<a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/race_ws/src/roboracer_baselines/roboracer_baselines/control.py" data-ext="1"><code>control.py</code></a>.</p>
+<p><strong><code>ros2: command not found</code> inside the container</strong>
+You are in a shell that did not source ROS. Exit and use
+<code>./install/&lt;os&gt;/shell.sh</code>, or run <code>source /opt/ros/humble/setup.bash</code> by hand.</p>
+<p><strong><code>Package 'team_driver' not found</code></strong>
+The workspace is not built or not sourced:</p>
+<div class="code"><pre><code><span class="nb">cd</span><span class="w"> </span>/hackathon/race_ws<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>colcon<span class="w"> </span>build<span class="w"> </span>--symlink-install<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>install/local_setup.bash
+</code></pre><span class="code-lang">shell</span></div>
+<p><strong><code>Permission denied</code> deleting <code>race_ws/build</code> on the host</strong>
+The container builds as root through the bind mount. Delete them from inside
+the container instead:</p>
+<div class="code"><pre><code>./install/linux/shell.sh<span class="w"> </span><span class="s1">'rm -rf /hackathon/race_ws/build /hackathon/race_ws/install /hackathon/race_ws/log'</span>
+</code></pre><span class="code-lang">shell</span></div>
+<p><strong>A run fails to start with "address already in use"</strong>
+A bridge from a previous run is still holding port 4567.
+<code>./scripts/evaluate.sh</code> cleans up after itself, but a run killed with Ctrl-C
+partway through may not have. Inside the container:</p>
+<div class="code"><pre><code>pkill<span class="w"> </span>-f<span class="w"> </span>autodrive_bridge<span class="p">;</span><span class="w"> </span>pkill<span class="w"> </span>-f<span class="w"> </span><span class="s1">'AutoDRIVE Simulator'</span>
+</code></pre><span class="code-lang">shell</span></div>
+<p><strong>Port 8080 is already in use</strong></p>
+<div class="code"><pre><code><span class="nv">NOVNC_PORT</span><span class="o">=</span><span class="m">8081</span><span class="w"> </span>./install/macos/run.sh
+</code></pre><span class="code-lang">shell</span></div>
+<hr>
+<p>Next: <strong><a href="02-simulator.html">2. The simulator</a></strong></p>
+    </article>
+    <nav class="pager"><a class="prev" href="index.html"><span class="arw">&larr;</span><span><span class="k">Previous</span><span class="t">Overview</span></span></a><a class="next" href="02-simulator.html"><span><span class="k">Next</span><span class="t">The simulator</span></span><span class="arw">&rarr;</span></a></nav>
+    <div class="src">Source &middot; <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/docs/01-setup.md">docs/01-setup.md</a></div>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="nav-lbl">On this page</div><ul><li><a href="#11-get-the-repository">1.1 Get the repository</a></li><li><a href="#12-install-docker">1.2 Install Docker</a><ul><li><a href="#windows-1011">Windows 10/11</a></li><li><a href="#macos">macOS</a></li><li><a href="#ubuntu--debian-linux">Ubuntu / Debian Linux</a></li></ul></li><li><a href="#13-fetch-the-simulator">1.3 Fetch the simulator</a></li><li><a href="#14-build-the-image">1.4 Build the image</a></li><li><a href="#15-start-the-container">1.5 Start the container</a><ul><li><a href="#where-the-simulator-window-appears">Where the simulator window appears</a></li><li><a href="#gpu">GPU</a></li></ul></li><li><a href="#16-running-the-simulator-on-your-host-macos-windows">1.6 Running the simulator on your host (macOS, Windows)</a></li><li><a href="#17-build-the-workspace-and-drive">1.7 Build the workspace and drive</a></li><li><a href="#18-check-your-environment-is-sane">1.8 Check your environment is sane</a></li><li><a href="#19-troubleshooting">1.9 Troubleshooting</a></li></ul></nav>
+</div>
+<footer class="ft"><div class="ft-in">
+  <span>NTU DeepSpeed &middot; Recruitment Hackathon 26/27</span>
+  <nav>
+    <a href="../track1/index.html">Track 1</a>
+    <a href="../track2/index.html">Track 2</a>
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">Repository</a>
+    <a href="mailto:ntu-deepspeed@e.ntu.edu.sg">ntu-deepspeed@e.ntu.edu.sg</a>
+  </nav>
+</div></footer>
+<script src="../assets/app.js" defer></script>
+</body>
+</html>

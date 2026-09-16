@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5. Rules &middot; Track 2 &middot; DeepSpeed Hackathon 26/27</title>
+<meta name="description" content="The compete phase of the RoboRacer Sim Racing League at ICRA 2026 — same vehicle, same sensors, same circuit the ICRA teams raced. You publish raw throttle, so the speed controller is yours to write.">
+<meta name="color-scheme" content="dark light">
+<meta property="og:title" content="5. Rules &middot; Track 2 &middot; DeepSpeed Hackathon 26/27">
+<meta property="og:description" content="The compete phase of the RoboRacer Sim Racing League at ICRA 2026 — same vehicle, same sensors, same circuit the ICRA teams raced. You publish raw throttle, so the speed controller is yours to write.">
+<meta property="og:type" content="article">
+<script>
+/* Applied before paint so the page never flashes the wrong theme.
+   Dark is the brand default — the identity lives on black. */
+(function () {
+  try {
+    var saved = localStorage.getItem("ds-theme");
+    document.documentElement.setAttribute("data-theme", saved === "light" ? "light" : "dark");
+  } catch (e) { /* storage blocked */ }
+})();
+</script>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body>
+<a class="skip" href="#doc">Skip to content</a>
+<header class="hdr">
+  <a class="hdr-brand" href="../index.html">
+    <span class="wm">DeepSpeed</span>
+    <span class="sub">Hackathon 26/27</span>
+  </a>
+  <nav class="hdr-nav" aria-label="Tracks"><a class="" href="../track1/index.html">Track 1</a><a class="on" href="../track2/index.html">Track 2</a></nav>
+  <div class="hdr-right">
+    <span class="hdr-meta">Deadline <b>18 Oct 2026</b></span>
+    <a class="hdr-meta" href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">GitHub</a>
+    <button class="toggle" type="button" aria-label="Switch theme">
+      <span class="t-light">Light</span><span class="t-dark">Dark</span>
+    </button>
+    <button class="navbtn" type="button" aria-label="Contents" aria-expanded="false" aria-controls="sidenav">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+</header>
+<div class="scrim"></div>
+<div class="shell">
+  <aside class="nav" id="sidenav">
+  <div class="nav-lbl">Select track</div>
+  <div class="nav-switch"><a href="../track1/index.html"><span class="n">01</span><span>Autonomous Racing</span></a><a href="../track2/index.html" aria-current="true"><span class="n">02</span><span>Sim Racing · ICRA</span></a></div>
+  <div class="nav-lbl">Track 2 &middot; Contents</div>
+  <ul class="nav-list"><li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-baselines.html"><span class="n">03</span><span>Baseline algorithms</span></a></li><li><a href="04-evaluation.html"><span class="n">04</span><span>Evaluation</span></a></li><li><a href="05-rules.html" aria-current="page"><span class="n">05</span><span>Rules</span></a></li><li><a href="06-submission.html"><span class="n">06</span><span>Submission</span></a></li><li><a href="07-workshop.html"><span class="n">07</span><span>ROS 2 primer</span></a></li></ul>
+  <div class="nav-lbl">Elsewhere</div>
+  <div class="nav-out">
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/tree/track2">Branch <code>track2</code></a>
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/actions">Judging runs</a>
+    <a href="mailto:ntu-deepspeed@e.ntu.edu.sg">Ask a question</a>
+  </div>
+</aside>
+  <main class="main" id="doc">
+    <div class="crumb"><span class="red">Track 2</span><span class="sep">/</span><a href="index.html">Overview</a><span class="sep">/</span><span>Chapter 05</span></div>
+    <article class="prose">
+      <h1>5. Rules</h1>
+      <p>These rules govern Track 2 of the NTU DeepSpeed Recruitment Hackathon 26/27.
+Where this page and any other document disagree, this page wins.</p>
+<p>Track 2 runs the <strong>compete</strong> phase of the
+<a href="https://autodrive-ecosystem.github.io/competitions/roboracer-sim-racing-icra-2026/" data-ext="1">RoboRacer Sim Racing League @ ICRA 2026</a>
+on the AutoDRIVE Simulator. Where the AutoDRIVE competition's own rules and
+these disagree, <strong>these apply</strong> — the differences are called out explicitly in
+rules 33 and 34, because they matter.</p>
+<hr>
+<h2 id="51-teams">5.1 Teams<a class="hl" href="#51-teams" title="Link to this section">#</a></h2>
+<ol>
+<li>A team has <strong>3 to 5 members</strong>.</li>
+<li>Each person may be on <strong>one team only</strong>.</li>
+<li>The roster is fixed at submission. Name every member in your <code>SUBMISSION.md</code>
+   (see <a href="06-submission.html">chapter 6</a>).</li>
+<li>One entry per team.</li>
+</ol>
+<hr>
+<h2 id="52-deadline">5.2 Deadline<a class="hl" href="#52-deadline" title="Link to this section">#</a></h2>
+<ol start="5">
+<li><strong>Submissions close 18 October 2026, 23:59 (SGT).</strong></li>
+<li>The commit timestamp on your submitted branch is what counts. Anything
+   pushed after the deadline is not scored.</li>
+<li>Late entries are not accepted. Submit early and push again if you improve —
+   the last commit before the deadline is the one judged.</li>
+</ol>
+<hr>
+<h2 id="53-the-race">5.3 The race<a class="hl" href="#53-the-race" title="Link to this section">#</a></h2>
+<ol start="8">
+<li>Every run is driven on the official circuit — the <strong>compete</strong> track inside
+   the AutoDRIVE Simulator <code>2026-icra</code> build — in the official Docker image
+   built from this repository, on a single judging machine whose specification
+   is published in <a href="04-evaluation.html#48-judging-day">§4.8</a>.</li>
+<li>A run consists of:
+   - an <strong>out lap</strong> from the grid slot to the start/finish line — not timed;
+   - <strong>one warm-up lap</strong> — granted, not scored;
+   - <strong>10 timed laps</strong>, run consecutively.</li>
+</ol>
+<p>The simulator spawns the car most of a circuit before its own start/finish
+   line, so the out lap closes as a lap in the simulator's count rather than
+   being a short run-up as it is on Track 1. Twelve laps are driven; ten are
+   scored.
+10. Laps are counted, and timed, by the simulator. The referee records what the
+    simulator reports — see <a href="04-evaluation.html#43-the-simulator-does-the-timing-not-us">§4.3</a>.
+11. <strong>The track boundary is a line of air ducts, and the gaps between them are
+    not a route.</strong> A duct marks the edge of the course exactly as a wall does;
+    the gaps are a consequence of the ducts being separate objects. Go around
+    the end of a row, never through it. The simulator scores contact with a
+    duct as a collision, so this rule mostly enforces itself — but a car that
+    threads a gap cleanly has still left the course, and a run that does it is
+    not scored.
+12. The car is placed on the grid by the referee at the start of every run.
+    Once a run starts there is no manual intervention.
+13. A run that does not complete all 10 timed laps within <strong>900 seconds of
+    simulated time</strong> is recorded as DNF and scores zero for both components.
+14. A car that does not move for <strong>15 seconds of simulated time</strong> is recorded as
+    DNF.</p>
+<hr>
+<h2 id="54-collisions">5.4 Collisions<a class="hl" href="#54-collisions" title="Link to this section">#</a></h2>
+<ol start="15">
+<li>Every collision adds a <strong>10-second penalty</strong> to the lap on which it
+    happened. Penalties are included in both your fastest lap and your adjusted
+    race time.</li>
+<li><strong>More than 10 collisions in a run is a disqualification</strong> for that run,
+    as on Track 1. The referee ends the run at the eleventh collision rather
+    than letting it continue. A disqualified run scores zero for both
+    components (rule 22).</li>
+<li>A collision is what the simulator counts as a collision. The referee reads
+    <code>…/collision_count</code> and applies the penalty; it does not do its own contact
+    detection and there is nothing to tune. See
+    <a href="04-evaluation.html#44-how-collisions-are-counted">§4.4</a>.</li>
+<li>Collisions during the out lap or the warm-up lap count towards the limit in
+    rule 16, but carry no time penalty, because there is no scored lap to apply
+    it to.</li>
+</ol>
+<hr>
+<h2 id="55-scoring">5.5 Scoring<a class="hl" href="#55-scoring" title="Link to this section">#</a></h2>
+<ol start="19">
+<li>
+<p>Two components, 50 points each, scored <strong>relative to the best team</strong>:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Points</th>
+<th>Formula</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Fastest single lap</strong></td>
+<td>50</td>
+<td><code>50 × (fastest lap of any team ÷ your fastest lap)</code></td>
+</tr>
+<tr>
+<td><strong>10-lap total</strong></td>
+<td>50</td>
+<td><code>50 × (fastest 10-lap total of any team ÷ your 10-lap total)</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>The fastest team in each component gets the full 50. Everyone else is scaled
+by the ratio of times.</p>
+</li>
+<li>
+<p><strong>Leaderboard score = fastest-lap points + 10-lap points</strong>, out of 100,
+    ranked highest first.</p>
+</li>
+<li>
+<p>Both components use times <strong>after</strong> collision penalties.</p>
+</li>
+<li>
+<p>Only a run with status <code>COMPLETE</code> scores. A disqualified or DNF run scores
+    <strong>zero for both components</strong>.</p>
+</li>
+<li>
+<p>The judges run each submission <strong>three times</strong> and take the best attempt.
+    The simulator is not perfectly deterministic, and nobody should lose on a
+    single unlucky run.</p>
+</li>
+<li>
+<p>Results are computed by
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/scripts/leaderboard.py" data-ext="1"><code>scripts/leaderboard.py</code></a>, which is in this
+    repository. You can run it yourself.</p>
+</li>
+<li>
+<p>Where a tie-break is needed, the 10-lap total decides it.</p>
+</li>
+</ol>
+<h3 id="worked-example">Worked example<a class="hl" href="#worked-example" title="Link to this section">#</a></h3>
+<p>Three teams finish. The fastest single lap of anyone is 20.50 s; the fastest
+10-lap total is 228.90 s.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Team</th>
+<th>Best lap</th>
+<th>10 laps</th>
+<th>Lap points</th>
+<th>Endurance points</th>
+<th><strong>Total</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Alpha</td>
+<td>21.80</td>
+<td>228.90</td>
+<td>50 × 20.50/21.80 = <strong>47.02</strong></td>
+<td>50 × 228.90/228.90 = <strong>50.00</strong></td>
+<td><strong>97.02</strong></td>
+</tr>
+<tr>
+<td>Bravo</td>
+<td>20.50</td>
+<td>245.00</td>
+<td>50 × 20.50/20.50 = <strong>50.00</strong></td>
+<td>50 × 228.90/245.00 = <strong>46.71</strong></td>
+<td><strong>96.71</strong></td>
+</tr>
+<tr>
+<td>Charlie</td>
+<td>25.00</td>
+<td>260.00</td>
+<td><strong>41.00</strong></td>
+<td><strong>44.02</strong></td>
+<td><strong>85.02</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>Bravo has the fastest single lap and still finishes second. Consistency over
+ten laps is worth exactly as much as one quick one — and since a single
+collision costs 10 s of race time, consistency here mostly means not crashing.</p>
+<hr>
+<h2 id="56-the-judging-environment">5.6 The judging environment<a class="hl" href="#56-the-judging-environment" title="Link to this section">#</a></h2>
+<ol start="26">
+<li>
+<p>The official simulator is the <strong><code>2026-icra</code> compete build</strong>, fetched by
+    <code>./scripts/fetch_simulator.sh</code>. Do not substitute the <code>explore</code> or
+    <code>practice</code> build, or a build from another event, for a scored run. You are
+    welcome to practise against any of them — training on <code>practice</code> and racing
+    on <code>compete</code> is exactly the generalisation problem ICRA set.</p>
+</li>
+<li>
+<p>The official image is the one built from <code>docker/Dockerfile</code> in this
+    repository. Entries are judged in that image and nothing else.</p>
+</li>
+<li>
+<p><strong>Do not modify the judging environment.</strong> That means:</p>
+<ul>
+<li><code>race_ws/src/roboracer_referee/</code></li>
+<li><code>docker/</code> — Dockerfile, dependency pins, compose files, entrypoint</li>
+<li><code>maps/tracks.yaml</code></li>
+<li><code>scripts/</code> and <code>install/</code></li>
+</ul>
+<p>The rest of <code>maps/</code> is yours: a racing line or an occupancy grid you built
+belongs there and is not checked.</p>
+</li>
+<li>
+<p><strong>Do not modify the AutoDRIVE Devkit</strong> at <code>external/autodrive_devkit/</code>.
+    This is the AutoDRIVE competition's own rule and the hackathon keeps it.
+    Write your code as separate packages that talk to the devkit's topics —
+    which is what <code>team_driver</code> already is.</p>
+</li>
+<li>
+<p>An entry that modifies either is <strong>not scored</strong>. If you genuinely believe
+    something in it is broken, raise it with the organisers before the deadline
+    rather than patching around it — see rule 49.</p>
+</li>
+<li>
+<p>Your code must not publish to <strong><code>/autodrive/reset_command</code></strong>, or otherwise
+    interfere with the referee's topics under <code>/referee/*</code>. The reset command
+    teleports the car and zeroes the counters the referee scores from;
+    publishing it during a run is not a penalty, it is a disqualification.</p>
+</li>
+<li>
+<p>Verify before you submit:
+    <code>sh
+    ./scripts/verify_judging_env.sh</code>
+    It checks file hashes across the referee and the devkit and looks for files
+    added into protected directories. The <strong>Judge</strong> workflow runs the same
+    check on every push and, when it fails, reports it in the run summary with
+    the list of files that differ — a disqualification is a ruling, so it is
+    shown as one rather than left as a failed build.</p>
+</li>
+</ol>
+<hr>
+<h2 id="57-what-your-code-may-use">5.7 What your code may use<a class="hl" href="#57-what-your-code-may-use" title="Link to this section">#</a></h2>
+<ol start="33">
+<li>
+<p><strong>Inputs you may read — all of them.</strong></p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Topic</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>…/lidar</code></td>
+<td>LiDAR, 1080 beams over 270°, 10 m</td>
+</tr>
+<tr>
+<td><code>…/front_camera</code></td>
+<td>RGB camera (empty in a headless run)</td>
+</tr>
+<tr>
+<td><code>…/imu</code></td>
+<td>Orientation, angular velocity, linear acceleration</td>
+</tr>
+<tr>
+<td><code>…/left_encoder</code>, <code>…/right_encoder</code></td>
+<td>Wheel encoders</td>
+</tr>
+<tr>
+<td><code>…/throttle</code>, <code>…/steering</code></td>
+<td>Actuator feedback</td>
+</tr>
+<tr>
+<td><code>…/ips</code></td>
+<td><strong>Ground-truth position — allowed</strong></td>
+</tr>
+<tr>
+<td><code>…/odom</code></td>
+<td><strong>Ground-truth pose and velocity — allowed and recommended</strong></td>
+</tr>
+<tr>
+<td><code>…/lap_count</code>, <code>…/lap_time</code>, <code>…/last_lap_time</code>, <code>…/best_lap_time</code></td>
+<td>Race telemetry — <strong>allowed</strong></td>
+</tr>
+<tr>
+<td><code>…/collision_count</code></td>
+<td>Collision count — <strong>allowed</strong></td>
+</tr>
+<tr>
+<td><code>/tf</code>, <code>/tf_static</code></td>
+<td>Transforms — <strong>allowed</strong></td>
+</tr>
+</tbody>
+</table></div>
+<blockquote>
+<p><strong>This differs deliberately from the AutoDRIVE competition rules.</strong> Those
+mark <code>…/ips</code>, <code>…/odom</code>, <code>/tf</code> and the race-telemetry topics <em>restricted</em>:
+available for development, but not "while autonomously racing at run-time".
+<strong>Track 2 does not adopt that restriction.</strong> Every input above is yours to
+use during a scored run.</p>
+<p>The reason is that this is a recruitment hackathon, not a robotics
+competition. Recovering a pose the simulator is already publishing is a
+good exercise and a genuinely hard one — and it is worth bonus marks under
+rule 45 — but making it compulsory would mean most teams spend the whole
+hackathon on localisation and never write a planner.</p>
+<p><strong>The restriction on <em>publishing</em> is kept in full.</strong> See rule 34.</p>
+</blockquote>
+</li>
+<li>
+<p><strong>Outputs.</strong> You may publish exactly two things to the car:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Topic</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>…/throttle_command</code></td>
+<td>Normalised throttle, [−1, 1]</td>
+</tr>
+<tr>
+<td><code>…/steering_command</code></td>
+<td>Normalised steering, [−1, 1]</td>
+</tr>
+</tbody>
+</table></div>
+<p>plus any topics of your own under <code>/driver/...</code> for visualisation and
+debugging.</p>
+<p><strong><code>/autodrive/reset_command</code> remains restricted</strong> — rule 31. It is the only
+output the AutoDRIVE rules restrict and the hackathon restricts it too.</p>
+</li>
+<li>
+<p><strong>Ground-truth pose is explicitly permitted.</strong> Building your own
+    localisation is not required and is genuinely difficult — harder here than
+    on Track 1, since there is no shipped map to localise against. If you do
+    build one, and can explain it thoroughly at the interview, it earns <strong>bonus
+    marks</strong> — see rule 45.</p>
+</li>
+<li>
+<p><strong>Offline precomputation is allowed.</strong> Optimising a racing line before the
+    run is real racing practice. But it must be produced by code you submit,
+    and it must be reproducible — from a map you built, from a recorded lap,
+    from something. Hand-tuned waypoints typed in from watching the car are not
+    in the spirit of this and will not survive the interview.</p>
+</li>
+<li>
+<p><strong>Extra packages are allowed, but you must declare them.</strong> Anything you
+    declare is installed into the image when it is built, so it is there during
+    judging. Anything you do not declare will not be:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>What you need</th>
+<th>Where to declare it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Python packages</td>
+<td><code>race_ws/src/team_driver/requirements.txt</code></td>
+</tr>
+<tr>
+<td>System packages</td>
+<td><code>race_ws/src/team_driver/apt-packages.txt</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>List them in your <code>SUBMISSION.md</code> as well, with a line on what each is for.
+An undeclared dependency means your entry does not start, and <strong>there is no
+network access during a judged run</strong> to rescue it.</p>
+<p>Already installed, so nothing to declare: <code>rclpy</code>, <code>numpy</code>, <code>scipy</code>,
+<code>Pillow</code>, <code>opencv-python</code>, <code>PyYAML</code>, <code>transforms3d</code>, and the devkit's
+websocket stack.</p>
+<blockquote>
+<p>Do <strong>not</strong> pin a different version of <code>python-socketio</code>, <code>python-engineio</code>
+or <code>gevent</code> in <code>requirements.txt</code>. Those pins are load-bearing: the
+simulator's client speaks Engine.IO v3 framing despite advertising v4, and
+a newer version gives a bridge that connects and then publishes nothing at
+all, silently, for the whole run. The build checks this, but a clash is
+still the fastest way to score zero.</p>
+</blockquote>
+<p>The image is ROS 2 Humble on Python 3.10, and the judging machine has an
+8 GB NVIDIA GPU, so CUDA builds of PyTorch and friends are usable — see
+<a href="04-evaluation.html#48-judging-day">§4.8</a>. Rebuild from clean after adding
+anything, and check a run still starts.</p>
+</li>
+<li>
+<p>Your driver must remain a ROS 2 node launched as
+    <code>ros2 run team_driver driver</code>. You may add files, modules and extra
+    executables inside <code>team_driver</code>, but keep that entry point working.</p>
+</li>
+<li>
+<p>Keep your control loop real-time capable. The simulator publishes scans at
+    40 Hz; a callback that takes longer than that will miss data. Note also
+    that the bridge runs a strict request/response loop with the simulator, so
+    a node that blocks the bridge slows the whole simulation down.</p>
+</li>
+</ol>
+<hr>
+<h2 id="58-ai-assistance">5.8 AI assistance<a class="hl" href="#58-ai-assistance" title="Link to this section">#</a></h2>
+<ol start="40">
+<li>
+<p><strong>Using AI assistants is permitted.</strong> ChatGPT, Claude, Copilot, Cursor —
+    all fine.</p>
+</li>
+<li>
+<p>You are responsible for everything you submit. At the interview, any member
+    may be asked to explain any part of the code: why it is written that way,
+    what happens if a parameter changes, why the alternative approach was
+    rejected.</p>
+</li>
+<li>
+<p>Code you cannot explain will not count in your favour, however fast it is.
+    This is a recruitment hackathon; we are hiring for understanding, not for
+    prompt output.</p>
+</li>
+<li>
+<p>Third-party code and open-source algorithms are fine, with attribution in
+    your <code>SUBMISSION.md</code>. Copying another team's entry is not.</p>
+</li>
+</ol>
+<hr>
+<h2 id="59-interview-and-bonus-marks">5.9 Interview and bonus marks<a class="hl" href="#59-interview-and-bonus-marks" title="Link to this section">#</a></h2>
+<ol start="44">
+<li>
+<p>Every team is interviewed after the race. The leaderboard decides the
+    ranking; the interview decides recruitment.</p>
+</li>
+<li>
+<p>Bonus marks, awarded at the interview and separate from the leaderboard:</p>
+<ul>
+<li><strong>Replacing the algorithm.</strong> Reinforcement learning, MPC, imitation
+  learning, or anything else that is not a tuned version of the baselines
+  we gave you. The bar is that you can explain what it does, why you chose
+  it, and what its failure modes are — not that it wins.</li>
+<li><strong>Mapping the circuit.</strong> Building an occupancy grid of a track that does
+  not ship with one, from your own recorded laps.</li>
+<li><strong>Own localisation.</strong> A particle filter, scan matching or similar,
+  replacing <code>…/odom</code>, that you can explain thoroughly.</li>
+<li><strong>Own racing line generation</strong> computed from a map rather than shipped as
+  data.</li>
+<li><strong>A real speed controller.</strong> The one we gave you is feed-forward plus PI
+  and knows nothing about the corner it is entering. Anything better is
+  both worth lap time and worth talking about.</li>
+<li><strong>Clear engineering.</strong> Readable code, sensible structure, evidence you
+  measured rather than guessed.</li>
+</ul>
+</li>
+<li>
+<p>Bonus marks affect the recruitment decision, not the leaderboard score.</p>
+</li>
+</ol>
+<hr>
+<h2 id="510-conduct">5.10 Conduct<a class="hl" href="#510-conduct" title="Link to this section">#</a></h2>
+<ol start="47">
+<li>Do not interfere with another team's work, machines or submissions.</li>
+<li>Do not attack, overload or attempt to gain access to the organisers'
+    infrastructure, or to AutoDRIVE's.</li>
+<li>If you find a bug in the judging environment, report it. Teams that report a
+    genuine bug before the deadline are credited, not penalised. This track is
+    new and the environment has a short history; we would rather hear about it.</li>
+<li>Do not attempt to make the referee report a result other than what the car
+    actually did. Exploiting a bug in the judging environment is the same as
+    modifying it.</li>
+</ol>
+<hr>
+<h2 id="511-judges-discretion">5.11 Judges' discretion<a class="hl" href="#511-judges-discretion" title="Link to this section">#</a></h2>
+<ol start="51">
+<li>The organisers may adjust or clarify these rules before the deadline. Any
+    change is announced in the team channel and reflected here. This includes
+    the circuit: if AutoDRIVE publish a revised compete build, we may adopt it,
+    and it will be announced.</li>
+<li>In a situation these rules do not cover, the organisers decide, and will
+    explain the reasoning.</li>
+<li>The organisers' decisions on scoring and disqualification are final.</li>
+</ol>
+<hr>
+<p>Next: <strong><a href="06-submission.html">6. Submission</a></strong></p>
+    </article>
+    <nav class="pager"><a class="prev" href="04-evaluation.html"><span class="arw">&larr;</span><span><span class="k">Previous</span><span class="t">Evaluation</span></span></a><a class="next" href="06-submission.html"><span><span class="k">Next</span><span class="t">Submission</span></span><span class="arw">&rarr;</span></a></nav>
+    <div class="src">Source &middot; <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/docs/05-rules.md">docs/05-rules.md</a></div>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="nav-lbl">On this page</div><ul><li><a href="#51-teams">5.1 Teams</a></li><li><a href="#52-deadline">5.2 Deadline</a></li><li><a href="#53-the-race">5.3 The race</a></li><li><a href="#54-collisions">5.4 Collisions</a></li><li><a href="#55-scoring">5.5 Scoring</a><ul><li><a href="#worked-example">Worked example</a></li></ul></li><li><a href="#56-the-judging-environment">5.6 The judging environment</a></li><li><a href="#57-what-your-code-may-use">5.7 What your code may use</a></li><li><a href="#58-ai-assistance">5.8 AI assistance</a></li><li><a href="#59-interview-and-bonus-marks">5.9 Interview and bonus marks</a></li><li><a href="#510-conduct">5.10 Conduct</a></li><li><a href="#511-judges-discretion">5.11 Judges&#x27; discretion</a></li></ul></nav>
+</div>
+<footer class="ft"><div class="ft-in">
+  <span>NTU DeepSpeed &middot; Recruitment Hackathon 26/27</span>
+  <nav>
+    <a href="../track1/index.html">Track 1</a>
+    <a href="../track2/index.html">Track 2</a>
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">Repository</a>
+    <a href="mailto:ntu-deepspeed@e.ntu.edu.sg">ntu-deepspeed@e.ntu.edu.sg</a>
+  </nav>
+</div></footer>
+<script src="../assets/app.js" defer></script>
+</body>
+</html>
