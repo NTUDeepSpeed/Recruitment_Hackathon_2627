@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="dark" data-platform="linux">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,13 +10,21 @@
 <meta property="og:description" content="Write the software that drives a 1/10-scale racing car around a circuit it has never seen, as fast as it can, without hitting anything. Two tracks, two simulators, one problem.">
 <meta property="og:type" content="website">
 <script>
-/* Applied before paint so the page never flashes the wrong theme.
-   Dark is the brand default — the identity lives on black. */
+/* Applied before paint, so the page never flashes the wrong theme or the
+   wrong platform's commands. Dark is the brand default — the identity lives
+   on black — and the platform falls back to the one you appear to be on. */
 (function () {
+  var root = document.documentElement, theme, platform;
   try {
-    var saved = localStorage.getItem("ds-theme");
-    document.documentElement.setAttribute("data-theme", saved === "light" ? "light" : "dark");
+    theme = localStorage.getItem("ds-theme");
+    platform = localStorage.getItem("ds-platform");
   } catch (e) { /* storage blocked */ }
+  root.setAttribute("data-theme", theme === "light" ? "light" : "dark");
+  if (!platform) {
+    var ua = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || "";
+    platform = /mac/i.test(ua) ? "macos" : /win/i.test(ua) ? "windows" : "linux";
+  }
+  root.setAttribute("data-platform", platform);
 })();
 </script>
 <link rel="icon" href="assets/favicon.ico" sizes="32x32">
@@ -38,6 +46,7 @@
   <div class="hdr-right">
     <span class="hdr-meta">Deadline <b>18 Oct 2026</b></span>
     <a class="hdr-meta" href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">GitHub</a>
+    <div class="pf-switch pf-switch--hdr" role="group" aria-label="Platform"><button type="button" data-set-pf="linux">Linux</button><button type="button" data-set-pf="macos">macOS</button><button type="button" data-set-pf="windows">Windows</button></div>
     <button class="toggle" type="button" aria-label="Switch theme">
       <span class="t-light">Light</span><span class="t-dark">Dark</span>
     </button>
@@ -117,20 +126,20 @@
       </div>
       <p class="sec-lede">Clone once, check out the branch for your track, then follow chapter 1. Submissions close 18 October 2026, 23:59 SGT.</p>
     </div>
-    <div class="quick"><div><div class="eyebrow" style="margin-bottom:var(--s-3)">Track 1 &middot; branch <span class="r">track1</span></div><pre>git clone --recurse-submodules \
+    <div class="quick"><div class="pf-switch pf-switch--quick" role="group" aria-label="Platform"><button type="button" data-set-pf="linux">Linux</button><button type="button" data-set-pf="macos">macOS</button><button type="button" data-set-pf="windows">Windows</button></div><div><div class="eyebrow" style="margin-bottom:var(--s-3)">Track 1 &middot; branch <span class="r">track1</span></div><pre>git clone --recurse-submodules \
   https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627.git
 cd Recruitment_Hackathon_2627
 git checkout track1
 
-./install/linux/setup.sh   # or macos, or windows from WSL
-./install/linux/run.sh     # builds, then drops you in</pre></div><div><div class="eyebrow" style="margin-bottom:var(--s-3)">Track 2 &middot; branch <span class="r">track2</span></div><pre>git clone \
+./install/<span class="pf" data-pf="linux">linux</span><span class="pf" data-pf="macos">macos</span><span class="pf" data-pf="windows">windows</span>/setup.sh   # builds the image, once
+./install/<span class="pf" data-pf="linux">linux</span><span class="pf" data-pf="macos">macos</span><span class="pf" data-pf="windows">windows</span>/run.sh     # builds, then drops you in</pre></div><div><div class="eyebrow" style="margin-bottom:var(--s-3)">Track 2 &middot; branch <span class="r">track2</span></div><pre>git clone \
   https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627.git
 cd Recruitment_Hackathon_2627
 git checkout track2
 
 ./scripts/fetch_simulator.sh   # 140 MB, once
-./install/linux/setup.sh       # or macos, or windows from WSL
-./install/linux/run.sh         # builds, then drops you in</pre></div></div>
+./install/<span class="pf" data-pf="linux">linux</span><span class="pf" data-pf="macos">macos</span><span class="pf" data-pf="windows">windows</span>/setup.sh       # builds the image, once
+./install/<span class="pf" data-pf="linux">linux</span><span class="pf" data-pf="macos">macos</span><span class="pf" data-pf="windows">windows</span>/run.sh         # builds, then drops you in</pre></div></div>
   </section>
 
 </main>

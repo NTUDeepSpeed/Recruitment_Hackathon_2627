@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="dark" data-platform="linux">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,13 +10,21 @@
 <meta property="og:description" content="The compete phase of the RoboRacer Sim Racing League at ICRA 2026 — same vehicle, same sensors, same circuit the ICRA teams raced. You publish raw throttle, so the speed controller is yours to write.">
 <meta property="og:type" content="article">
 <script>
-/* Applied before paint so the page never flashes the wrong theme.
-   Dark is the brand default — the identity lives on black. */
+/* Applied before paint, so the page never flashes the wrong theme or the
+   wrong platform's commands. Dark is the brand default — the identity lives
+   on black — and the platform falls back to the one you appear to be on. */
 (function () {
+  var root = document.documentElement, theme, platform;
   try {
-    var saved = localStorage.getItem("ds-theme");
-    document.documentElement.setAttribute("data-theme", saved === "light" ? "light" : "dark");
+    theme = localStorage.getItem("ds-theme");
+    platform = localStorage.getItem("ds-platform");
   } catch (e) { /* storage blocked */ }
+  root.setAttribute("data-theme", theme === "light" ? "light" : "dark");
+  if (!platform) {
+    var ua = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || "";
+    platform = /mac/i.test(ua) ? "macos" : /win/i.test(ua) ? "windows" : "linux";
+  }
+  root.setAttribute("data-platform", platform);
 })();
 </script>
 <link rel="icon" href="../assets/favicon.ico" sizes="32x32">
@@ -38,6 +46,7 @@
   <div class="hdr-right">
     <span class="hdr-meta">Deadline <b>18 Oct 2026</b></span>
     <a class="hdr-meta" href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">GitHub</a>
+    <div class="pf-switch pf-switch--hdr" role="group" aria-label="Platform"><button type="button" data-set-pf="linux">Linux</button><button type="button" data-set-pf="macos">macOS</button><button type="button" data-set-pf="windows">Windows</button></div>
     <button class="toggle" type="button" aria-label="Switch theme">
       <span class="t-light">Light</span><span class="t-dark">Dark</span>
     </button>
@@ -51,12 +60,13 @@
   <aside class="nav" id="sidenav">
   <div class="nav-lbl">Select track</div>
   <div class="nav-switch"><a href="../track1/index.html"><span class="n">01</span><span>Autonomous Racing</span></a><a href="../track2/index.html" aria-current="true"><span class="n">02</span><span>Sim Racing · ICRA</span></a></div>
+  <div class="nav-lbl">Your platform</div>
+  <div class="pf-switch pf-switch--nav" role="group" aria-label="Platform"><button type="button" data-set-pf="linux">Linux</button><button type="button" data-set-pf="macos">macOS</button><button type="button" data-set-pf="windows">Windows</button></div>
   <div class="nav-lbl">Track 2 &middot; Contents</div>
   <ul class="nav-list"><li><a href="index.html" aria-current="page"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-baselines.html"><span class="n">03</span><span>Baseline algorithms</span></a></li><li><a href="04-evaluation.html"><span class="n">04</span><span>Evaluation</span></a></li><li><a href="05-rules.html"><span class="n">05</span><span>Rules</span></a></li><li><a href="06-submission.html"><span class="n">06</span><span>Submission</span></a></li><li><a href="07-workshop.html"><span class="n">07</span><span>ROS 2 primer</span></a></li></ul>
   <div class="nav-lbl">Elsewhere</div>
   <div class="nav-out">
     <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/tree/track2">Branch <code>track2</code></a>
-    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/actions">Judging runs</a>
     <a href="mailto:ntu-deepspeed@e.ntu.edu.sg">Ask a question</a>
   </div>
 </aside>
@@ -80,8 +90,8 @@ circuit and the same devkit the ICRA teams raced.</p>
 git<span class="w"> </span>checkout<span class="w"> </span>track2
 
 ./scripts/fetch_simulator.sh<span class="w">      </span><span class="c1"># 140 MB, once</span>
-./install/linux/setup.sh<span class="w">          </span><span class="c1"># or install/macos, or install/windows from WSL</span>
-./install/linux/run.sh<span class="w">            </span><span class="c1"># builds if needed, then drops you into the container</span>
+./install/<span class="pf" data-pf="linux">linux</span><span class="pf" data-pf="macos">macos</span><span class="pf" data-pf="windows">windows</span>/setup.sh<span class="pf-alt"><span class="w">          </span><span class="c1"># or install/macos, or install/windows from WSL</span></span>
+./install/<span class="pf" data-pf="linux">linux</span><span class="pf" data-pf="macos">macos</span><span class="pf" data-pf="windows">windows</span>/run.sh<span class="w">            </span><span class="c1"># builds if needed, then drops you into the container</span>
 </code></pre><span class="code-lang">shell</span></div>
 <p>Then, inside the container:</p>
 <div class="code"><pre><code><span class="nb">cd</span><span class="w"> </span>/hackathon/race_ws<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>colcon<span class="w"> </span>build<span class="w"> </span>--symlink-install

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="dark" data-platform="linux">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,13 +10,21 @@
 <meta property="og:description" content="Everything in one repository — simulator, judging environment, reference algorithms and every official track. Ask the car for a speed and a steering angle; the sim closes the loop for you.">
 <meta property="og:type" content="article">
 <script>
-/* Applied before paint so the page never flashes the wrong theme.
-   Dark is the brand default — the identity lives on black. */
+/* Applied before paint, so the page never flashes the wrong theme or the
+   wrong platform's commands. Dark is the brand default — the identity lives
+   on black — and the platform falls back to the one you appear to be on. */
 (function () {
+  var root = document.documentElement, theme, platform;
   try {
-    var saved = localStorage.getItem("ds-theme");
-    document.documentElement.setAttribute("data-theme", saved === "light" ? "light" : "dark");
+    theme = localStorage.getItem("ds-theme");
+    platform = localStorage.getItem("ds-platform");
   } catch (e) { /* storage blocked */ }
+  root.setAttribute("data-theme", theme === "light" ? "light" : "dark");
+  if (!platform) {
+    var ua = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || "";
+    platform = /mac/i.test(ua) ? "macos" : /win/i.test(ua) ? "windows" : "linux";
+  }
+  root.setAttribute("data-platform", platform);
 })();
 </script>
 <link rel="icon" href="../assets/favicon.ico" sizes="32x32">
@@ -38,6 +46,7 @@
   <div class="hdr-right">
     <span class="hdr-meta">Deadline <b>18 Oct 2026</b></span>
     <a class="hdr-meta" href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">GitHub</a>
+    <div class="pf-switch pf-switch--hdr" role="group" aria-label="Platform"><button type="button" data-set-pf="linux">Linux</button><button type="button" data-set-pf="macos">macOS</button><button type="button" data-set-pf="windows">Windows</button></div>
     <button class="toggle" type="button" aria-label="Switch theme">
       <span class="t-light">Light</span><span class="t-dark">Dark</span>
     </button>
@@ -51,12 +60,13 @@
   <aside class="nav" id="sidenav">
   <div class="nav-lbl">Select track</div>
   <div class="nav-switch"><a href="../track1/index.html" aria-current="true"><span class="n">01</span><span>Autonomous Racing</span></a><a href="../track2/index.html"><span class="n">02</span><span>Sim Racing · ICRA</span></a></div>
+  <div class="nav-lbl">Your platform</div>
+  <div class="pf-switch pf-switch--nav" role="group" aria-label="Platform"><button type="button" data-set-pf="linux">Linux</button><button type="button" data-set-pf="macos">macOS</button><button type="button" data-set-pf="windows">Windows</button></div>
   <div class="nav-lbl">Track 1 &middot; Contents</div>
   <ul class="nav-list"><li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html" aria-current="page"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-baselines.html"><span class="n">03</span><span>Baseline algorithms</span></a></li><li><a href="04-evaluation.html"><span class="n">04</span><span>Evaluation</span></a></li><li><a href="05-rules.html"><span class="n">05</span><span>Rules</span></a></li><li><a href="06-submission.html"><span class="n">06</span><span>Submission</span></a></li><li><a href="07-workshop.html"><span class="n">07</span><span>ROS 2 primer</span></a></li></ul>
   <div class="nav-lbl">Elsewhere</div>
   <div class="nav-out">
     <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/tree/track1">Branch <code>track1</code></a>
-    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/actions">Judging runs</a>
     <a href="mailto:ntu-deepspeed@e.ntu.edu.sg">Ask a question</a>
   </div>
 </aside>
@@ -84,6 +94,8 @@ git submodules; without them the image cannot be built. If you forgot:</p>
 submodule folders empty and there is no way to fill them in afterwards.</p>
 <hr>
 <h2 id="12-install-docker">1.2 Install Docker<a class="hl" href="#12-install-docker" title="Link to this section">#</a></h2>
+<div class="pf-tabs"><span class="eyebrow">Your platform</span><div class="pf-switch " role="group" aria-label="Platform"><button type="button" data-set-pf="linux">Linux</button><button type="button" data-set-pf="macos">macOS</button><button type="button" data-set-pf="windows">Windows</button></div></div>
+<div class="pf-block" data-pf="windows">
 <h3 id="windows-1011">Windows 10/11<a class="hl" href="#windows-1011" title="Link to this section">#</a></h3>
 <ol>
 <li>Install <a href="https://www.docker.com/products/docker-desktop/" data-ext="1">Docker Desktop for Windows</a>.</li>
@@ -104,6 +116,8 @@ run the scripts from PowerShell they will tell you so and stop.</p>
 <p>Cannot paste into the terminal? Right-click the window title → <em>Properties</em> →
 tick <em>Use Ctrl+Shift+C/V as Copy/Paste</em>.</p>
 </blockquote>
+</div>
+<div class="pf-block" data-pf="macos">
 <h3 id="macos">macOS<a class="hl" href="#macos" title="Link to this section">#</a></h3>
 <ol>
 <li>Install the Xcode command line tools if you have not already:
@@ -117,6 +131,8 @@ tick <em>Use Ctrl+Shift+C/V as Copy/Paste</em>.</p>
 and is slower than on an Intel Mac or a PC, but lap times are measured in
 simulated time, so <strong>a slow machine does not cost you points</strong>. See
 <a href="04-evaluation.html">chapter 4</a>.</p>
+</div>
+<div class="pf-block" data-pf="linux">
 <h3 id="ubuntu--debian-linux">Ubuntu / Debian Linux<a class="hl" href="#ubuntu--debian-linux" title="Link to this section">#</a></h3>
 <ol>
 <li>Install <a href="https://docs.docker.com/engine/install/ubuntu/" data-ext="1">Docker Engine</a>.</li>
@@ -129,31 +145,32 @@ simulated time, so <strong>a slow machine does not cost you points</strong>. See
    <code>sh
    docker run --rm hello-world</code></li>
 </ol>
+</div>
 <hr>
 <h2 id="13-build-the-image">1.3 Build the image<a class="hl" href="#13-build-the-image" title="Link to this section">#</a></h2>
 <p>Pick the folder for your platform. The commands below use Linux; swap in
 <code>macos</code> or <code>windows</code> as appropriate.</p>
 <div class="code"><pre><code><span class="nb">cd</span><span class="w"> </span>~/Recruitment_Hackathon_2627
-./install/linux/setup.sh
+./install/<span class="pf" data-pf="linux">linux</span><span class="pf" data-pf="macos">macos</span><span class="pf" data-pf="windows">windows</span>/setup.sh
 </code></pre><span class="code-lang">shell</span></div>
 <p>This takes <strong>15 to 30 minutes</strong> the first time: it pulls the ROS 2 Jazzy base
 image and installs the simulator's stack, which includes JAX, OpenCV and Qt.
 Later builds are cached and take seconds.</p>
 <p>If a build step fails, read the last few lines of output — the Dockerfile
-checks its own work and says which step broke and why. <code>./install/linux/setup.sh
+checks its own work and says which step broke and why. <code>./install/<span class="pf" data-pf="linux">linux</span><span class="pf" data-pf="macos">macos</span><span class="pf" data-pf="windows">windows</span>/setup.sh
 --no-cache</code> forces a clean rebuild.</p>
 <hr>
 <h2 id="14-start-the-container">1.4 Start the container<a class="hl" href="#14-start-the-container" title="Link to this section">#</a></h2>
-<div class="code"><pre><code>./install/linux/run.sh
+<div class="code"><pre><code>./install/<span class="pf" data-pf="linux">linux</span><span class="pf" data-pf="macos">macos</span><span class="pf" data-pf="windows">windows</span>/run.sh
 </code></pre><span class="code-lang">shell</span></div>
 <p>You land in a shell inside the container, at <code>/hackathon</code>. ROS is already
 sourced.</p>
 <p>For more terminals — and you will want three or four — open new host terminals
 and run:</p>
-<div class="code"><pre><code>./install/linux/shell.sh
+<div class="code"><pre><code>./install/<span class="pf" data-pf="linux">linux</span><span class="pf" data-pf="macos">macos</span><span class="pf" data-pf="windows">windows</span>/shell.sh
 </code></pre><span class="code-lang">shell</span></div>
 <p>To shut everything down:</p>
-<div class="code"><pre><code>./install/linux/stop.sh
+<div class="code"><pre><code>./install/<span class="pf" data-pf="linux">linux</span><span class="pf" data-pf="macos">macos</span><span class="pf" data-pf="windows">windows</span>/stop.sh
 </code></pre><span class="code-lang">shell</span></div>
 <h3 id="where-the-simulator-window-appears">Where the simulator window appears<a class="hl" href="#where-the-simulator-window-appears" title="Link to this section">#</a></h3>
 <div class="tbl"><table>
@@ -179,7 +196,7 @@ and run:</p>
 </tbody>
 </table></div>
 <p>If nothing appears on Linux or WSL, fall back to the browser:</p>
-<div class="code"><pre><code>./install/linux/run.sh<span class="w"> </span>--novnc
+<div class="code"><pre><code>./install/<span class="pf" data-pf="linux">linux</span><span class="pf" data-pf="macos">macos</span><span class="pf" data-pf="windows">windows</span>/run.sh<span class="w"> </span>--novnc
 </code></pre><span class="code-lang">shell</span></div>
 <h3 id="gpu">GPU<a class="hl" href="#gpu" title="Link to this section">#</a></h3>
 <p>If an NVIDIA GPU is visible, <code>run.sh</code> attaches it automatically and falls back
@@ -225,7 +242,7 @@ group. On Windows, check Settings → Resources → WSL integration.</p>
 Submodules are not checked out: <code>git submodule update --init --recursive</code>. If
 that does nothing, you downloaded a ZIP — clone properly instead.</p>
 <p><strong>The build fails at <code>apt-get</code> or <code>pip</code></strong>
-Force a clean rebuild: <code>./install/linux/setup.sh --no-cache</code>. A half-cached
+Force a clean rebuild: <code>./install/<span class="pf" data-pf="linux">linux</span><span class="pf" data-pf="macos">macos</span><span class="pf" data-pf="windows">windows</span>/setup.sh --no-cache</code>. A half-cached
 layer from an interrupted attempt is the usual cause.</p>
 <p><strong>No simulator window</strong>
 Use <code>--novnc</code> and open <a href="http://localhost:8080/vnc.html" data-ext="1">http://localhost:8080/vnc.html</a>. On Linux also check
@@ -233,7 +250,7 @@ Use <code>--novnc</code> and open <a href="http://localhost:8080/vnc.html" data-
 <p><strong>RViz is black, or the window is blank</strong>
 Give it a few seconds on the first launch. If it stays black, software
 rendering usually fixes it:</p>
-<div class="code"><pre><code><span class="nv">LIBGL_ALWAYS_SOFTWARE</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>./install/linux/run.sh
+<div class="code"><pre><code><span class="nv">LIBGL_ALWAYS_SOFTWARE</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>./install/<span class="pf" data-pf="linux">linux</span><span class="pf" data-pf="macos">macos</span><span class="pf" data-pf="windows">windows</span>/run.sh
 </code></pre><span class="code-lang">shell</span></div>
 <p><strong>The car does not move</strong>
 Check something is publishing:</p>
@@ -256,7 +273,7 @@ does <strong>not</strong> affect your score — timing uses simulated time. Clos
 (<code>ros2 launch roboracer_referee simulator.launch.py rviz:=false</code>) or run
 evaluations with <code>--headless</code> to claw back speed.</p>
 <p><strong>Port 8080 is already in use</strong></p>
-<div class="code"><pre><code><span class="nv">NOVNC_PORT</span><span class="o">=</span><span class="m">8081</span><span class="w"> </span>./install/macos/run.sh
+<div class="code"><pre><code><span class="nv">NOVNC_PORT</span><span class="o">=</span><span class="m">8081</span><span class="w"> </span>./install/<span class="pf" data-pf="linux">linux</span><span class="pf" data-pf="macos">macos</span><span class="pf" data-pf="windows">windows</span>/run.sh
 </code></pre><span class="code-lang">shell</span></div>
 <hr>
 <p>Next: <strong><a href="02-simulator.html">2. The simulator</a></strong></p>
@@ -264,7 +281,7 @@ evaluations with <code>--headless</code> to claw back speed.</p>
     <nav class="pager"><a class="prev" href="index.html"><span class="arw">&larr;</span><span><span class="k">Previous</span><span class="t">Overview</span></span></a><a class="next" href="02-simulator.html"><span><span class="k">Next</span><span class="t">The simulator</span></span><span class="arw">&rarr;</span></a></nav>
     <div class="src">Source &middot; <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track1/docs/01-setup.md">docs/01-setup.md</a></div>
   </main>
-  <nav class="toc" aria-label="On this page"><div class="nav-lbl">On this page</div><ul><li><a href="#11-get-the-repository">1.1 Get the repository</a></li><li><a href="#12-install-docker">1.2 Install Docker</a><ul><li><a href="#windows-1011">Windows 10/11</a></li><li><a href="#macos">macOS</a></li><li><a href="#ubuntu--debian-linux">Ubuntu / Debian Linux</a></li></ul></li><li><a href="#13-build-the-image">1.3 Build the image</a></li><li><a href="#14-start-the-container">1.4 Start the container</a><ul><li><a href="#where-the-simulator-window-appears">Where the simulator window appears</a></li><li><a href="#gpu">GPU</a></li></ul></li><li><a href="#15-build-the-workspace-and-drive">1.5 Build the workspace and drive</a></li><li><a href="#16-check-your-environment-is-sane">1.6 Check your environment is sane</a></li><li><a href="#17-troubleshooting">1.7 Troubleshooting</a></li></ul></nav>
+  <nav class="toc" aria-label="On this page"><div class="nav-lbl">On this page</div><ul><li><a href="#11-get-the-repository">1.1 Get the repository</a></li><li><a href="#12-install-docker">1.2 Install Docker</a><ul><li data-pf="windows"><a href="#windows-1011">Windows 10/11</a></li><li data-pf="macos"><a href="#macos">macOS</a></li><li data-pf="linux"><a href="#ubuntu--debian-linux">Ubuntu / Debian Linux</a></li></ul></li><li><a href="#13-build-the-image">1.3 Build the image</a></li><li><a href="#14-start-the-container">1.4 Start the container</a><ul><li><a href="#where-the-simulator-window-appears">Where the simulator window appears</a></li><li><a href="#gpu">GPU</a></li></ul></li><li><a href="#15-build-the-workspace-and-drive">1.5 Build the workspace and drive</a></li><li><a href="#16-check-your-environment-is-sane">1.6 Check your environment is sane</a></li><li><a href="#17-troubleshooting">1.7 Troubleshooting</a></li></ul></nav>
 </div>
 <footer class="ft"><div class="ft-in">
   <span>NTU DeepSpeed &middot; Recruitment Hackathon 26/27</span>
