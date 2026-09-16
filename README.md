@@ -31,14 +31,14 @@ Once completed, repeat the `Docker Setup` step in the installation guide below.
    ```
 6. Clone this repository
    ```sh
-   git clone https://github.com/NTU-Autonomous-Racing-Team/F1Tenth_Workshop_2627.git ~/F1Tenth_Workshop_2627/
+   git clone https://github.com/NTU-Autonomous-Racing-Team/Recruitment_Hackathon_2627.git ~/Recruitment_Hackathon_2627/
    ```
    > If you can't copy paste, right click powershell then navigate to `Properties > Tick "Use Ctrl+Shift+C/V as copy paste`"
 8. Docker Setup
     - Setting up docker container
       
       ```sh
-      cd ~/F1Tenth_Workshop_2627/install_windows/
+      cd ~/Recruitment_Hackathon_2627/install_windows/
       sudo docker network create f1tenth_net
       sudo docker build -t f1tenth_gym_ros .
       ```
@@ -73,13 +73,13 @@ Once completed, repeat the `Docker Setup` step in the installation guide below.
 2.  Clone this repository
    
      ```sh
-     git clone https://github.com/NTU-Autonomous-Racing-Team/F1Tenth_Workshop_2627.git ~/F1Tenth_Workshop_2627/
+     git clone https://github.com/NTU-Autonomous-Racing-Team/Recruitment_Hackathon_2627.git ~/Recruitment_Hackathon_2627/
      ```
 3. Launch Docker
 4. Docker Setup
     - Setting up docker containers
       ```sh
-      cd ~/F1Tenth_Workshop_2627/install_macos/
+      cd ~/Recruitment_Hackathon_2627/install_macos/
       docker compose -p f1tenth_gym_ros up -d
       ```
     
@@ -96,13 +96,13 @@ Once completed, repeat the `Docker Setup` step in the installation guide below.
 3. Clone this repository
    
     ```sh
-    git clone https://github.com/NTU-Autonomous-Racing-Team/F1Tenth_Workshop_2627.git ~/F1Tenth_Workshop_2627/
+    git clone https://github.com/NTU-Autonomous-Racing-Team/Recruitment_Hackathon_2627.git ~/Recruitment_Hackathon_2627/
     ```
     
 5. Docker Setup
     - Setting up docker container      
       ```sh
-      cd ~/F1Tenth_Workshop_2627/install_linux/
+      cd ~/Recruitment_Hackathon_2627/install_linux/
       sudo docker network create f1tenth_net
       sudo docker build -t f1tenth_gym_ros .
       ```
