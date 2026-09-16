@@ -11,6 +11,18 @@ ros2 run roboracer_baselines gap_follower
 ros2 run roboracer_baselines pure_pursuit
 ```
 
+### What they actually do on this circuit
+
+Measured over a full 10-lap run on `icra26`, with the defaults as shipped:
+
+| | Lap time | Collisions | 10 laps |
+| --- | ---: | ---: | ---: |
+| **Pure pursuit** (follows a path, uses odometry) | 39.904 s | 0 | 399.0 s |
+| **Gap follower** (reactive, LiDAR only) | 58.001 s | 0 | 580.2 s |
+| **Wall follower** (reactive, LiDAR only) | — | — | does not finish |
+
+Two things worth reading off that table. The path follower is **31% faster** than the best reactive algorithm, for one reason: it knows what is coming. And the runs are repeatable to the millisecond — across ten laps pure pursuit varied by 0.001 s — because judging switches the LiDAR noise off and measures in simulated seconds.
+
 Score any of them exactly as the judges would:
 
 ```sh
@@ -35,8 +47,13 @@ the wall and oscillating about it.
 
 **Good for:** proving your setup works. It is about 40 lines of real logic.
 
-**Where it breaks:** it only knows about one wall. A hairpin, a gap in the
-barrier, or a corner in the other direction and it drives straight on.
+**It does not complete icra26.** The best settings we found manage one timed
+lap before hitting the collision limit, and that is the algorithm rather than
+the tuning: it steers from two LiDAR beams aimed at one wall, and this circuit
+keeps taking that wall away. The cone rows are gaps rather than surfaces, and
+the infield hairpins put the followed wall behind the car. It is shipped
+because watching it fail is the clearest possible argument for the next two
+algorithms — not because it is a contender.
 
 Tune `target_distance`, `kp`/`kd`, and `projection_distance`. If it wobbles,
 raise `projection_distance` before you touch the gains.
@@ -67,9 +84,19 @@ Speed scales down with steering angle and with how short the gap ahead is.
 once it can see it, so it is always later on the brakes and earlier off the
 throttle than it needs to be. On a fast, flowing circuit that costs a lot.
 
-Worth tuning: `bubble_radius` (too small and it clips, too large and it refuses
-gaps it would fit through), `disparity_threshold`, `car_half_width` — your real
-safety margin — and the speed limits.
+**The defaults are tuned for this circuit and are much more conservative than
+follow-the-gap usually needs:** 1.8 m/s rather than 6, and a 2.2 rad field of
+view rather than the full 3.14. That last one was the difference between
+finishing and not. A wide view lets the deepest reading fall down a side
+opening — the mouth of the infield, the lane between two cone rows — and the
+car turns into it. Narrowing the view to roughly the width of the corridor
+keeps its attention on the track ahead.
+
+Worth tuning: `field_of_view` first, then `bubble_radius` (too small and it
+clips, too large and it refuses gaps it would fit through),
+`disparity_threshold`, `car_half_width` — your real safety margin — and the
+speed limits. `max_steering` is at the car's true limit of 0.41 rad; the 0.34
+you will see elsewhere leaves a third of the steering unused.
 
 ---
 

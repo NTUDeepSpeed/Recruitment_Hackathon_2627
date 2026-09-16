@@ -161,9 +161,11 @@ jobs:
           if [ "${MODE}" = "submission" ]; then
             race "team_driver" "team_driver" "driver"
           else
-            race "baseline_gap_follower"  "roboracer_baselines" "gap_follower"
-            race "baseline_wall_follower" "roboracer_baselines" "wall_follower"
-            race "baseline_pure_pursuit"  "roboracer_baselines" "pure_pursuit"
+            # wall_follower is deliberately absent: it cannot complete this
+            # circuit (see docs/03-baselines.md), so racing it would only ever
+            # report a disqualification.
+            race "baseline_gap_follower" "roboracer_baselines" "gap_follower"
+            race "baseline_pure_pursuit" "roboracer_baselines" "pure_pursuit"
           fi
 
           # The container writes as root through the bind mount.
