@@ -282,6 +282,14 @@ to add it to.</p>
 entry on GitHub Actions whenever you push, and writes the result to the
 workflow summary. It is the same referee with the same settings, so a green run
 means your entry will at least start on judging day.</p>
+<blockquote>
+<p><strong>The workflow is for reference only. It never decides your result.</strong>
+Your score comes from the organisers' run on the judging machine
+(<a href="#48-judging-day">§4.8</a>) — three runs, best attempt, rule 23. A green
+Judge run tells you the entry builds, starts and finishes; the times it
+prints are an indication and nothing more. Nothing it reports is scored,
+and a quick time here wins nothing.</p>
+</blockquote>
 <p>It runs in two stages:</p>
 <div class="tbl"><table>
 <thead>
@@ -356,7 +364,8 @@ to force the baselines even when you have an entry:</p>
 below real time. That does <strong>not</strong> change your lap times — they are measured in
 simulated seconds (§4.3) — but it does mean a run takes a while, and a driver
 that only just fits its control loop here may behave differently on the judging
-machine. The real result is a scored run on the machine in §4.8.</p>
+machine. Nothing CI reports is scored: the result that counts is the
+organisers' run on the machine in <a href="#48-judging-day">§4.8</a>.</p>
 <hr>
 <h2 id="47-watching-a-run">4.7 Watching a run<a class="hl" href="#47-watching-a-run" title="Link to this section">#</a></h2>
 <p>With RViz open you get, live:</p>

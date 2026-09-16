@@ -193,6 +193,11 @@ by the ratio of times.</p>
 <p>The judges run each submission <strong>three times</strong> and take the best attempt.
     The simulator is not perfectly deterministic, and nobody should lose on a
     single unlucky run.</p>
+<p><strong>That run, on the judging machine, is the only one that scores.</strong> The
+GitHub Actions <strong>Judge</strong> workflow races your entry too, but it is for
+reference — it tells you the entry builds and runs, on hardware that is
+neither yours nor ours. Nothing it reports counts towards the leaderboard.
+See <a href="04-evaluation.html#46-automated-judging-on-every-push">§4.6</a>.</p>
 </li>
 <li>
 <p>Results are computed by

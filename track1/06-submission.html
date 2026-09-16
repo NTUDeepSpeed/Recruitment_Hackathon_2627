@@ -161,7 +161,8 @@ they did.</p>
 <p>Pushing runs the same thing on GitHub Actions and writes the result to the
 workflow summary — see
 <a href="04-evaluation.html#46-automated-judging-on-every-push">§4.6</a>. Check it is green
-before you tell us you are done.</p>
+before you tell us you are done — green means your entry runs, not that it is
+fast, and none of the times it prints are scored.</p>
 <hr>
 <h2 id="63-submissionmd-template">6.3 <code>SUBMISSION.md</code> template<a class="hl" href="#63-submissionmd-template" title="Link to this section">#</a></h2>
 <div class="code"><pre><code><span class="gh"># Team &lt;name&gt;</span>
@@ -253,7 +254,8 @@ recruitment decision, not the leaderboard.</p>
 <li>[ ] <code>./scripts/evaluate.sh --team &lt;team&gt; --runs 1</code> gives <code>COMPLETE</code></li>
 <li>[ ] Your own judged runs committed in <code>results/submitted/</code>, unedited, with
       the machine described in <code>SUBMISSION.md</code></li>
-<li>[ ] The <strong>Judge</strong> workflow is green on your submitted branch</li>
+<li>[ ] The <strong>Judge</strong> workflow is green on your submitted branch (a check that
+      your entry runs, not a score — the organisers' run decides that)</li>
 <li>[ ] No build artefacts committed, and no result files outside
       <code>results/submitted/</code></li>
 <li>[ ] <code>SUBMISSION.md</code> filled in, including AI usage and attributions</li>
