@@ -126,7 +126,10 @@ counts. The short version:
 - **Teams of 3 to 5.**
 - **Deadline: 18 October 2026, 23:59 SGT.** Late entries are not scored.
 - **AI assistants are allowed.** You will be asked to explain your code at the
-  interview, so do not submit anything you cannot defend.
+  interview — generally, not line by line — so do not submit anything you
+  cannot defend. A learned policy is held to the same standard, and meets it
+  the same way: explain how you trained it and why, not what each weight
+  means.
 - **Do not modify the judging environment.** Check yourself with
   `./scripts/verify_judging_env.sh`.
 - **Score (out of 100):**

@@ -224,7 +224,15 @@ ten laps is worth exactly as much as one quick one.
 
 38. Code you cannot explain will not count in your favour, however fast it is.
     This is a recruitment hackathon; we are hiring for understanding, not for
-    prompt output.
+    prompt output. "Explain" means generally, not line by line: what it does,
+    why it is built that way, what you rejected, where it breaks.
+
+    This applies to learned components exactly as it does to hand-written ones,
+    and it is satisfied the same way. Nobody is asked to account for an
+    individual weight. If you can explain the method that produced them — what
+    the model takes in and puts out, how it was trained, on what data or in
+    what environment, under what reward or loss, how you validated it, and
+    where it fails — then the model is explained, and it counts in full.
 
 39. Third-party code and open-source algorithms are fine, with attribution in
     your `SUBMISSION.md`. Copying another team's entry is not.
@@ -240,7 +248,8 @@ ten laps is worth exactly as much as one quick one.
     - **Replacing the algorithm.** Reinforcement learning, MPC, imitation
       learning, or anything else that is not a tuned version of the baselines
       we gave you. The bar is that you can explain what it does, why you chose
-      it, and what its failure modes are — not that it wins.
+      it, how you produced it — the training setup included, if it was
+      trained — and what its failure modes are; not that it wins.
     - **Own localisation.** A particle filter, scan matching or similar,
       replacing `/ego_racecar/odom`, that you can explain thoroughly.
     - **Own racing line generation** computed from the map at runtime rather
