@@ -106,7 +106,10 @@ just say so.
 
 ## Anything precomputed
 A map, a racing line, trained weights. What is computed offline, which script
-produces it, and how to regenerate it from scratch.
+produces it, and how to regenerate it from scratch. For trained weights, say
+how they were trained as well — environment or dataset, reward or loss, roughly
+how long, and how you decided the result was good. That description is what we
+discuss at the interview, not the weights themselves.
 
 ## Dependencies we added
 Everything in `requirements.txt` / `apt-packages.txt`, with one line each on
@@ -139,6 +142,8 @@ Every team is interviewed after the race. Expect roughly 30 minutes.
 - Why that approach and not the others?
 - What does this parameter do, and what happens if we double it?
 - Show us a change you made that did not work, and how you knew.
+- If any of it is learned: how did you train it, why that way, and how do you
+  know it works?
 - How does your throttle become a speed? What happens when it is wrong?
 - How would you handle a track twice as fast? An obstacle mid-corner?
 - You have never seen this circuit. What in your design made that survivable?
