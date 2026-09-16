@@ -105,8 +105,14 @@ if [ "${SKIP_BUILD}" = "0" ]; then
         || die "colcon build failed. Fix the build errors above, or pass --no-build to skip this."
 fi
 
+# ROS and colcon setup scripts read unset variables, so `set -u` would abort
+# the moment we source one. Lift it for the source, then put it back.
 # shellcheck disable=SC1091
-[ -f "${RACE_WS}/install/local_setup.bash" ] && source "${RACE_WS}/install/local_setup.bash"
+if [ -f "${RACE_WS}/install/local_setup.bash" ]; then
+    set +u
+    source "${RACE_WS}/install/local_setup.bash"
+    set -u
+fi
 
 ros2 pkg executables "${DRIVER_PKG}" 2>/dev/null | grep -q " ${DRIVER_EXEC}$" || die \
 "Could not find executable '${DRIVER_EXEC}' in package '${DRIVER_PKG}'.

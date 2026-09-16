@@ -34,9 +34,20 @@ full 1.80 m width of the corridor. The car is placed 3 m before it facing `+x`,
 and laps run **counter-clockwise**: east along the bottom straight, north up
 the right-hand side, west across the top, south down the left.
 
-A lap is about 55 m down the middle of the track. `track_tool.py validate`
+A lap is about 78 m down the middle of the track. `track_tool.py validate`
 confirms a closed lap exists for a car of real width, which is the check worth
 re-running after any edit to `tracks.yaml`.
+
+Two things decide that route, and both matter:
+
+- **Clearance, 0.35 m.** Not the car's half width (0.155 m) but the radius its
+  corners sweep when turning. Plan with less and the search threads gaps the
+  car cannot take, which shows up as a car that scrapes the same places every
+  lap.
+- **Cone rows are sealed.** Neighbouring cones are joined into solid barriers
+  before the search runs, so no path can thread between them. Cones sit 0.25 to
+  0.50 m apart and the car is 0.31 m wide, so without this a shortest-path
+  search goes straight through a slalom. See rule 11.
 
 ## The centreline is not a racing line
 

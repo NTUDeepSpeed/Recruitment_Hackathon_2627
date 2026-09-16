@@ -63,7 +63,7 @@ and a speed. That is the whole interface.
 | **Car** | Ackermann steering, 0.33 m wheelbase, 0.31 × 0.58 m, steering limited to ±0.4189 rad |
 | **Sensor** | 819-beam LiDAR, 270° field of view, 25 m range |
 | **Localisation** | Ground-truth pose on `/ego_racecar/odom` — **allowed and recommended** |
-| **Track** | `icra26`, in this repository. 17 x 18 m, about 55 m a lap, cone slaloms and a hairpin complex. |
+| **Track** | `icra26`, in this repository. 17 x 18 m, about 78 m a lap, cone slaloms and a hairpin complex. |
 | **Scored on** | Your single fastest lap, and your time for 10 consecutive laps |
 | **Penalties** | +10 s on the lap for each collision; more than 10 collisions is a disqualification |
 | **Judged on** | One machine: i9-14900HX, 32 GB, RTX 5060 Laptop. Times are in simulated seconds, so your own hardware does not affect your score. |

@@ -40,36 +40,46 @@ Where this page and any other document disagree, this page wins.
    - **10 timed laps**, run consecutively.
 10. A lap counts when the car crosses the start/finish line in the racing
     direction. Crossing it backwards does not count.
-11. The car is placed on the grid by the referee at the start of every run.
+11. **Cone rows are barriers. Do not drive between the cones.** A line of cones
+    marks the edge of the course exactly as a wall does; the gaps between them
+    are not a route, they are a consequence of the cones being separate
+    objects. Go around the end of a row, never through it.
+
+    The gaps are wide enough to squeeze a car through — 0.25 to 0.50 m
+    against a 0.31 m car — which is why this is written down rather than left
+    to the geometry. A run that threads a cone row is not scored, and the
+    shipped centreline is generated with those gaps sealed so it cannot suggest
+    one (`scripts/track_tool.py --link-cones`).
+12. The car is placed on the grid by the referee at the start of every run.
     Once a run starts there is no manual intervention.
-12. A run that does not complete all 10 timed laps within **900 seconds of
+13. A run that does not complete all 10 timed laps within **900 seconds of
     simulated time** is recorded as DNF and scores zero for both components.
-13. A car that does not move for **15 seconds of simulated time** is recorded as
+14. A car that does not move for **15 seconds of simulated time** is recorded as
     DNF.
 
 ---
 
 ## 5.4 Collisions
 
-14. Every collision adds a **10-second penalty** to the lap on which it
+15. Every collision adds a **10-second penalty** to the lap on which it
     happened. Penalties are included in both your fastest lap and your 10-lap
     total.
-15. **More than 10 collisions in a run is a disqualification** for that run.
-16. A collision is counted at most once per second of simulated time, and
+16. **More than 10 collisions in a run is a disqualification** for that run.
+17. A collision is counted at most once per second of simulated time, and
     **continuous contact keeps counting**: a car scraping along a barrier
     accrues a fresh collision, and a fresh 10-second penalty, every second
     it stays there. A car that ends up wedged against a wall is therefore
     disqualified after about eleven seconds of contact. See
     [§4.4](04-evaluation.md#44-how-collisions-are-counted).
-17. Collisions during the out lap or the warm-up lap count towards the limit in
-    rule 15, but carry no time penalty, because there is no scored lap to apply
+18. Collisions during the out lap or the warm-up lap count towards the limit in
+    rule 16, but carry no time penalty, because there is no scored lap to apply
     it to.
 
 ---
 
 ## 5.5 Scoring
 
-18. Two components, 50 points each, scored **relative to the best team**:
+19. Two components, 50 points each, scored **relative to the best team**:
 
     | Component | Points | Formula |
     | --- | --- | --- |
@@ -79,19 +89,19 @@ Where this page and any other document disagree, this page wins.
     The fastest team in each component gets the full 50. Everyone else is scaled
     by the ratio of times.
 
-19. **Leaderboard score = fastest-lap points + 10-lap points**, out of 100,
+20. **Leaderboard score = fastest-lap points + 10-lap points**, out of 100,
     ranked highest first.
 
-20. Both components use times **after** collision penalties.
+21. Both components use times **after** collision penalties.
 
-21. Only a run with status `COMPLETE` scores. A disqualified or DNF run scores
+22. Only a run with status `COMPLETE` scores. A disqualified or DNF run scores
     **zero for both components**.
 
-22. The judges run each submission **three times** and take the best attempt.
+23. The judges run each submission **three times** and take the best attempt.
     The simulator is not perfectly deterministic, and nobody should lose on a
     single unlucky run.
 
-23. Results are computed by
+24. Results are computed by
     [`scripts/leaderboard.py`](../scripts/leaderboard.py), which is in this
     repository. You can run it yourself.
 
@@ -113,7 +123,7 @@ ten laps is worth exactly as much as one quick one.
 
 ## 5.6 The judging environment
 
-24. **Do not modify the judging environment.** That means:
+25. **Do not modify the judging environment.** That means:
     - `race_ws/src/roboracer_referee/`
     - `docker/` — Dockerfile, compose files, entrypoint
     - `maps/` — the circuit, its metadata and `tracks.yaml`
@@ -123,18 +133,18 @@ ten laps is worth exactly as much as one quick one.
     Editing the map to move a wall is the clearest possible case of this, and
     it is checked.
 
-25. Verify before you submit:
+26. Verify before you submit:
     ```sh
     ./scripts/verify_judging_env.sh
     ```
     It checks file hashes, looks for files added into protected directories, and
     confirms the submodule pins.
 
-26. An entry that modifies the judging environment is **not scored**. If you
+27. An entry that modifies the judging environment is **not scored**. If you
     genuinely believe something in it is broken, raise it with the organisers
     before the deadline rather than patching around it.
 
-27. Your code must not publish to, or otherwise interfere with, the referee's
+28. Your code must not publish to, or otherwise interfere with, the referee's
     topics: `/initialpose`, `/referee/*`, `/clock`,
     `/ego_racecar/collision`.
 
@@ -142,7 +152,7 @@ ten laps is worth exactly as much as one quick one.
 
 ## 5.7 What your code may use
 
-28. **Inputs you may read:**
+29. **Inputs you may read:**
 
     | Topic | |
     | --- | --- |
@@ -151,21 +161,21 @@ ten laps is worth exactly as much as one quick one.
     | `/map` | The static occupancy grid |
     | `/tf`, `/tf_static` | Transforms |
 
-29. **Output:** `/drive`, plus any topics of your own under `/driver/...` for
+30. **Output:** `/drive`, plus any topics of your own under `/driver/...` for
     visualisation and debugging.
 
-30. **Ground-truth odometry is explicitly permitted.** Building your own
+31. **Ground-truth odometry is explicitly permitted.** Building your own
     localisation is not required and is genuinely difficult. If you do build
     one, and can explain it thoroughly at the interview, it earns **bonus marks**
-    — see rule 39.
+    — see rule 40.
 
-31. **Offline precomputation is allowed.** Optimising a racing line before the
+32. **Offline precomputation is allowed.** Optimising a racing line before the
     run is real racing practice. But it must be produced by code you submit, and
     it must be reproducible from the map alone. Hand-tuned waypoints typed in
     from watching the car are not in the spirit of this and will not survive the
     interview.
 
-32. **Extra packages are allowed, but you must declare them.** Anything you
+33. **Extra packages are allowed, but you must declare them.** Anything you
     declare is installed into the image when it is built, so it is there during
     judging. Anything you do not declare will not be:
 
@@ -188,11 +198,11 @@ ten laps is worth exactly as much as one quick one.
     adding anything, and check the simulator still starts: the build fails
     loudly if a package breaks it.
 
-33. Your driver must remain a ROS 2 node launched as
+34. Your driver must remain a ROS 2 node launched as
     `ros2 run team_driver driver`. You may add files, modules and extra
     executables inside `team_driver`, but keep that entry point working.
 
-34. Keep your control loop real-time capable. The simulator publishes scans at
+35. Keep your control loop real-time capable. The simulator publishes scans at
     roughly 40 Hz; a callback that takes longer than that will miss data. Timing
     is in simulated seconds, so a slow machine costs you nothing — but slow code
     still costs you lap time.
@@ -201,29 +211,29 @@ ten laps is worth exactly as much as one quick one.
 
 ## 5.8 AI assistance
 
-35. **Using AI assistants is permitted.** ChatGPT, Claude, Copilot,
+36. **Using AI assistants is permitted.** ChatGPT, Claude, Copilot,
     Cursor — all fine.
 
-36. You are responsible for everything you submit. At the interview, any member
+37. You are responsible for everything you submit. At the interview, any member
     may be asked to explain any part of the code: why it is written that way,
     what happens if a parameter changes, why the alternative approach was
     rejected.
 
-37. Code you cannot explain will not count in your favour, however fast it is.
+38. Code you cannot explain will not count in your favour, however fast it is.
     This is a recruitment hackathon; we are hiring for understanding, not for
     prompt output.
 
-38. Third-party code and open-source algorithms are fine, with attribution in
+39. Third-party code and open-source algorithms are fine, with attribution in
     your `SUBMISSION.md`. Copying another team's entry is not.
 
 ---
 
 ## 5.9 Interview and bonus marks
 
-39. Every team is interviewed after the race. The leaderboard decides the
+40. Every team is interviewed after the race. The leaderboard decides the
     ranking; the interview decides recruitment.
 
-40. Bonus marks, awarded at the interview and separate from the leaderboard:
+41. Bonus marks, awarded at the interview and separate from the leaderboard:
     - **Replacing the algorithm.** Reinforcement learning, MPC, imitation
       learning, or anything else that is not a tuned version of the baselines
       we gave you. The bar is that you can explain what it does, why you chose
@@ -239,24 +249,24 @@ ten laps is worth exactly as much as one quick one.
 
 ## 5.10 Conduct
 
-41. Do not interfere with another team's work, machines or submissions.
-42. Do not attack, overload or attempt to gain access to the organisers'
+42. Do not interfere with another team's work, machines or submissions.
+43. Do not attack, overload or attempt to gain access to the organisers'
     infrastructure.
-43. Do not attempt to make the referee report a result other than what the car
+44. Do not attempt to make the referee report a result other than what the car
     actually did. Exploiting a bug in the judging environment is the same as
     modifying it.
-44. If you find a bug in the judging environment, report it. Teams that report a
+45. If you find a bug in the judging environment, report it. Teams that report a
     genuine bug before the deadline are credited, not penalised.
 
 ---
 
 ## 5.11 Judges' discretion
 
-45. The organisers may adjust or clarify these rules before the deadline. Any
+46. The organisers may adjust or clarify these rules before the deadline. Any
     change is announced in the team channel and reflected here.
-46. In a situation these rules do not cover, the organisers decide, and will
+47. In a situation these rules do not cover, the organisers decide, and will
     explain the reasoning.
-47. The organisers' decisions on scoring and disqualification are final.
+48. The organisers' decisions on scoring and disqualification are final.
 
 ---
 

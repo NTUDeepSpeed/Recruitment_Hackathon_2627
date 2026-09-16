@@ -190,7 +190,7 @@ It runs in two stages:
 
 **Checks failing blocks the race.** That is deliberate: the one most likely to
 trip is the judging-environment check, and an entry that modifies it is not
-scored (rule 26), so there is no point racing it.
+scored (rule 27), so there is no point racing it.
 
 ### Entry or template?
 
@@ -262,7 +262,7 @@ if Docker cannot attach it. `--gpu` forces it on, `--no-gpu` off.
 
 **The GPU is usable.** The container is ROS 2 Jazzy on Ubuntu 24.04, so Python
 3.12, and CUDA builds of PyTorch, JAX and CuPy all support a compute capability
-12.0 card. Declare what you need in `requirements.txt` (rule 32) and it is
+12.0 card. Declare what you need in `requirements.txt` (rule 33) and it is
 installed into the image.
 
 The simulator itself deliberately stays on the CPU (`JAX_PLATFORMS=cpu`): it is

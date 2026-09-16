@@ -39,7 +39,7 @@ this repository.
 | --- | --- |
 | Map | [`maps/icra26.pgm`](../maps/icra26.pgm) + [`maps/icra26.yaml`](../maps/icra26.yaml) |
 | Size | 17.0 × 18.2 m at 5 cm per pixel |
-| Lap | about 55 m down the middle of the track |
+| Lap | about 78 m down the middle of the track |
 | Start/finish | 1.80 m wide straight, the line at `x = +1.32` |
 | Grid slot | `(-1.68, -0.01)` facing `+x`, 3 m before the line |
 | Direction | Counter-clockwise: east along the bottom straight, north up the right-hand side, west across the top, south down the left |

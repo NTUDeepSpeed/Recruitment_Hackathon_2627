@@ -130,7 +130,7 @@ fine; not knowing what your teammates built is not.
 **Bonus marks** are available for replacing the algorithm outright (RL, MPC,
 imitation learning — anything beyond tuning the baselines), your own
 localisation, runtime racing-line generation, and clear engineering — see
-[rule 40](05-rules.md#59-interview-and-bonus-marks). These affect the
+[rule 41](05-rules.md#59-interview-and-bonus-marks). These affect the
 recruitment decision, not the leaderboard.
 
 ---

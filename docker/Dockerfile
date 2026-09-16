@@ -137,7 +137,7 @@ RUN set -euxo pipefail; \
 # 5. Build the simulator workspace
 # ---------------------------------------------------------------------------
 RUN set -euxo pipefail; \
-    source /opt/ros/${ROS_DISTRO}/setup.bash; \
+    set +u; source /opt/ros/${ROS_DISTRO}/setup.bash; set -u; \
     cd ${SIM_WS}; \
     colcon build --symlink-install; \
     test -f ${SIM_WS}/install/local_setup.bash

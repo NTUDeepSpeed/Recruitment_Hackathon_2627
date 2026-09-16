@@ -24,9 +24,10 @@ default: icra26
 tracks:
   icra26:
     description: >-
-      The official hackathon circuit. A 17 x 18 m closed course, roughly 57 m
+      The official hackathon circuit. A 17 x 18 m closed course, roughly 78 m
       per lap, with a 1.8 m wide start/finish straight, two cone slaloms on the
-      right-hand side and a tight hairpin complex in the infield.
+      right-hand side and a tight hairpin complex in the infield. Cone rows are
+      barriers: the course goes around their ends, never between them.
 
     map_path: /hackathon/maps/icra26
     map_image_ext: .pgm

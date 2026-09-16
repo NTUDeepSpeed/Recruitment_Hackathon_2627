@@ -40,7 +40,9 @@ ARGUMENTS = [
     ("output_dir", "/hackathon/results", "Where the result JSON is written"),
     ("simulator", "true", "Also start the simulator"),
     ("rviz", "true", "Open RViz (ignored when simulator:=false)"),
-    ("driver_delay_s", "5.0", "Seconds to let the simulator settle before the driver starts"),
+    ("referee_delay_s", "5.0", "Seconds to let the simulator settle before the referee starts"),
+    ("driver_delay_s", "15.0", "Seconds before the driver starts; must be after the referee has "
+                               "placed the car, or the car is driven off the grid mid-placement"),
     ("timed_laps", "10", "Number of scored laps"),
     ("warmup_laps", "1", "Unscored laps before timing starts"),
     ("wall_timeout_s", "1800", "Hard wall-clock watchdog on the whole run, in seconds"),
@@ -93,10 +95,20 @@ def _setup(context, *_args, **_kwargs):
                               "rviz": arg("rviz")}.items(),
         ))
 
-    # The driver waits for the simulator: publishing a drive command before the
-    # bridge is listening just loses it, and the referee would sit in
-    # "waiting for the driver node" for no reason.
-    actions.append(TimerAction(period=float(arg("driver_delay_s")), actions=[driver, referee]))
+    # Order matters. The referee teleports the car onto the grid, and a driver
+    # that is already publishing will drive it straight back off again - the car
+    # then spends the whole startup racing unsupervised and is usually in a wall
+    # by the time the green flag drops. So: simulator settles, referee starts and
+    # parks the car, and only then does the driver come up.
+    referee_delay = float(arg("referee_delay_s"))
+    driver_delay = float(arg("driver_delay_s"))
+    if driver_delay <= referee_delay:
+        raise RuntimeError(
+            f"driver_delay_s ({driver_delay}) must be greater than referee_delay_s "
+            f"({referee_delay}); the referee has to place the car before the driver moves it."
+        )
+    actions.append(TimerAction(period=referee_delay, actions=[referee]))
+    actions.append(TimerAction(period=driver_delay, actions=[driver]))
 
     actions.append(RegisterEventHandler(OnProcessExit(
         target_action=referee,

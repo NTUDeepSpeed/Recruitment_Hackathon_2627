@@ -161,7 +161,7 @@ outright is encouraged, and earns bonus marks at the interview if you can
 explain what you built and why.**
 
 The environment supports it: ROS 2 Jazzy on Python 3.12, a GPU on the judging
-machine, and any package you declare (rule 32). Some directions that fit:
+machine, and any package you declare (rule 33). Some directions that fit:
 
 - **Reinforcement learning.** The simulator is a Gymnasium environment, so you
   can train a policy directly against it, outside ROS, and then ship the
@@ -180,13 +180,13 @@ machine, and any package you declare (rule 32). Some directions that fit:
 
 Two warnings worth taking seriously. A learned policy that cannot say *why* it
 did something is hard to defend in an interview, and this is a recruitment
-hackathon — rule 37 applies to a neural network exactly as it applies to an
+hackathon — rule 38 applies to a neural network exactly as it applies to an
 `if` statement. And ambition is not scored: ten clean laps from a well-tuned
 gap follower beats a half-trained policy that crashes out on lap three. Get
 something finishing first, then get clever.
 
-Whatever you build, put it behind `ros2 run team_driver driver` (rule 33) and
-declare its dependencies (rule 32).
+Whatever you build, put it behind `ros2 run team_driver driver` (rule 34) and
+declare its dependencies (rule 33).
 
 ---
 

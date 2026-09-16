@@ -232,6 +232,84 @@ class OccupancyMap:
 
     # -- clearance ------------------------------------------------------
 
+    # -- cones ----------------------------------------------------------
+
+    def cone_components(self, max_span: float = 0.9,
+                        max_cells: int = 400) -> List[Tuple[float, float]]:
+        """Centres of the small free-standing obstacles, i.e. the cones.
+
+        Anything occupied, isolated, and smaller than max_span across counts.
+        The track walls are one huge component and never qualify.
+        """
+        from collections import deque                              # noqa: PLC0415
+
+        w, h = self.width, self.height
+        occupied = [self._is_obstacle(v) for v in self.pixels]
+        seen = bytearray(w * h)
+        centres = []
+        for start in range(w * h):
+            if not occupied[start] or seen[start]:
+                continue
+            queue = deque([start])
+            seen[start] = 1
+            cells = []
+            while queue:
+                i = queue.popleft()
+                cells.append(i)
+                row, col = divmod(i, w)
+                for dr in (-1, 0, 1):
+                    for dc in (-1, 0, 1):
+                        rr, cc = row + dr, col + dc
+                        if self.in_bounds(rr, cc):
+                            j = rr * w + cc
+                            if occupied[j] and not seen[j]:
+                                seen[j] = 1
+                                queue.append(j)
+            if len(cells) > max_cells:
+                continue
+            rows = [i // w for i in cells]
+            cols = [i % w for i in cells]
+            span = max(max(rows) - min(rows) + 1, max(cols) - min(cols) + 1) * self.resolution
+            if not 0.1 < span < max_span:
+                continue
+            centres.append(self.to_world((min(rows) + max(rows)) // 2,
+                                         (min(cols) + max(cols)) // 2))
+        return centres
+
+    def link_cones(self, max_distance: float = 1.1) -> int:
+        """Join neighbouring cones into solid barriers, and return how many.
+
+        A line of cones is a wall in every sense that matters to a race, but to
+        an occupancy grid it is a row of small islands with drivable gaps
+        between them. A shortest-path search will happily thread one, and a car
+        following that line is cutting the course. Filling the gaps in makes
+        threading geometrically impossible rather than merely against the rules.
+
+        max_distance must sit between the spacing within a row and the width of
+        the lane between rows, or the lanes get sealed too. On this circuit
+        those are about 0.95 m and 1.9 m.
+        """
+        centres = self.cone_components()
+        links = 0
+        for i, a in enumerate(centres):
+            for b in centres[i + 1:]:
+                if math.dist(a, b) <= max_distance:
+                    self._draw_barrier(a, b)
+                    links += 1
+        if links:
+            self._clearance = None          # the geometry changed
+        return links
+
+    def _draw_barrier(self, a: Point, b: Point) -> None:
+        steps = max(2, int(math.dist(a, b) / (self.resolution / 2.0)))
+        for i in range(steps + 1):
+            t = i / steps
+            row, col = self.to_cell(a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1]))
+            for dr in (-1, 0, 1):
+                for dc in (-1, 0, 1):
+                    if self.in_bounds(row + dr, col + dc):
+                        self.pixels[(row + dr) * self.width + col + dc] = 0
+
     def clearance(self) -> List[float]:
         """Distance in metres from each cell to the nearest obstacle."""
         if self._clearance is None:
@@ -302,7 +380,8 @@ NEIGHBOURS = ((-1, 0, 1.0), (1, 0, 1.0), (0, -1, 1.0), (0, 1, 1.0),
               (1, -1, 1.41421356), (1, 1, 1.41421356))
 
 
-def find_lap(grid: OccupancyMap, track, half_width: float = 0.22) -> Optional[List[Point]]:
+def find_lap(grid: OccupancyMap, track, half_width: float = 0.35,
+             link_cones: float = 1.1) -> Optional[List[Point]]:
     """Cheapest closed lap that crosses the finish line in the racing direction.
 
     The finish line is cut out of the grid, then a shortest path is searched
@@ -314,6 +393,10 @@ def find_lap(grid: OccupancyMap, track, half_width: float = 0.22) -> Optional[Li
     from roboracer_referee.geometry import signed_side          # noqa: PLC0415
 
     w, h = grid.width, grid.height
+    if link_cones:
+        joined = grid.link_cones(link_cones)
+        if joined:
+            print(f"  sealed {joined} gap(s) between neighbouring cones")
     clear = grid.clearance()
     drivable = [c >= half_width for c in clear]
 
@@ -556,7 +639,7 @@ def cmd_validate(args) -> int:
                     notes.append(f"line {length:.2f} m, gaps {past_a:.2f}/{past_b:.2f} m")
 
             if not problems:
-                lap = find_lap(grid, track, args.half_width)
+                lap = find_lap(grid, track, args.half_width, args.link_cones)
                 if lap is None:
                     problems.append(
                         "no closed lap exists through this finish line for a car "
@@ -591,7 +674,7 @@ def cmd_centerline(args) -> int:
     grid = OccupancyMap(yaml_path)
 
     print(f"Tracing a lap of '{name}' for a car {2 * args.half_width:.2f} m wide...")
-    lap = find_lap(grid, track, args.half_width)
+    lap = find_lap(grid, track, args.half_width, args.link_cones)
     if lap is None:
         raise SystemExit(
             "No closed lap found. Either the finish line is wrong, or the corridor "
@@ -631,8 +714,16 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--config", default=DEFAULT_CONFIG, help="path to tracks.yaml")
-    parser.add_argument("--half-width", type=float, default=0.22,
-                        help="car half width plus safety margin, in metres")
+    # Not the car's half width (0.155 m) - the radius its corners sweep when
+    # turning, hypot(half_length, half_width) = 0.33 m. Clearance below that
+    # lets the search thread a gap the car cannot actually take, which shows up
+    # as a car that scrapes the same three places on every lap.
+    parser.add_argument("--half-width", type=float, default=0.35,
+                        help="clearance the car needs along the path, in metres "
+                             "(default 0.35: its turning envelope, not its half width)")
+    parser.add_argument("--link-cones", type=float, default=1.1,
+                        help="join cones closer together than this into a solid "
+                             "barrier, so no path can thread a cone row. 0 disables.")
     sub = parser.add_subparsers(dest="command", required=True)
 
     val = sub.add_parser("validate", help="check tracks.yaml against the map image")
