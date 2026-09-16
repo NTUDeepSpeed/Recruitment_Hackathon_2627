@@ -69,7 +69,7 @@ interface.
 | **Control** | **Normalised throttle and steering, both in [−1, 1].** Not a speed request — closing that loop is your problem |
 | **Localisation** | Ground-truth pose on `.../ips` and `.../odom` — **allowed and recommended** |
 | **Track** | The ICRA 2026 compete circuit, inside the simulator. A long, narrow loop about 6.3 × 18.2 m with a 54 m lap, bounded by 33 cm air ducts, roughly 2 m wide and under 1 m at its tightest. |
-| **Scored on** | Your single fastest lap, and your adjusted race time over 10 laps |
+| **Scored on** | Your single fastest lap, and your time for 10 consecutive laps |
 | **Penalties** | +10 s on the lap for each collision; more than 10 collisions is a disqualification |
 | **Judged on** | One machine: i9-14900HX, 32 GB, RTX 5060 Laptop. Times come from the simulator's own clock, so your hardware does not affect your score. |
 
@@ -160,12 +160,13 @@ counts. The short version:
   | | Weight | Formula |
   | --- | --- | --- |
   | Fastest single lap | 50 | `50 × (fastest lap of any team ÷ your fastest lap)` |
-  | Adjusted race time | 50 | `50 × (fastest race time of any team ÷ your race time)` |
+  | 10-lap total | 50 | `50 × (fastest 10-lap total of any team ÷ your 10-lap total)` |
 
-  Ten laps from a standing start. Each collision adds 10 s to the lap it
-  happened on — about half a lap here — and more than 10 collisions in a run is
-  a disqualification. Both baselines we ship are disqualified before the flag,
-  so contact is the first problem to solve, not the last.
+  An out lap and one warm-up lap are granted before timing starts. Each
+  collision adds 10 s to the lap it happened on — about half a lap here — and
+  more than 10 collisions in a run is a disqualification. Both baselines we
+  ship are disqualified before the flag, so contact is the first problem to
+  solve, not the last.
 
 - **Bonus marks** at the interview, for work you can explain properly:
   replacing the ground-truth pose with your own localisation; building a map of

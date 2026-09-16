@@ -100,7 +100,7 @@ How you turn a desired speed into a throttle command, and how well it holds.
 just say so.
 
 ## Results on our own machine
-| Best lap | Adjusted race time | Collisions | Runs attempted |
+| Best lap | 10-lap total | Collisions | Runs attempted |
 | --- | --- | --- | --- |
 | ... | ... | ... | ... |
 

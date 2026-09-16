@@ -201,6 +201,19 @@ def test_warmup_laps_are_not_scored():
     assert session.best_lap().number == 1
 
 
+def test_the_official_format_scores_laps_three_to_twelve():
+    """Out lap and warm-up lap are driven and thrown away; ten laps are scored."""
+    session = RaceSession(Rules())                      # official defaults
+    sim = Simulator()
+    start(session, sim)
+    run_laps(session, sim, [30.0, 25.0] + [20.0] * 10)  # 12 laps driven
+
+    assert session.status is Status.COMPLETE
+    assert session.timed_laps_done == 10
+    assert abs(session.total_time() - 200.0) < 1e-6, "only the ten timed laps count"
+    assert len(session.result()["warmup_laps"]) == 2
+
+
 def test_collisions_on_a_warmup_lap_count_but_carry_no_penalty():
     session = RaceSession(Rules(timed_laps=1, warmup_laps=1, max_collisions=10))
     sim = Simulator()
@@ -308,12 +321,13 @@ def test_invalid_rules_are_rejected():
         raise AssertionError(f"{bad} should have been rejected")
 
 
-def test_the_official_defaults_are_the_icra_format():
+def test_the_official_defaults_match_track_1():
     rules = Rules()
     assert rules.timed_laps == 10
     assert rules.collision_penalty_s == 10.0
-    assert rules.warmup_laps == 0, "ICRA races a standing start"
     assert rules.max_collisions == 10, "more than ten contacts is a disqualification"
+    assert rules.warmup_laps == 2, "an out lap and a warm-up lap, neither scored"
+    assert rules.session_timeout_s == 900.0
 
 
 def test_the_default_limit_stops_a_scruffy_run():

@@ -89,12 +89,12 @@ class Referee(Node):
         self.declare_parameter("track_config", "")
         self.declare_parameter("output_dir", "/hackathon/results")
 
-        self.declare_parameter("warmup_laps", 0)
+        self.declare_parameter("warmup_laps", 2)
         self.declare_parameter("timed_laps", 10)
         self.declare_parameter("collision_penalty_s", 10.0)
         self.declare_parameter("max_collisions", 10)   # negative disables the limit
         self.declare_parameter("min_lap_time_s", 1.0)
-        self.declare_parameter("session_timeout_s", 600.0)
+        self.declare_parameter("session_timeout_s", 900.0)
         self.declare_parameter("stuck_speed_mps", 0.05)
         self.declare_parameter("stuck_timeout_s", 15.0)
 
@@ -208,7 +208,7 @@ class Referee(Node):
             f" run id        : {self.run_id}\n"
             f" track         : {self.track.name}\n"
             f" simulator     : AutoDRIVE (compete build)\n"
-            f" format        : {rules.warmup_laps} warm-up lap(s) + {rules.timed_laps} timed lap(s)\n"
+            f" format        : {rules.warmup_laps} unscored lap(s) + {rules.timed_laps} timed lap(s)\n"
             f" penalty       : +{rules.collision_penalty_s:.0f}s per collision{limit}\n"
             f" results       : {self.output_dir}\n"
             "========================================================="
@@ -608,8 +608,7 @@ class Referee(Node):
         if result["scored"]:
             lines.append(f" BEST LAP      : {result['best_lap_time']:.3f} s  "
                          f"(lap {result['best_lap_number']})")
-            lines.append(f" RACE TIME     : {result['total_time']:.3f} s  "
-                         f"(adjusted, {rules.timed_laps} laps)")
+            lines.append(f" {rules.timed_laps}-LAP TOTAL  : {result['total_time']:.3f} s")
         else:
             lines.append(" NOT SCORED - this run does not produce leaderboard times.")
 

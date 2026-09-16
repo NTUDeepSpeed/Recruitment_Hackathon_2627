@@ -48,7 +48,8 @@ inside the container directly.
 
 | | |
 | --- | --- |
-| Start | Standing start from the grid, as ICRA runs it. No out lap, no warm-up lap. |
+| Out lap | From the grid slot to the start/finish line. Not timed. |
+| Warm-up lap | One full lap, granted, not scored. |
 | Timed laps | 10 consecutive laps. |
 | Collision | +10 s added to the lap it happened on. |
 | Disqualification | More than 10 collisions in a run. |
@@ -56,14 +57,15 @@ inside the container directly.
 Two numbers come out:
 
 - **Best lap** — your fastest single timed lap, including its penalties.
-- **Adjusted race time** — the sum of all ten timed laps, including penalties.
-  This is the number the ICRA leaderboard ranks on.
+- **10-lap total** — the sum of all ten timed laps, including penalties.
 
 The scoring formula that turns those into leaderboard points is in
 [chapter 5](05-rules.md).
 
-Lap one includes getting off the line, so it is normally your slowest. That is
-the same for everyone.
+Twelve laps are driven and ten are scored. The out lap is a full circuit here
+rather than the short run-up it is on Track 1, because the simulator spawns the
+car most of a lap before its own start/finish line — so the standing start is
+absorbed by a lap nobody scores.
 
 A run can also end early:
 
@@ -71,7 +73,7 @@ A run can also end early:
 | --- | --- |
 | `COMPLETE` | All 10 laps finished. This is the only status that scores. |
 | `DISQUALIFIED` | More than 10 collisions. |
-| `DNF_TIMEOUT` | Ran out of session time (600 simulated seconds) before 10 laps. |
+| `DNF_TIMEOUT` | Ran out of session time (900 simulated seconds) before 10 laps. |
 | `DNF_STUCK` | The car did not move for 15 simulated seconds. |
 | `ABORTED` | Interrupted, or the referee never got as far as racing. |
 
@@ -182,7 +184,7 @@ cannot cost you anything.
   "best_lap_number": 7,
   "fastest_raw_lap_time": 21.235, // the quickest lap as driven - a different lap here
   "fastest_raw_lap_number": 8,
-  "total_time": 238.912,          // adjusted race time - what you are scored on
+  "total_time": 238.912,          // 10-lap total - what you are scored on
   "total_time_raw": 228.912,      // before penalties
   "total_penalty_s": 10.0,
   "race_time_s": 228.9,

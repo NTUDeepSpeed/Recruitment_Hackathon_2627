@@ -37,7 +37,11 @@ class Status(str, Enum):
 class Rules:
     """The scoring rules. Defaults are the official Track 2 settings."""
 
-    warmup_laps: int = 0               # ICRA runs a standing start; no lap is given away
+    # Unscored laps before timing starts: the out lap and the warm-up lap, as
+    # on Track 1. The simulator spawns the car most of a circuit before its own
+    # start/finish line, so the run from the grid closes as a lap in its own
+    # right - it is the out lap, and the granted warm-up lap follows it.
+    warmup_laps: int = 2
     timed_laps: int = 10
     collision_penalty_s: float = 10.0  # added to the lap the collision happened on
     max_collisions: int = 10           # strictly more than this disqualifies
@@ -45,7 +49,7 @@ class Rules:
     # a run to finish and be ranked however scruffy it was. Not the default:
     # a car that has hit the boundary eleven times is not racing any more.
     min_lap_time_s: float = 1.0        # a "lap" quicker than this is telemetry noise
-    session_timeout_s: float = 600.0
+    session_timeout_s: float = 900.0
     stuck_speed_mps: float = 0.05
     stuck_timeout_s: float = 15.0
 
@@ -247,7 +251,7 @@ class RaceSession:
             self.laps.append(Lap(number=self._laps_closed, kind="warmup",
                                  raw_time=raw, collisions=collisions, penalty_s=0.0))
             events.append(
-                f"Warm-up lap {self._laps_closed}/{self.rules.warmup_laps}: "
+                f"Unscored lap {self._laps_closed}/{self.rules.warmup_laps}: "
                 f"{raw:.3f}s (not scored)."
             )
             if self._laps_closed == self.rules.warmup_laps:
@@ -321,7 +325,7 @@ class RaceSession:
         return min(timed, key=lambda lap: lap.raw_time) if timed else None
 
     def total_time(self) -> Optional[float]:
-        """Adjusted race time: every timed lap, with its collision penalties."""
+        """Net time for the full set of timed laps, or None if not completed."""
         if not self.scored:
             return None
         return sum(lap.net_time for lap in self.timed())

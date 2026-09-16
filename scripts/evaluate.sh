@@ -17,7 +17,7 @@
 #   --driver-exec EXEC   executable name                    (default: driver)
 #   --driver-params FILE parameter YAML for the driver
 #   --laps N             scored laps                        (default: 10)
-#   --warmup N           unscored laps before timing        (default: 0)
+#   --warmup N           unscored laps before timing        (default: 2)
 #   --runs N             repeat and keep the best           (default: 1)
 #   --output DIR         where results land                 (default: <repo>/results)
 #   --headless           run the simulator with no graphics device and no RViz.
@@ -39,7 +39,7 @@ DRIVER_PKG="team_driver"
 DRIVER_EXEC="driver"
 DRIVER_PARAMS=""
 LAPS=10
-WARMUP=0
+WARMUP=2
 RUNS=1
 OUTPUT=""
 HEADLESS=1

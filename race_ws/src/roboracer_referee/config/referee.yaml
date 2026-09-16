@@ -17,8 +17,11 @@ referee:
     track_config: ""              # blank -> search the standard locations
 
     # --- race format ----------------------------------------------------
-    # ICRA 2026 races a standing start over ten laps, so no lap is given away.
-    warmup_laps: 0
+    # Unscored laps before timing starts: the out lap and the warm-up lap, as
+    # on Track 1. The simulator spawns the car most of a circuit before its own
+    # start/finish line, so the run from the grid closes as a lap in its own
+    # right - that is the out lap - and the granted warm-up lap follows it.
+    warmup_laps: 2
     timed_laps: 10
     collision_penalty_s: 10.0     # per contact with the track boundary
     # Strictly more than this disqualifies the run, as on Track 1. The referee
@@ -33,7 +36,7 @@ referee:
     min_lap_time_s: 1.0
 
     # --- run limits (simulated seconds) ---------------------------------
-    session_timeout_s: 600.0      # 10 minutes of simulated time for 10 laps
+    session_timeout_s: 900.0      # 15 minutes of simulated time for 12 laps
     stuck_speed_mps: 0.05
     stuck_timeout_s: 15.0
 

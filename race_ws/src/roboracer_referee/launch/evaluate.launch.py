@@ -48,7 +48,7 @@ ARGUMENTS = [
                               "is up, so the referee sees the first drive command and can "
                               "place the car before it moves"),
     ("timed_laps", "10", "Number of scored laps"),
-    ("warmup_laps", "0", "Unscored laps before timing starts"),
+    ("warmup_laps", "2", "Unscored laps before timing starts: out lap + warm-up lap"),
     ("wall_timeout_s", "1800", "Hard wall-clock watchdog on the whole run, in seconds"),
 ]
 

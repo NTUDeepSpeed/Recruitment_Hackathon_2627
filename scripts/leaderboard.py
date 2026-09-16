@@ -10,12 +10,11 @@
 
 Scoring, per docs/05-rules.md:
 
-    lap score   = 50 * (fastest single lap of any team / this team's fastest lap)
-    race score  = 50 * (fastest adjusted race time of any team / this team's)
-    total       = lap score + race score, out of 100
+    lap score        = 50 * (fastest single lap of any team / this team's fastest lap)
+    endurance score  = 50 * (fastest 10-lap total of any team / this team's 10-lap total)
+    total            = lap score + endurance score, out of 100
 
-"Adjusted race time" is every timed lap added up, plus 10 s for each contact
-with the track boundary. Both halves already include
+Both halves already include
 those penalties, because the referee applies them to the lap times before they
 reach this file. A team that was disqualified or did not finish scores zero and
 is listed separately.
@@ -32,7 +31,7 @@ import sys
 from typing import Dict, List, Optional
 
 LAP_WEIGHT = 50.0
-RACE_WEIGHT = 50.0
+ENDURANCE_WEIGHT = 50.0
 
 
 def load_results(paths: List[str]) -> List[dict]:
@@ -75,8 +74,7 @@ def best_run_per_team(results: List[dict]) -> Dict[str, dict]:
         if result.get("scored") and not current.get("scored"):
             best[team] = result
         elif result.get("scored") and current.get("scored"):
-            # Ranking is driven by the adjusted race time, so that is what
-            # "best" means when a team has several completed runs.
+            # Ranking is driven by the 10-lap total, so that is what "best" means.
             if _total(result) < _total(current):
                 best[team] = result
     return best
@@ -111,7 +109,7 @@ def rank(results: List[dict]) -> dict:
         fastest_total = min(_total(r) for r in scored.values())
         for team, result in scored.items():
             lap_score = LAP_WEIGHT * fastest_lap / _best_lap(result)
-            race_score = RACE_WEIGHT * fastest_total / _total(result)
+            endurance_score = ENDURANCE_WEIGHT * fastest_total / _total(result)
             rows.append({
                 "team": team,
                 "status": result["status"],
@@ -120,8 +118,8 @@ def rank(results: List[dict]) -> dict:
                 "collisions": result.get("collisions", 0),
                 "penalty_s": result.get("total_penalty_s", 0.0),
                 "lap_score": round(lap_score, 3),
-                "race_score": round(race_score, 3),
-                "total_score": round(lap_score + race_score, 3),
+                "endurance_score": round(endurance_score, 3),
+                "total_score": round(lap_score + endurance_score, 3),
                 "run_id": result.get("run_id", ""),
                 "track": result.get("track", ""),
                 "source": os.path.basename(result.get("_path", "")),
@@ -137,7 +135,7 @@ def rank(results: List[dict]) -> dict:
             "collisions": result.get("collisions", 0),
             "penalty_s": result.get("total_penalty_s", 0.0),
             "lap_score": 0.0,
-            "race_score": 0.0,
+            "endurance_score": 0.0,
             "total_score": 0.0,
             "run_id": result.get("run_id", ""),
             "track": result.get("track", ""),
@@ -175,7 +173,7 @@ def render_markdown(table: dict, title: str = "Leaderboard") -> str:
         out += ["No runs were scored.", ""]
         return "\n".join(out)
 
-    out += ["| # | Team | Best lap | Race time | Collisions | Lap pts | Race pts | **Total** | Status |",
+    out += ["| # | Team | Best lap | 10 laps | Collisions | Lap pts | Endurance pts | **Total** | Status |",
             "| ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |"]
     for row in table["rows"]:
         position = str(row["rank"]) if row["rank"] else "-"
@@ -183,7 +181,7 @@ def render_markdown(table: dict, title: str = "Leaderboard") -> str:
             f"| {position} | {row['team']} "
             f"| {_fmt(row['best_lap_time'])} | {_fmt(row['total_time'])} "
             f"| {row['collisions']} "
-            f"| {row['lap_score']:.2f} | {row['race_score']:.2f} "
+            f"| {row['lap_score']:.2f} | {row['endurance_score']:.2f} "
             f"| **{row['total_score']:.2f}** "
             f"| {_status_icon(row['status'])} {row['status']} |"
         )
@@ -246,8 +244,8 @@ def cmd_rank(args) -> int:
     for warning in table["warnings"]:
         print(f"warning: {warning}\n", file=sys.stderr)
 
-    header = (f"{'#':>3}  {'team':<22} {'best lap':>9} {'race':>10} "
-              f"{'coll':>5} {'lap':>7} {'race':>7} {'TOTAL':>8}  status")
+    header = (f"{'#':>3}  {'team':<22} {'best lap':>9} {'10 laps':>10} "
+              f"{'coll':>5} {'lap':>7} {'end':>7} {'TOTAL':>8}  status")
     print(header)
     print("-" * len(header))
     for row in table["rows"]:
@@ -255,7 +253,7 @@ def cmd_rank(args) -> int:
         print(f"{position}  {row['team'][:22]:<22} "
               f"{_fmt(row['best_lap_time']):>9} {_fmt(row['total_time']):>10} "
               f"{row['collisions']:>5} "
-              f"{row['lap_score']:>7.2f} {row['race_score']:>7.2f} "
+              f"{row['lap_score']:>7.2f} {row['endurance_score']:>7.2f} "
               f"{row['total_score']:>8.2f}  {row['status']}")
     print("-" * len(header))
     print(f"{table['scored_teams']} of {table['teams']} team(s) scored, "
@@ -269,7 +267,7 @@ def cmd_rank(args) -> int:
 
     if args.csv:
         fields = ["rank", "team", "status", "best_lap_time", "total_time", "collisions",
-                  "penalty_s", "lap_score", "race_score", "total_score",
+                  "penalty_s", "lap_score", "endurance_score", "total_score",
                   "track", "run_id", "source"]
         with open(args.csv, "w", newline="") as handle:
             writer = csv.DictWriter(handle, fieldnames=fields)

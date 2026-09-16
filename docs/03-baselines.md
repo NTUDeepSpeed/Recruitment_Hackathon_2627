@@ -62,7 +62,7 @@ of the gap follower, to show how much a single run tells you:
 | Best lap as scored | 41.433 s | 50.924 s | **39.056 s** |
 | Collisions | 40 | 47 | **29** |
 | Race time, before penalties | 221.1 s | 227.6 s | **203.9 s** |
-| **Adjusted race time** | 621.1 s | 697.6 s | **493.9 s** |
+| **10-lap total** | 621.1 s | 697.6 s | **493.9 s** |
 
 Two things to read off that.
 
@@ -71,11 +71,14 @@ quicker per lap *and* hits things less often, because it knows what is coming
 and the gap follower can only see 10 m. That is the whole argument for §3.4,
 and it is why "make the gap follower faster" is the wrong project.
 
-**Penalties dominate.** Even pure pursuit spends 290 seconds in penalties
-against 204 seconds of driving. Taking a second a lap off its pace would save
-10 seconds; getting it round cleanly would save 290. On its best run one lap
-came home in 19.87 s with no contact at all, so a clean lap is clearly
-available — it just is not repeatable yet.
+**Penalties dominate, and then they end the run.** Even pure pursuit spends 290
+seconds in penalties against 204 of driving — and at three collisions a lap it
+passes ten before the flag, so on the official settings **both baselines are
+disqualified**, the gap follower inside three laps and pure pursuit on lap
+four. The numbers above are what they would have scored had the limit not
+applied; treat them as pace, not as results. On its best run pure pursuit
+brought one lap home in 19.87 s with no contact at all, so a clean lap is
+clearly available. It just is not repeatable yet, and that is the whole job.
 
 Notice also how different the two gap-follower runs are: the same code, the
 same settings, 40 collisions one time and 47 the next, and a "best lap" nine

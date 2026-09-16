@@ -37,8 +37,15 @@ rules 33 and 34, because they matter.
    the AutoDRIVE Simulator `2026-icra` build — in the official Docker image
    built from this repository, on a single judging machine whose specification
    is published in [§4.8](04-evaluation.md#48-judging-day).
-9. A run is **10 timed laps from a standing start**. There is no out lap and no
-   warm-up lap; lap one includes getting off the line, for everyone.
+9. A run consists of:
+   - an **out lap** from the grid slot to the start/finish line — not timed;
+   - **one warm-up lap** — granted, not scored;
+   - **10 timed laps**, run consecutively.
+
+   The simulator spawns the car most of a circuit before its own start/finish
+   line, so the out lap closes as a lap in the simulator's count rather than
+   being a short run-up as it is on Track 1. Twelve laps are driven; ten are
+   scored.
 10. Laps are counted, and timed, by the simulator. The referee records what the
     simulator reports — see [§4.3](04-evaluation.md#43-the-simulator-does-the-timing-not-us).
 11. **The track boundary is a line of air ducts, and the gaps between them are
@@ -50,7 +57,7 @@ rules 33 and 34, because they matter.
     not scored.
 12. The car is placed on the grid by the referee at the start of every run.
     Once a run starts there is no manual intervention.
-13. A run that does not complete all 10 timed laps within **600 seconds of
+13. A run that does not complete all 10 timed laps within **900 seconds of
     simulated time** is recorded as DNF and scores zero for both components.
 14. A car that does not move for **15 seconds of simulated time** is recorded as
     DNF.
@@ -70,11 +77,9 @@ rules 33 and 34, because they matter.
     `…/collision_count` and applies the penalty; it does not do its own contact
     detection and there is nothing to tune. See
     [§4.4](04-evaluation.md#44-how-collisions-are-counted).
-18. At 10 seconds against a lap in the low twenties, a single contact costs
-    about half a lap and three of them cost more than a whole one — and ten of
-    them end your run. **Clean laps are worth more than fast ones.** Both
-    shipped baselines are disqualified before the flag, so this is not a
-    theoretical margin: it is the first problem to solve.
+18. Collisions during the out lap or the warm-up lap count towards the limit in
+    rule 16, but carry no time penalty, because there is no scored lap to apply
+    it to.
 
 ---
 
@@ -85,14 +90,12 @@ rules 33 and 34, because they matter.
     | Component | Points | Formula |
     | --- | --- | --- |
     | **Fastest single lap** | 50 | `50 × (fastest lap of any team ÷ your fastest lap)` |
-    | **Adjusted race time** | 50 | `50 × (fastest race time of any team ÷ your race time)` |
+    | **10-lap total** | 50 | `50 × (fastest 10-lap total of any team ÷ your 10-lap total)` |
 
-    "Adjusted race time" is all ten timed laps added up, plus 10 s per
-    collision — the ICRA metric, with the hackathon's penalty. The fastest team
-    in each component gets the full 50. Everyone else is scaled by the ratio of
-    times.
+    The fastest team in each component gets the full 50. Everyone else is scaled
+    by the ratio of times.
 
-20. **Leaderboard score = fastest-lap points + race-time points**, out of 100,
+20. **Leaderboard score = fastest-lap points + 10-lap points**, out of 100,
     ranked highest first.
 
 21. Both components use times **after** collision penalties.
@@ -108,15 +111,14 @@ rules 33 and 34, because they matter.
     [`scripts/leaderboard.py`](../scripts/leaderboard.py), which is in this
     repository. You can run it yourself.
 
-25. Where a tie-break is needed, adjusted race time decides it, as it does at
-    ICRA.
+25. Where a tie-break is needed, the 10-lap total decides it.
 
 ### Worked example
 
 Three teams finish. The fastest single lap of anyone is 20.50 s; the fastest
-adjusted race time is 228.90 s.
+10-lap total is 228.90 s.
 
-| Team | Best lap | Race time | Lap points | Race points | **Total** |
+| Team | Best lap | 10 laps | Lap points | Endurance points | **Total** |
 | --- | --- | --- | --- | --- | --- |
 | Alpha | 21.80 | 228.90 | 50 × 20.50/21.80 = **47.02** | 50 × 228.90/228.90 = **50.00** | **97.02** |
 | Bravo | 20.50 | 245.00 | 50 × 20.50/20.50 = **50.00** | 50 × 228.90/245.00 = **46.71** | **96.71** |
