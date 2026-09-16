@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>4. Evaluation &middot; Track 1 &middot; DeepSpeed Hackathon 26/27</title>
+<title>5. Evaluation &middot; Track 1 &middot; DeepSpeed Hackathon 26/27</title>
 <meta name="description" content="Everything in one repository — simulator, judging environment, reference algorithms and every official track. Ask the car for a speed and a steering angle; the sim closes the loop for you.">
 <meta name="color-scheme" content="dark light">
-<meta property="og:title" content="4. Evaluation &middot; Track 1 &middot; DeepSpeed Hackathon 26/27">
+<meta property="og:title" content="5. Evaluation &middot; Track 1 &middot; DeepSpeed Hackathon 26/27">
 <meta property="og:description" content="Everything in one repository — simulator, judging environment, reference algorithms and every official track. Ask the car for a speed and a steering angle; the sim closes the loop for you.">
 <meta property="og:type" content="article">
 <script>
@@ -64,7 +64,7 @@
   <div class="nav-lbl">Your platform</div>
   <div class="pf-switch pf-switch--nav" role="group" aria-label="Platform"><button type="button" data-set-pf="linux">Linux</button><button type="button" data-set-pf="macos">macOS</button><button type="button" data-set-pf="windows">Windows</button></div>
   <div class="nav-lbl">Track 1 &middot; Contents</div>
-  <ul class="nav-list"><li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-baselines.html"><span class="n">03</span><span>Baseline algorithms</span></a></li><li><a href="04-evaluation.html" aria-current="page"><span class="n">04</span><span>Evaluation</span></a></li><li><a href="05-rules.html"><span class="n">05</span><span>Rules</span></a></li><li><a href="06-submission.html"><span class="n">06</span><span>Submission</span></a></li><li><a href="07-workshop.html"><span class="n">07</span><span>ROS 2 primer</span></a></li></ul>
+  <ul class="nav-list"><li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-workshop.html"><span class="n">03</span><span>ROS 2 primer</span></a></li><li><a href="04-baselines.html"><span class="n">04</span><span>Baseline algorithms</span></a></li><li><a href="05-evaluation.html" aria-current="page"><span class="n">05</span><span>Evaluation</span></a></li><li><a href="06-rules.html"><span class="n">06</span><span>Rules</span></a></li><li><a href="07-submission.html"><span class="n">07</span><span>Submission</span></a></li></ul>
   <div class="nav-lbl">Elsewhere</div>
   <div class="nav-out">
     <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/tree/track1">Branch <code>track1</code></a>
@@ -72,22 +72,22 @@
   </div>
 </aside>
   <main class="main" id="doc">
-    <div class="crumb"><span class="red">Track 1</span><span class="sep">/</span><a href="index.html">Overview</a><span class="sep">/</span><span>Chapter 04</span></div>
+    <div class="crumb"><span class="red">Track 1</span><span class="sep">/</span><a href="index.html">Overview</a><span class="sep">/</span><span>Chapter 05</span></div>
     <article class="prose">
-      <h1>4. Evaluation</h1>
+      <h1>5. Evaluation</h1>
       <p>The judging environment is in this repository. The script that scores you on
 judging day is the same one you can run right now, against the same referee
 with the same settings. There are no surprises on the day — only a track you
 have not seen.</p>
 <hr>
-<h2 id="41-score-yourself">4.1 Score yourself<a class="hl" href="#41-score-yourself" title="Link to this section">#</a></h2>
+<h2 id="51-score-yourself">5.1 Score yourself<a class="hl" href="#51-score-yourself" title="Link to this section">#</a></h2>
 <div class="code"><pre><code><span class="c1"># From the host, with the container running</span>
 ./scripts/evaluate.sh<span class="w"> </span>--team<span class="w"> </span>your_team_name
 </code></pre><span class="code-lang">shell</span></div>
 <p>That builds the workspace, starts the simulator, starts your driver, runs the
 full race format and writes a result file to <code>results/</code>.</p>
 <p>Keep the result files from your final runs. Committing them is part of a
-submission — see <a href="06-submission.html#61-what-to-submit">§6.1</a>.</p>
+submission — see <a href="07-submission.html#71-what-to-submit">§7.1</a>.</p>
 <p>Useful variations:</p>
 <div class="code"><pre><code><span class="c1"># Three runs, keep the best — this is what the judges do</span>
 ./scripts/evaluate.sh<span class="w"> </span>--team<span class="w"> </span>your_team<span class="w"> </span>--runs<span class="w"> </span><span class="m">3</span><span class="w"> </span>--headless
@@ -103,7 +103,7 @@ lists every option.</p>
 <p>The script works from your host (it hops into the container for you) or from
 inside the container directly.</p>
 <hr>
-<h2 id="42-the-race-format">4.2 The race format<a class="hl" href="#42-the-race-format" title="Link to this section">#</a></h2>
+<h2 id="52-the-race-format">5.2 The race format<a class="hl" href="#52-the-race-format" title="Link to this section">#</a></h2>
 <div class="tbl"><table>
 <thead>
 <tr>
@@ -140,7 +140,7 @@ inside the container directly.</p>
 <li><strong>10-lap total</strong> — the sum of all ten timed laps, including penalties.</li>
 </ul>
 <p>The scoring formula that turns those into leaderboard points is in
-<a href="05-rules.html">chapter 5</a>.</p>
+<a href="06-rules.html">chapter 6</a>.</p>
 <p>A run can also end early:</p>
 <div class="tbl"><table>
 <thead>
@@ -173,7 +173,7 @@ inside the container directly.</p>
 </tbody>
 </table></div>
 <hr>
-<h2 id="43-everything-is-measured-in-simulated-time">4.3 Everything is measured in simulated time<a class="hl" href="#43-everything-is-measured-in-simulated-time" title="Link to this section">#</a></h2>
+<h2 id="53-everything-is-measured-in-simulated-time">5.3 Everything is measured in simulated time<a class="hl" href="#53-everything-is-measured-in-simulated-time" title="Link to this section">#</a></h2>
 <p><strong>This is the most important thing in this chapter.</strong> Lap times come from the
 simulator's own clock, not the wall clock.</p>
 <p>The physics runs at 100 Hz on a ROS timer. On a machine that cannot keep up,
@@ -196,7 +196,7 @@ valid.</p>
 misses scans. That is your code's problem, and it is a real one — keep the
 per-scan work bounded.</p>
 <hr>
-<h2 id="44-how-collisions-are-counted">4.4 How collisions are counted<a class="hl" href="#44-how-collisions-are-counted" title="Link to this section">#</a></h2>
+<h2 id="54-how-collisions-are-counted">5.4 How collisions are counted<a class="hl" href="#54-how-collisions-are-counted" title="Link to this section">#</a></h2>
 <p>The bridge publishes the simulator's own collision flag on
 <code>/ego_racecar/collision</code>, so the referee uses ground truth rather than guessing
 from "the car seems to have stopped".</p>
@@ -244,7 +244,7 @@ to add it to.</p>
 <p>The interval is <code>collision_interval_s</code> in
 <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track1/race_ws/src/roboracer_referee/config/referee.yaml" data-ext="1"><code>config/referee.yaml</code></a>.</p>
 <hr>
-<h2 id="45-reading-a-result-file">4.5 Reading a result file<a class="hl" href="#45-reading-a-result-file" title="Link to this section">#</a></h2>
+<h2 id="55-reading-a-result-file">5.5 Reading a result file<a class="hl" href="#55-reading-a-result-file" title="Link to this section">#</a></h2>
 <div class="code"><pre><code>{
   &quot;schema_version&quot;: 2,
   &quot;team&quot;: &quot;your_team_name&quot;,
@@ -277,7 +277,7 @@ to add it to.</p>
 ./scripts/leaderboard.py<span class="w"> </span>rank<span class="w"> </span>results/<span class="w"> </span>--csv<span class="w"> </span>leaderboard.csv
 </code></pre><span class="code-lang">shell</span></div>
 <hr>
-<h2 id="46-automated-judging-on-every-push">4.6 Automated judging on every push<a class="hl" href="#46-automated-judging-on-every-push" title="Link to this section">#</a></h2>
+<h2 id="56-automated-judging-on-every-push">5.6 Automated judging on every push<a class="hl" href="#56-automated-judging-on-every-push" title="Link to this section">#</a></h2>
 <p><a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track1/.github/workflows/judge.yml" data-ext="1"><code>.github/workflows/judge.yml</code></a> races your
 entry on GitHub Actions whenever you push, and writes the result to the
 workflow summary. It is the same referee with the same settings, so a green run
@@ -285,7 +285,7 @@ means your entry will at least start on judging day.</p>
 <blockquote>
 <p><strong>The workflow is for reference only. It never decides your result.</strong>
 Your score comes from the organisers' run on the judging machine
-(<a href="#48-judging-day">§4.8</a>) — three runs, best attempt, rule 23. A green
+(<a href="#58-judging-day">§5.8</a>) — three runs, best attempt, rule 23. A green
 Judge run tells you the entry builds, starts and finishes; the times it
 prints are an indication and nothing more. Nothing it reports is scored,
 and a quick time here wins nothing.</p>
@@ -362,12 +362,12 @@ to force the baselines even when you have an entry:</p>
 <h3 id="what-it-is-not">What it is not<a class="hl" href="#what-it-is-not" title="Link to this section">#</a></h3>
 <p>CI runs on a shared two-core runner with no GPU, so the simulator runs well
 below real time. That does <strong>not</strong> change your lap times — they are measured in
-simulated seconds (§4.3) — but it does mean a run takes a while, and a driver
+simulated seconds (§5.3) — but it does mean a run takes a while, and a driver
 that only just fits its control loop here may behave differently on the judging
 machine. Nothing CI reports is scored: the result that counts is the
-organisers' run on the machine in <a href="#48-judging-day">§4.8</a>.</p>
+organisers' run on the machine in <a href="#58-judging-day">§5.8</a>.</p>
 <hr>
-<h2 id="47-watching-a-run">4.7 Watching a run<a class="hl" href="#47-watching-a-run" title="Link to this section">#</a></h2>
+<h2 id="57-watching-a-run">5.7 Watching a run<a class="hl" href="#57-watching-a-run" title="Link to this section">#</a></h2>
 <p>With RViz open you get, live:</p>
 <ul>
 <li>the <strong>finish line</strong> in yellow, exactly as the referee sees it;</li>
@@ -376,7 +376,7 @@ organisers' run on the machine in <a href="#48-judging-day">§4.8</a>.</p>
 </ul>
 <p>The referee log prints each lap as it closes, with any penalty applied.</p>
 <hr>
-<h2 id="48-judging-day">4.8 Judging day<a class="hl" href="#48-judging-day" title="Link to this section">#</a></h2>
+<h2 id="58-judging-day">5.8 Judging day<a class="hl" href="#58-judging-day" title="Link to this section">#</a></h2>
 <h3 id="the-judging-machine">The judging machine<a class="hl" href="#the-judging-machine" title="Link to this section">#</a></h3>
 <p>Every submission is scored on one machine, so nobody is advantaged by hardware:</p>
 <div class="tbl"><table>
@@ -424,7 +424,7 @@ needing more will not fit. And your node still has to keep up with a ~40 Hz
 control loop; a heavyweight network that misses scans costs more time than it
 gains.</p>
 <p>Because lap times are measured in simulated seconds, none of this affects
-fairness — see §4.3.</p>
+fairness — see §5.3.</p>
 <p>For each submission the judges:</p>
 <ol>
 <li>Check out the entry, verify the judging environment is intact
@@ -444,9 +444,9 @@ it lands in the image at build time. No manual intervention once a run starts.
 Identical referee settings for every team.</p>
 <p>A run that fails to build, fails to start, or never publishes a drive command
 scores zero for the timing component. Test from a clean clone before you
-submit — see <a href="06-submission.html">chapter 6</a>.</p>
+submit — see <a href="07-submission.html">chapter 7</a>.</p>
 <hr>
-<h2 id="49-verifying-your-environment">4.9 Verifying your environment<a class="hl" href="#49-verifying-your-environment" title="Link to this section">#</a></h2>
+<h2 id="59-verifying-your-environment">5.9 Verifying your environment<a class="hl" href="#59-verifying-your-environment" title="Link to this section">#</a></h2>
 <div class="code"><pre><code>./scripts/verify_judging_env.sh
 </code></pre><span class="code-lang">shell</span></div>
 <p>It hashes every file a scored run depends on — the referee package, the
@@ -460,12 +460,12 @@ git<span class="w"> </span>submodule<span class="w"> </span>update<span class="w
 </code></pre><span class="code-lang">shell</span></div>
 <p><code>race_ws/src/team_driver/</code> is deliberately not protected. That is yours.</p>
 <hr>
-<p>Next: <strong><a href="05-rules.html">5. Rules</a></strong></p>
+<p>Next: <strong><a href="06-rules.html">6. Rules</a></strong></p>
     </article>
-    <nav class="pager"><a class="prev" href="03-baselines.html"><span class="arw">&larr;</span><span><span class="k">Previous</span><span class="t">Baseline algorithms</span></span></a><a class="next" href="05-rules.html"><span><span class="k">Next</span><span class="t">Rules</span></span><span class="arw">&rarr;</span></a></nav>
-    <div class="src">Source &middot; <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track1/docs/04-evaluation.md">docs/04-evaluation.md</a></div>
+    <nav class="pager"><a class="prev" href="04-baselines.html"><span class="arw">&larr;</span><span><span class="k">Previous</span><span class="t">Baseline algorithms</span></span></a><a class="next" href="06-rules.html"><span><span class="k">Next</span><span class="t">Rules</span></span><span class="arw">&rarr;</span></a></nav>
+    <div class="src">Source &middot; <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track1/docs/05-evaluation.md">docs/05-evaluation.md</a></div>
   </main>
-  <nav class="toc" aria-label="On this page"><div class="nav-lbl">On this page</div><ul><li><a href="#41-score-yourself">4.1 Score yourself</a></li><li><a href="#42-the-race-format">4.2 The race format</a></li><li><a href="#43-everything-is-measured-in-simulated-time">4.3 Everything is measured in simulated time</a></li><li><a href="#44-how-collisions-are-counted">4.4 How collisions are counted</a></li><li><a href="#45-reading-a-result-file">4.5 Reading a result file</a></li><li><a href="#46-automated-judging-on-every-push">4.6 Automated judging on every push</a><ul><li><a href="#entry-or-template">Entry or template?</a></li><li><a href="#running-it-by-hand">Running it by hand</a></li><li><a href="#what-it-is-not">What it is not</a></li></ul></li><li><a href="#47-watching-a-run">4.7 Watching a run</a></li><li><a href="#48-judging-day">4.8 Judging day</a><ul><li><a href="#the-judging-machine">The judging machine</a></li></ul></li><li><a href="#49-verifying-your-environment">4.9 Verifying your environment</a></li></ul></nav>
+  <nav class="toc" aria-label="On this page"><div class="nav-lbl">On this page</div><ul><li><a href="#51-score-yourself">5.1 Score yourself</a></li><li><a href="#52-the-race-format">5.2 The race format</a></li><li><a href="#53-everything-is-measured-in-simulated-time">5.3 Everything is measured in simulated time</a></li><li><a href="#54-how-collisions-are-counted">5.4 How collisions are counted</a></li><li><a href="#55-reading-a-result-file">5.5 Reading a result file</a></li><li><a href="#56-automated-judging-on-every-push">5.6 Automated judging on every push</a><ul><li><a href="#entry-or-template">Entry or template?</a></li><li><a href="#running-it-by-hand">Running it by hand</a></li><li><a href="#what-it-is-not">What it is not</a></li></ul></li><li><a href="#57-watching-a-run">5.7 Watching a run</a></li><li><a href="#58-judging-day">5.8 Judging day</a><ul><li><a href="#the-judging-machine">The judging machine</a></li></ul></li><li><a href="#59-verifying-your-environment">5.9 Verifying your environment</a></li></ul></nav>
 </div>
 <footer class="ft"><div class="ft-in">
   <span>NTU DeepSpeed &middot; Recruitment Hackathon 26/27</span>

@@ -64,7 +64,7 @@
   <div class="nav-lbl">Your platform</div>
   <div class="pf-switch pf-switch--nav" role="group" aria-label="Platform"><button type="button" data-set-pf="linux">Linux</button><button type="button" data-set-pf="macos">macOS</button><button type="button" data-set-pf="windows">Windows</button></div>
   <div class="nav-lbl">Track 2 &middot; Contents</div>
-  <ul class="nav-list"><li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html" aria-current="page"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-baselines.html"><span class="n">03</span><span>Baseline algorithms</span></a></li><li><a href="04-evaluation.html"><span class="n">04</span><span>Evaluation</span></a></li><li><a href="05-rules.html"><span class="n">05</span><span>Rules</span></a></li><li><a href="06-submission.html"><span class="n">06</span><span>Submission</span></a></li><li><a href="07-workshop.html"><span class="n">07</span><span>ROS 2 primer</span></a></li></ul>
+  <ul class="nav-list"><li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html" aria-current="page"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-workshop.html"><span class="n">03</span><span>ROS 2 primer</span></a></li><li><a href="04-baselines.html"><span class="n">04</span><span>Baseline algorithms</span></a></li><li><a href="05-evaluation.html"><span class="n">05</span><span>Evaluation</span></a></li><li><a href="06-rules.html"><span class="n">06</span><span>Rules</span></a></li><li><a href="07-submission.html"><span class="n">07</span><span>Submission</span></a></li></ul>
   <div class="nav-lbl">Elsewhere</div>
   <div class="nav-out">
     <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/tree/track2">Branch <code>track2</code></a>
@@ -177,7 +177,7 @@ wall, both of which will cost you if you ignore them:</p>
 <li><strong>The LiDAR sees through the gaps between ducts.</strong> A beam that slips between
    two of them reports the far side of the track, or nothing. A naive "steer at
    the deepest reading" therefore aims the car straight at a duct. Disparity
-   extension exists to fix exactly this — see <a href="03-baselines.html">chapter 3</a>.</li>
+   extension exists to fix exactly this — see <a href="04-baselines.html">chapter 4</a>.</li>
 <li><strong>The gaps are not a route.</strong> Going between two ducts is leaving the course.
    The simulator scores a collision when you touch one, so it enforces itself.</li>
 </ol>
@@ -461,7 +461,7 @@ is. Record your own and do better:</p>
 </code></pre><span class="code-lang">shell</span></div>
 <p><strong>None of this affects a scored run.</strong> The referee never opens a map; it reads
 the simulator's own lap and collision telemetry. See
-<a href="04-evaluation.html">chapter 4</a>. That separation is deliberate, and it is why the
+<a href="05-evaluation.html">chapter 5</a>. That separation is deliberate, and it is why the
 environment worked before this map existed.</p>
 <hr>
 <h2 id="210-vehicle-and-sensor-specifications">2.10 Vehicle and sensor specifications<a class="hl" href="#210-vehicle-and-sensor-specifications" title="Link to this section">#</a></h2>
@@ -589,9 +589,9 @@ default, not the car's limit. You can go to ±0.5236 rad and the simulator will
 honour it — but a sharper angle at speed is also how you spin, and the 3.2 rad/s
 rate limit means a step command does not arrive instantly however hard you ask.</p>
 <hr>
-<p>Next: <strong><a href="03-baselines.html">3. Baseline algorithms</a></strong></p>
+<p>Next: <strong><a href="03-workshop.html">3. ROS 2 primer</a></strong></p>
     </article>
-    <nav class="pager"><a class="prev" href="01-setup.html"><span class="arw">&larr;</span><span><span class="k">Previous</span><span class="t">Setup</span></span></a><a class="next" href="03-baselines.html"><span><span class="k">Next</span><span class="t">Baseline algorithms</span></span><span class="arw">&rarr;</span></a></nav>
+    <nav class="pager"><a class="prev" href="01-setup.html"><span class="arw">&larr;</span><span><span class="k">Previous</span><span class="t">Setup</span></span></a><a class="next" href="03-workshop.html"><span><span class="k">Next</span><span class="t">ROS 2 primer</span></span><span class="arw">&rarr;</span></a></nav>
     <div class="src">Source &middot; <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/docs/02-simulator.md">docs/02-simulator.md</a></div>
   </main>
   <nav class="toc" aria-label="On this page"><div class="nav-lbl">On this page</div><ul><li><a href="#21-how-the-pieces-fit-together">2.1 How the pieces fit together</a><ul><li><a href="#headless">Headless</a></li><li><a href="#the-circuit">The circuit</a></li></ul></li><li><a href="#22-topics">2.2 Topics</a><ul><li><a href="#what-you-read">What you read</a></li><li><a href="#what-you-write">What you write</a></li><li><a href="#what-you-must-not-write">What you must not write</a></li></ul></li><li><a href="#23-the-restricted-topics-and-what-this-hackathon-does-about-them">2.3 The restricted topics, and what this hackathon does about them</a></li><li><a href="#24-the-control-interface-is-not-a-speed-request">2.4 The control interface is not a speed request</a><ul><li><a href="#quality-of-service--read-this-before-you-debug-for-an-hour">Quality of service — read this before you debug for an hour</a></li></ul></li><li><a href="#25-the-lidar-scan">2.5 The LiDAR scan</a></li><li><a href="#26-ground-truth-pose--use-it">2.6 Ground-truth pose — use it</a></li><li><a href="#27-driving-by-hand">2.7 Driving by hand</a></li><li><a href="#28-rviz-and-foxglove">2.8 RViz and Foxglove</a></li><li><a href="#29-the-map">2.9 The map</a></li><li><a href="#210-vehicle-and-sensor-specifications">2.10 Vehicle and sensor specifications</a></li></ul></nav>

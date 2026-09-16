@@ -64,7 +64,7 @@
   <div class="nav-lbl">Your platform</div>
   <div class="pf-switch pf-switch--nav" role="group" aria-label="Platform"><button type="button" data-set-pf="linux">Linux</button><button type="button" data-set-pf="macos">macOS</button><button type="button" data-set-pf="windows">Windows</button></div>
   <div class="nav-lbl">Track 1 &middot; Contents</div>
-  <ul class="nav-list"><li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html" aria-current="page"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-baselines.html"><span class="n">03</span><span>Baseline algorithms</span></a></li><li><a href="04-evaluation.html"><span class="n">04</span><span>Evaluation</span></a></li><li><a href="05-rules.html"><span class="n">05</span><span>Rules</span></a></li><li><a href="06-submission.html"><span class="n">06</span><span>Submission</span></a></li><li><a href="07-workshop.html"><span class="n">07</span><span>ROS 2 primer</span></a></li></ul>
+  <ul class="nav-list"><li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html" aria-current="page"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-workshop.html"><span class="n">03</span><span>ROS 2 primer</span></a></li><li><a href="04-baselines.html"><span class="n">04</span><span>Baseline algorithms</span></a></li><li><a href="05-evaluation.html"><span class="n">05</span><span>Evaluation</span></a></li><li><a href="06-rules.html"><span class="n">06</span><span>Rules</span></a></li><li><a href="07-submission.html"><span class="n">07</span><span>Submission</span></a></li></ul>
   <div class="nav-lbl">Elsewhere</div>
   <div class="nav-out">
     <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/tree/track1">Branch <code>track1</code></a>
@@ -131,7 +131,7 @@ tick <em>Use Ctrl+Shift+C/V as Copy/Paste</em>.</p>
 <p>Apple Silicon works. The simulator runs under emulation for a few components
 and is slower than on an Intel Mac or a PC, but lap times are measured in
 simulated time, so <strong>a slow machine does not cost you points</strong>. See
-<a href="04-evaluation.html">chapter 4</a>.</p>
+<a href="05-evaluation.html">chapter 5</a>.</p>
 </div>
 <div class="pf-block" data-pf="linux">
 <h3 id="ubuntu--debian-linux">Ubuntu / Debian Linux<a class="hl" href="#ubuntu--debian-linux" title="Link to this section">#</a></h3>
@@ -205,7 +205,7 @@ to CPU-only if Docker cannot. Force it either way with <code>--gpu</code> or <co
 <p>The container is Python 3.12, so CUDA builds of PyTorch, JAX and CuPy do
 install and run. The simulator itself stays on the CPU by design
 (<code>JAX_PLATFORMS=cpu</code>) so that a judged run is reproducible; the GPU is there
-for your code. See <a href="04-evaluation.html#48-judging-day">chapter 4</a>.</p>
+for your code. See <a href="05-evaluation.html#58-judging-day">chapter 5</a>.</p>
 <hr>
 <h2 id="15-build-the-workspace-and-drive">1.5 Build the workspace and drive<a class="hl" href="#15-build-the-workspace-and-drive" title="Link to this section">#</a></h2>
 <p>Inside the container:</p>

@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>5. Rules &middot; Track 1 &middot; DeepSpeed Hackathon 26/27</title>
+<title>6. Rules &middot; Track 1 &middot; DeepSpeed Hackathon 26/27</title>
 <meta name="description" content="Everything in one repository — simulator, judging environment, reference algorithms and every official track. Ask the car for a speed and a steering angle; the sim closes the loop for you.">
 <meta name="color-scheme" content="dark light">
-<meta property="og:title" content="5. Rules &middot; Track 1 &middot; DeepSpeed Hackathon 26/27">
+<meta property="og:title" content="6. Rules &middot; Track 1 &middot; DeepSpeed Hackathon 26/27">
 <meta property="og:description" content="Everything in one repository — simulator, judging environment, reference algorithms and every official track. Ask the car for a speed and a steering angle; the sim closes the loop for you.">
 <meta property="og:type" content="article">
 <script>
@@ -64,7 +64,7 @@
   <div class="nav-lbl">Your platform</div>
   <div class="pf-switch pf-switch--nav" role="group" aria-label="Platform"><button type="button" data-set-pf="linux">Linux</button><button type="button" data-set-pf="macos">macOS</button><button type="button" data-set-pf="windows">Windows</button></div>
   <div class="nav-lbl">Track 1 &middot; Contents</div>
-  <ul class="nav-list"><li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-baselines.html"><span class="n">03</span><span>Baseline algorithms</span></a></li><li><a href="04-evaluation.html"><span class="n">04</span><span>Evaluation</span></a></li><li><a href="05-rules.html" aria-current="page"><span class="n">05</span><span>Rules</span></a></li><li><a href="06-submission.html"><span class="n">06</span><span>Submission</span></a></li><li><a href="07-workshop.html"><span class="n">07</span><span>ROS 2 primer</span></a></li></ul>
+  <ul class="nav-list"><li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-workshop.html"><span class="n">03</span><span>ROS 2 primer</span></a></li><li><a href="04-baselines.html"><span class="n">04</span><span>Baseline algorithms</span></a></li><li><a href="05-evaluation.html"><span class="n">05</span><span>Evaluation</span></a></li><li><a href="06-rules.html" aria-current="page"><span class="n">06</span><span>Rules</span></a></li><li><a href="07-submission.html"><span class="n">07</span><span>Submission</span></a></li></ul>
   <div class="nav-lbl">Elsewhere</div>
   <div class="nav-out">
     <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/tree/track1">Branch <code>track1</code></a>
@@ -72,22 +72,22 @@
   </div>
 </aside>
   <main class="main" id="doc">
-    <div class="crumb"><span class="red">Track 1</span><span class="sep">/</span><a href="index.html">Overview</a><span class="sep">/</span><span>Chapter 05</span></div>
+    <div class="crumb"><span class="red">Track 1</span><span class="sep">/</span><a href="index.html">Overview</a><span class="sep">/</span><span>Chapter 06</span></div>
     <article class="prose">
-      <h1>5. Rules</h1>
+      <h1>6. Rules</h1>
       <p>These rules govern Track 1 of the NTU DeepSpeed Recruitment Hackathon 26/27.
 Where this page and any other document disagree, this page wins.</p>
 <hr>
-<h2 id="51-teams">5.1 Teams<a class="hl" href="#51-teams" title="Link to this section">#</a></h2>
+<h2 id="61-teams">6.1 Teams<a class="hl" href="#61-teams" title="Link to this section">#</a></h2>
 <ol>
 <li>A team has <strong>3 to 5 members</strong>.</li>
 <li>Each person may be on <strong>one team only</strong>.</li>
 <li>The roster is fixed at submission. Name every member in your <code>SUBMISSION.md</code>
-   (see <a href="06-submission.html">chapter 6</a>).</li>
+   (see <a href="07-submission.html">chapter 7</a>).</li>
 <li>One entry per team.</li>
 </ol>
 <hr>
-<h2 id="52-deadline">5.2 Deadline<a class="hl" href="#52-deadline" title="Link to this section">#</a></h2>
+<h2 id="62-deadline">6.2 Deadline<a class="hl" href="#62-deadline" title="Link to this section">#</a></h2>
 <ol start="5">
 <li><strong>Submissions close 18 October 2026, 23:59 (SGT).</strong></li>
 <li>The commit timestamp on your submitted branch is what counts. Anything
@@ -96,12 +96,12 @@ Where this page and any other document disagree, this page wins.</p>
    the last commit before the deadline is the one judged.</li>
 </ol>
 <hr>
-<h2 id="53-the-race">5.3 The race<a class="hl" href="#53-the-race" title="Link to this section">#</a></h2>
+<h2 id="63-the-race">6.3 The race<a class="hl" href="#63-the-race" title="Link to this section">#</a></h2>
 <ol start="8">
 <li>Every run is driven on the official circuit, <code>icra26</code>, in the official
    Docker image built from this repository, on a single judging machine whose
    specification is published in
-   <a href="04-evaluation.html#48-judging-day">§4.7</a>. The map is in <code>maps/</code>, so you can
+   <a href="05-evaluation.html#58-judging-day">§5.8</a>. The map is in <code>maps/</code>, so you can
    practise on exactly what you will be scored on. If the organisers revise the
    circuit before the deadline it is announced in the team channel and updated
    here.</li>
@@ -130,7 +130,7 @@ DNF.</p>
 </li>
 </ol>
 <hr>
-<h2 id="54-collisions">5.4 Collisions<a class="hl" href="#54-collisions" title="Link to this section">#</a></h2>
+<h2 id="64-collisions">6.4 Collisions<a class="hl" href="#64-collisions" title="Link to this section">#</a></h2>
 <ol start="15">
 <li>Every collision adds a <strong>10-second penalty</strong> to the lap on which it
     happened. Penalties are included in both your fastest lap and your 10-lap
@@ -141,13 +141,13 @@ DNF.</p>
     accrues a fresh collision, and a fresh 10-second penalty, every second
     it stays there. A car that ends up wedged against a wall is therefore
     disqualified after about eleven seconds of contact. See
-    <a href="04-evaluation.html#44-how-collisions-are-counted">§4.4</a>.</li>
+    <a href="05-evaluation.html#54-how-collisions-are-counted">§5.4</a>.</li>
 <li>Collisions during the out lap or the warm-up lap count towards the limit in
     rule 16, but carry no time penalty, because there is no scored lap to apply
     it to.</li>
 </ol>
 <hr>
-<h2 id="55-scoring">5.5 Scoring<a class="hl" href="#55-scoring" title="Link to this section">#</a></h2>
+<h2 id="65-scoring">6.5 Scoring<a class="hl" href="#65-scoring" title="Link to this section">#</a></h2>
 <ol start="19">
 <li>
 <p>Two components, 50 points each, scored <strong>relative to the best team</strong>:</p>
@@ -194,7 +194,7 @@ by the ratio of times.</p>
 GitHub Actions <strong>Judge</strong> workflow races your entry too, but it is for
 reference — it tells you the entry builds and runs, on hardware that is
 neither yours nor ours. Nothing it reports counts towards the leaderboard.
-See <a href="04-evaluation.html#46-automated-judging-on-every-push">§4.6</a>.</p>
+See <a href="05-evaluation.html#56-automated-judging-on-every-push">§5.6</a>.</p>
 </li>
 <li>
 <p>Results are computed by
@@ -246,7 +246,7 @@ See <a href="04-evaluation.html#46-automated-judging-on-every-push">§4.6</a>.</
 <p>Bravo has the fastest single lap and still finishes second. Consistency over
 ten laps is worth exactly as much as one quick one.</p>
 <hr>
-<h2 id="56-the-judging-environment">5.6 The judging environment<a class="hl" href="#56-the-judging-environment" title="Link to this section">#</a></h2>
+<h2 id="66-the-judging-environment">6.6 The judging environment<a class="hl" href="#66-the-judging-environment" title="Link to this section">#</a></h2>
 <ol start="25">
 <li>
 <p><strong>Do not modify the judging environment.</strong> That means:</p>
@@ -282,7 +282,7 @@ it is checked.</p>
 </li>
 </ol>
 <hr>
-<h2 id="57-what-your-code-may-use">5.7 What your code may use<a class="hl" href="#57-what-your-code-may-use" title="Link to this section">#</a></h2>
+<h2 id="67-what-your-code-may-use">6.7 What your code may use<a class="hl" href="#67-what-your-code-may-use" title="Link to this section">#</a></h2>
 <ol start="29">
 <li>
 <p><strong>Inputs you may read:</strong></p>
@@ -360,7 +360,7 @@ network access during a judged run</strong> to rescue it.</p>
 <code>PyYAML</code>.</p>
 <p>The image is ROS 2 Jazzy on Python 3.12, and the judging machine has an
 8 GB NVIDIA GPU, so CUDA builds of PyTorch, JAX and CuPy are all usable —
-see <a href="04-evaluation.html#48-judging-day">§4.7</a>. Rebuild from clean after
+see <a href="05-evaluation.html#58-judging-day">§5.8</a>. Rebuild from clean after
 adding anything, and check the simulator still starts: the build fails
 loudly if a package breaks it.</p>
 </li>
@@ -377,7 +377,7 @@ loudly if a package breaks it.</p>
 </li>
 </ol>
 <hr>
-<h2 id="58-ai-assistance">5.8 AI assistance<a class="hl" href="#58-ai-assistance" title="Link to this section">#</a></h2>
+<h2 id="68-ai-assistance">6.8 AI assistance<a class="hl" href="#68-ai-assistance" title="Link to this section">#</a></h2>
 <ol start="36">
 <li>
 <p><strong>Using AI assistants is permitted.</strong> ChatGPT, Claude, Copilot,
@@ -407,7 +407,7 @@ where it fails — then the model is explained, and it counts in full.</p>
 </li>
 </ol>
 <hr>
-<h2 id="59-interview-and-bonus-marks">5.9 Interview and bonus marks<a class="hl" href="#59-interview-and-bonus-marks" title="Link to this section">#</a></h2>
+<h2 id="69-interview-and-bonus-marks">6.9 Interview and bonus marks<a class="hl" href="#69-interview-and-bonus-marks" title="Link to this section">#</a></h2>
 <ol start="40">
 <li>
 <p>Every team is interviewed after the race. The leaderboard decides the
@@ -431,7 +431,7 @@ where it fails — then the model is explained, and it counts in full.</p>
 </li>
 </ol>
 <hr>
-<h2 id="510-conduct">5.10 Conduct<a class="hl" href="#510-conduct" title="Link to this section">#</a></h2>
+<h2 id="610-conduct">6.10 Conduct<a class="hl" href="#610-conduct" title="Link to this section">#</a></h2>
 <ol start="42">
 <li>Do not interfere with another team's work, machines or submissions.</li>
 <li>Do not attack, overload or attempt to gain access to the organisers'
@@ -443,7 +443,7 @@ where it fails — then the model is explained, and it counts in full.</p>
     genuine bug before the deadline are credited, not penalised.</li>
 </ol>
 <hr>
-<h2 id="511-judges-discretion">5.11 Judges' discretion<a class="hl" href="#511-judges-discretion" title="Link to this section">#</a></h2>
+<h2 id="611-judges-discretion">6.11 Judges' discretion<a class="hl" href="#611-judges-discretion" title="Link to this section">#</a></h2>
 <ol start="46">
 <li>The organisers may adjust or clarify these rules before the deadline. Any
     change is announced in the team channel and reflected here.</li>
@@ -452,12 +452,12 @@ where it fails — then the model is explained, and it counts in full.</p>
 <li>The organisers' decisions on scoring and disqualification are final.</li>
 </ol>
 <hr>
-<p>Next: <strong><a href="06-submission.html">6. Submission</a></strong></p>
+<p>Next: <strong><a href="07-submission.html">7. Submission</a></strong></p>
     </article>
-    <nav class="pager"><a class="prev" href="04-evaluation.html"><span class="arw">&larr;</span><span><span class="k">Previous</span><span class="t">Evaluation</span></span></a><a class="next" href="06-submission.html"><span><span class="k">Next</span><span class="t">Submission</span></span><span class="arw">&rarr;</span></a></nav>
-    <div class="src">Source &middot; <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track1/docs/05-rules.md">docs/05-rules.md</a></div>
+    <nav class="pager"><a class="prev" href="05-evaluation.html"><span class="arw">&larr;</span><span><span class="k">Previous</span><span class="t">Evaluation</span></span></a><a class="next" href="07-submission.html"><span><span class="k">Next</span><span class="t">Submission</span></span><span class="arw">&rarr;</span></a></nav>
+    <div class="src">Source &middot; <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track1/docs/06-rules.md">docs/06-rules.md</a></div>
   </main>
-  <nav class="toc" aria-label="On this page"><div class="nav-lbl">On this page</div><ul><li><a href="#51-teams">5.1 Teams</a></li><li><a href="#52-deadline">5.2 Deadline</a></li><li><a href="#53-the-race">5.3 The race</a></li><li><a href="#54-collisions">5.4 Collisions</a></li><li><a href="#55-scoring">5.5 Scoring</a><ul><li><a href="#worked-example">Worked example</a></li></ul></li><li><a href="#56-the-judging-environment">5.6 The judging environment</a></li><li><a href="#57-what-your-code-may-use">5.7 What your code may use</a></li><li><a href="#58-ai-assistance">5.8 AI assistance</a></li><li><a href="#59-interview-and-bonus-marks">5.9 Interview and bonus marks</a></li><li><a href="#510-conduct">5.10 Conduct</a></li><li><a href="#511-judges-discretion">5.11 Judges&#x27; discretion</a></li></ul></nav>
+  <nav class="toc" aria-label="On this page"><div class="nav-lbl">On this page</div><ul><li><a href="#61-teams">6.1 Teams</a></li><li><a href="#62-deadline">6.2 Deadline</a></li><li><a href="#63-the-race">6.3 The race</a></li><li><a href="#64-collisions">6.4 Collisions</a></li><li><a href="#65-scoring">6.5 Scoring</a><ul><li><a href="#worked-example">Worked example</a></li></ul></li><li><a href="#66-the-judging-environment">6.6 The judging environment</a></li><li><a href="#67-what-your-code-may-use">6.7 What your code may use</a></li><li><a href="#68-ai-assistance">6.8 AI assistance</a></li><li><a href="#69-interview-and-bonus-marks">6.9 Interview and bonus marks</a></li><li><a href="#610-conduct">6.10 Conduct</a></li><li><a href="#611-judges-discretion">6.11 Judges&#x27; discretion</a></li></ul></nav>
 </div>
 <footer class="ft"><div class="ft-in">
   <span>NTU DeepSpeed &middot; Recruitment Hackathon 26/27</span>
