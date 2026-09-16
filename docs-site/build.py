@@ -183,6 +183,8 @@ class Page:
     @property
     def short(self) -> str:
         """'3. Baseline algorithms' -> 'Baseline algorithms'."""
+        if self.slug == "index":
+            return "Overview"
         return re.sub(r"^\d+\.\s*", "", self.title)
 
 
@@ -507,7 +509,8 @@ def copy_assets(out: Path) -> None:
     for name in ("tokens.css", "docs.css", "app.js"):
         shutil.copy2(HERE / "theme" / name, assets / name)
     for item in (HERE / "static").glob("*"):
-        if item.is_file():
+        # README.md in there documents the assets; it is not one of them.
+        if item.is_file() and item.name != "README.md":
             shutil.copy2(item, assets / item.name)
     # GitHub Pages must serve the tree as-is, not run Jekyll over it.
     (out / ".nojekyll").write_text("", encoding="utf-8")
