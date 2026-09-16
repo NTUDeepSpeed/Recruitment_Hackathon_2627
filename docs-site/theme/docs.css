@@ -547,6 +547,7 @@ h1:hover .hl, h2:hover .hl, h3:hover .hl, h4:hover .hl { opacity: 1; }
 /* ----- Track choice ----- */
 
 .tracks { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s-6); }
+.tracks > .tcard { min-width: 0; }
 
 .tcard {
   position: relative;
@@ -591,7 +592,7 @@ h1:hover .hl, h2:hover .hl, h3:hover .hl, h4:hover .hl { opacity: 1; }
   font-family: var(--font-mono); font-size: 10px;
   letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-muted);
 }
-.spec .v { font-size: var(--t-sm); font-weight: var(--w-med); font-variant-numeric: tabular-nums; }
+.spec .v { font-size: var(--t-sm); font-weight: var(--w-med); font-variant-numeric: tabular-nums; overflow-wrap: break-word; }
 
 .tcard-foot {
   margin-top: auto;
@@ -617,9 +618,9 @@ h1:hover .hl, h2:hover .hl, h3:hover .hl, h4:hover .hl { opacity: 1; }
   font-family: var(--font-mono); font-size: 10px;
   letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-muted);
 }
-.row-item .v { font-size: var(--t-sm); font-variant-numeric: tabular-nums; }
+.row-item .v { font-size: var(--t-sm); font-variant-numeric: tabular-nums; overflow-wrap: break-word; }
 .row-item .v.red { color: var(--accent); font-weight: var(--w-med); }
-.row-item .n { font-size: var(--t-sm); color: var(--fg-muted); }
+.row-item .n { font-size: var(--t-sm); color: var(--fg-muted); overflow-wrap: break-word; }
 .row-item .n a {
   color: var(--fg); text-decoration: none;
   border-bottom: 1px solid var(--line-strong);
@@ -652,6 +653,10 @@ h1:hover .hl, h2:hover .hl, h3:hover .hl, h4:hover .hl { opacity: 1; }
 .chap .cd { font-size: var(--t-xs); color: var(--fg-muted); line-height: 1.5; }
 
 .quick { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-6); }
+/* Grid and flex items are min-width:auto by default, so an unbreakable line —
+   the clone URL — widens the page instead of scrolling inside its own panel. */
+.quick > div { min-width: 0; }
+.quick pre { max-width: 100%; }
 .quick pre {
   margin: 0; padding: var(--s-6);
   background: var(--bg-inset);
@@ -743,9 +748,24 @@ h1:hover .hl, h2:hover .hl, h3:hover .hl, h4:hover .hl { opacity: 1; }
  */
 
 [data-pf] { display: none; }
-html[data-platform="linux"]   [data-pf~="linux"],
-html[data-platform="macos"]   [data-pf~="macos"],
-html[data-platform="windows"] [data-pf~="windows"] { display: revert; }
+
+/* Spelled out per element rather than `display: revert`: revert needs Safari
+   15.4+, and where it is not understood every variant stays hidden and the
+   command reads "./install//setup.sh". These selectors work everywhere. */
+html[data-platform="linux"]   span[data-pf~="linux"],
+html[data-platform="macos"]   span[data-pf~="macos"],
+html[data-platform="windows"] span[data-pf~="windows"] { display: inline; }
+
+html[data-platform="linux"]   div[data-pf~="linux"],
+html[data-platform="linux"]   p[data-pf~="linux"],
+html[data-platform="macos"]   div[data-pf~="macos"],
+html[data-platform="macos"]   p[data-pf~="macos"],
+html[data-platform="windows"] div[data-pf~="windows"],
+html[data-platform="windows"] p[data-pf~="windows"] { display: block; }
+
+html[data-platform="linux"]   li[data-pf~="linux"],
+html[data-platform="macos"]   li[data-pf~="macos"],
+html[data-platform="windows"] li[data-pf~="windows"] { display: list-item; }
 
 /* Alternatives spelled out for GitHub readers, who have no switch. */
 .pf-alt { display: none; }
@@ -778,7 +798,7 @@ html[data-platform="windows"] .pf-switch [data-set-pf="windows"] {
 
 .pf-switch--nav { display: flex; width: 100%; margin-bottom: var(--s-8); }
 .pf-switch--nav button { flex: 1; justify-content: center; padding: 7px 2px; }
-.pf-switch--quick { margin-bottom: var(--s-5); }
+.pf-switch--quick { margin-bottom: var(--s-6); }
 
 /* The switch repeated where the per-platform sections actually start. */
 .pf-tabs {
@@ -802,5 +822,30 @@ html[data-platform="windows"] .pf-switch [data-set-pf="windows"] {
   max-width: none;
 }
 
-@media (max-width: 1100px) { .pf-switch--hdr { display: none; } }
-@media print { .pf-switch, .pf-tabs { display: none !important; } }
+/* The landing page has no sidebar, so it carries its own switch in the hero. */
+.hero-pf {
+  display: flex; align-items: center; gap: var(--s-4); flex-wrap: wrap;
+  margin-top: var(--s-8);
+  padding-top: var(--s-6);
+  border-top: 1px solid var(--line);
+}
+.hero-pf__note { font-size: var(--t-sm); color: var(--fg-subtle); }
+
+/* The header switch stays at every width — it is the one control a reader is
+   guaranteed to see. Below 1100px the deadline and the GitHub link give up
+   their room for it, and below 860px it and the theme toggle both shrink. */
+@media (max-width: 1100px) { .hdr-meta { display: none; } }
+
+@media (max-width: 860px) {
+  .pf-switch--hdr button { padding: 5px 6px; font-size: 9px; letter-spacing: 0.1em; }
+  .wm { font-size: 17px; }
+  .toggle { padding: 6px 8px; }
+  .toggle .t-light, .toggle .t-dark { display: none; }
+  .toggle svg { display: block; width: 15px; height: 15px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+  .hero-pf__note { display: none; }
+}
+
+/* Above that the glyph is redundant — the word is there. */
+.toggle svg { display: none; }
+
+@media print { .pf-switch, .pf-tabs, .hero-pf { display: none !important; } }

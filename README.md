@@ -112,7 +112,14 @@ Markdown syntax, and nothing to maintain by hand**:
 
 Nothing is rewritten at run time: every variant ships in the HTML, so the page
 is correct before the JavaScript loads. The choice is remembered per reader,
-and defaults to the OS they appear to be on.
+and defaults to the OS they appear to be on. The switch sits in the header at
+every width, and again in the sidebar, in the landing hero and beside the
+per-platform sections.
+
+The stylesheet and the script are published under a content hash
+(`docs.<hash>.css`). GitHub Pages serves everything with `max-age=600`, so
+without that a returning reader could hold a ten-minute-stale stylesheet
+against fresh HTML — which is exactly how a CSS-driven feature looks broken.
 
 Keep writing the Markdown for a GitHub reader, who has no switch. A line like
 `./install/linux/setup.sh  # or install/macos, …` is right there and the site
@@ -154,6 +161,13 @@ JetBrains Mono for telemetry and labels. Dark is the default theme.
 `theme/tokens.css` is vendored verbatim from that system — re-export over it to
 update. Everything in `theme/docs.css` reads those custom properties and
 contains no raw brand values, so re-skinning is a one-file swap.
+
+`static/favicon.png` is the team's own favicon, copied byte for byte from
+[NTUDeepSpeed.github.io](https://github.com/NTUDeepSpeed/NTUDeepSpeed.github.io)
+(`public/favicon.png`) and declared the same way. Do not regenerate it — if the
+team changes theirs, copy the new file over. The mascot appears nowhere else:
+the design system's rule is that the lion is a logo, not a UI icon, and the
+favicon is one of the two places it is allowed below 64px.
 
 ---
 

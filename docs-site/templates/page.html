@@ -27,13 +27,13 @@
   root.setAttribute("data-platform", platform);
 })();
 </script>
-<link rel="icon" href="{{PREFIX}}assets/favicon.ico" sizes="32x32">
-<link rel="icon" href="{{PREFIX}}assets/favicon-32.png" type="image/png" sizes="32x32">
-<link rel="apple-touch-icon" href="{{PREFIX}}assets/apple-touch-icon.png">
+<meta name="theme-color" content="#0A0A0B">
+<link rel="icon" type="image/png" href="{{PREFIX}}assets/favicon.png">
+<link rel="apple-touch-icon" href="{{PREFIX}}assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="{{PREFIX}}assets/tokens.css">
-<link rel="stylesheet" href="{{PREFIX}}assets/docs.css">
+<link rel="stylesheet" href="{{PREFIX}}{{TOKENS_CSS}}">
+<link rel="stylesheet" href="{{PREFIX}}{{DOCS_CSS}}">
 </head>
 <body>
 <a class="skip" href="#doc">Skip to content</a>
@@ -53,6 +53,6 @@
   <nav class="toc" aria-label="On this page">{{TOC}}</nav>
 </div>
 {{FOOTER}}
-<script src="{{PREFIX}}assets/app.js" defer></script>
+<script src="{{PREFIX}}{{APP_JS}}" defer></script>
 </body>
 </html>

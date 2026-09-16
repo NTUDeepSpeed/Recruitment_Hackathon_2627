@@ -16,6 +16,7 @@ Styling comes from the DeepSpeed design system (see docs-site/theme/).
 from __future__ import annotations
 
 import argparse
+import hashlib
 import html
 import json
 import re
@@ -445,6 +446,7 @@ def header(cfg: dict, *, active: str, prefix: str) -> str:
     {platform_switch("pf-switch--hdr")}
     <button class="toggle" type="button" aria-label="Switch theme">
       <span class="t-light">Light</span><span class="t-dark">Dark</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/></svg>
     </button>
     <button class="navbtn" type="button" aria-label="Contents" aria-expanded="false" aria-controls="sidenav">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -522,7 +524,7 @@ def pager(pages: list, current: Page) -> str:
     return f'<nav class="pager">{"".join(parts)}</nav>' if parts else ""
 
 
-def build_track(cfg: dict, track: dict, src: Path, out: Path, tpl: str) -> list:
+def build_track(cfg: dict, track: dict, src: Path, out: Path, tpl: str, assets: dict) -> list:
     repo, branch = cfg["repo"], track["branch"]
 
     sources = [("README.md", src / "README.md")]
@@ -558,6 +560,9 @@ def build_track(cfg: dict, track: dict, src: Path, out: Path, tpl: str) -> list:
             title=f"{page.title} &middot; {track['name']} &middot; DeepSpeed Hackathon 26/27",
             description=e(track["lede"]),
             prefix="../",
+            tokens_css=assets["tokens.css"],
+            docs_css=assets["docs.css"],
+            app_js=assets["app.js"],
             header=header(cfg, active=track["id"], prefix="../"),
             sidebar=sidebar(cfg, track, pages, page),
             crumb=crumb,
@@ -574,7 +579,7 @@ def build_track(cfg: dict, track: dict, src: Path, out: Path, tpl: str) -> list:
     return pages
 
 
-def build_landing(cfg: dict, tracks_pages: dict, out: Path) -> None:
+def build_landing(cfg: dict, tracks_pages: dict, out: Path, assets: dict) -> None:
     cards = []
     for track in cfg["tracks"]:
         specs = "".join(
@@ -654,14 +659,19 @@ def build_landing(cfg: dict, tracks_pages: dict, out: Path) -> None:
             title=f"{cfg['org']} &middot; {cfg['title']}",
             description=e(cfg["description"]),
             prefix="",
+            tokens_css=assets["tokens.css"],
+            docs_css=assets["docs.css"],
+            app_js=assets["app.js"],
             header=header(cfg, active="", prefix=""),
             hero_lede=e(cfg["description"]),
+            hero_switch=platform_switch("pf-switch--hero"),
             deadline_full=e(cfg["deadline_full"]),
             stats=stats,
             tracks="".join(cards),
             shared=shared,
             chapters="".join(chapters),
-            quickstart=platform_switch("pf-switch--quick") + quick_html,
+            quick_switch=platform_switch("pf-switch--quick"),
+            quickstart=quick_html,
             repo_url=f"https://github.com/{cfg['repo']}",
             contact=e(cfg["contact"]),
             footer=footer(cfg, prefix=""),
@@ -670,7 +680,7 @@ def build_landing(cfg: dict, tracks_pages: dict, out: Path) -> None:
     )
 
 
-def build_404(cfg: dict, out: Path) -> None:
+def build_404(cfg: dict, out: Path, assets: dict) -> None:
     (out / "404.html").write_text(
         fill(
             load_template("404.html"),
@@ -678,6 +688,9 @@ def build_404(cfg: dict, out: Path) -> None:
             title="Off track &middot; DeepSpeed Hackathon 26/27",
             description="Page not found.",
             prefix="",
+            tokens_css=assets["tokens.css"],
+            docs_css=assets["docs.css"],
+            app_js=assets["app.js"],
             header=header(cfg, active="", prefix=""),
             footer=footer(cfg, prefix=""),
         ),
@@ -685,17 +698,40 @@ def build_404(cfg: dict, out: Path) -> None:
     )
 
 
-def copy_assets(out: Path) -> None:
+def copy_assets(out: Path) -> dict:
+    """
+    Copy the theme out, fingerprinting the stylesheet and the script.
+
+    GitHub Pages serves everything with `Cache-Control: max-age=600`, so for ten
+    minutes after a deploy a returning reader can hold a stale stylesheet while
+    already having the new HTML — which is exactly how a feature driven by CSS
+    and JS appears broken. A content hash in the filename makes that impossible:
+    new markup can only ever reference the assets it was built against.
+
+    Returns {source name: published path relative to the site root}.
+    """
     assets = out / "assets"
     assets.mkdir(parents=True, exist_ok=True)
+
+    published = {}
     for name in ("tokens.css", "docs.css", "app.js"):
-        shutil.copy2(HERE / "theme" / name, assets / name)
+        source = HERE / "theme" / name
+        data = source.read_bytes()
+        digest = hashlib.sha256(data).hexdigest()[:10]
+        stem, _, suffix = name.partition(".")
+        target = f"{stem}.{digest}.{suffix}"
+        (assets / target).write_bytes(data)
+        published[name] = f"assets/{target}"
+
     for item in (HERE / "static").glob("*"):
         # README.md in there documents the assets; it is not one of them.
         if item.is_file() and item.name != "README.md":
             shutil.copy2(item, assets / item.name)
+            published[item.name] = f"assets/{item.name}"
+
     # GitHub Pages must serve the tree as-is, not run Jekyll over it.
     (out / ".nojekyll").write_text("", encoding="utf-8")
+    return published
 
 
 def main() -> int:
@@ -722,16 +758,17 @@ def main() -> int:
         shutil.rmtree(out)
     out.mkdir(parents=True)
 
+    assets = copy_assets(out)
+
     page_tpl = load_template("page.html")
     pages = {}
     for track in cfg["tracks"]:
         src = Path(roots[track["id"]])
-        pages[track["id"]] = build_track(cfg, track, src, out, page_tpl)
+        pages[track["id"]] = build_track(cfg, track, src, out, page_tpl, assets)
         print(f"  {track['id']}: {len(pages[track['id']])} pages", file=sys.stderr)
 
-    build_landing(cfg, pages, out)
-    build_404(cfg, out)
-    copy_assets(out)
+    build_landing(cfg, pages, out, assets)
+    build_404(cfg, out, assets)
 
     total = sum(len(p) for p in pages.values()) + 2
     print(f"built {total} pages into {out}", file=sys.stderr)
