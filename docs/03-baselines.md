@@ -20,6 +20,7 @@ Measured over a full 10-lap run on `icra26`, with the defaults as shipped:
 | **Pure pursuit** (follows a path, uses odometry) | 39.904 s | 0 | 399.0 s |
 | **Gap follower** (reactive, LiDAR only) | 58.001 s | 0 | 580.2 s |
 | **Wall follower** (reactive, LiDAR only) | — | — | does not finish |
+| *(the `team_driver` template you start from)* | *78.582 s* | *0* | *786.3 s* |
 
 Two things worth reading off that table. The path follower is **31% faster** than the best reactive algorithm, for one reason: it knows what is coming. And the runs are repeatable to the millisecond — across ten laps pure pursuit varied by 0.001 s — because judging switches the LiDAR noise off and measures in simulated seconds.
 

@@ -75,8 +75,8 @@ jobs:
           # has to say why. Left as a bare non-zero exit it shows up as a red
           # cross with the reason buried in a collapsed log, which reads like
           # the pipeline broke rather than like a ruling.
-          if ./scripts/verify_judging_env.sh > integrity.txt 2>&1; then
-            cat integrity.txt
+          if ./scripts/verify_judging_env.sh > "${RUNNER_TEMP:-/tmp}/integrity.txt" 2>&1; then
+            cat "${RUNNER_TEMP:-/tmp}/integrity.txt"
             {
               echo "### Judging environment"
               echo
@@ -86,7 +86,7 @@ jobs:
             exit 0
           fi
 
-          cat integrity.txt
+          cat "${RUNNER_TEMP:-/tmp}/integrity.txt"
           {
             echo "# DISQUALIFIED - judging environment modified"
             echo
@@ -100,7 +100,8 @@ jobs:
             echo '```'
             # Only the findings. The script's own recovery advice is indented
             # four spaces, the findings two, which is what separates them here.
-            grep -E ': FAILED$|^  [^ ]' integrity.txt || cat integrity.txt
+            grep -E ': FAILED$|^  [^ ]' "${RUNNER_TEMP:-/tmp}/integrity.txt" \
+              || cat "${RUNNER_TEMP:-/tmp}/integrity.txt"
             echo '```'
             echo
             echo "## How to fix it"
