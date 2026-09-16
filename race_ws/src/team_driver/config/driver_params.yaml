@@ -11,10 +11,18 @@
 
 driver:
   ros__parameters:
-    max_speed: 4.0
-    min_speed: 1.5
-    max_steering: 0.34        # conservative; the car itself allows up to 0.4189
-    field_of_view: 3.14159
-    max_range: 8.0
-    bubble_radius: 0.30
-    steering_gain: 0.7
+    # AutoDRIVE takes a normalised throttle in [-1, 1], not a target speed.
+    # These are open loop: the car goes as fast as 0.2 throttle takes it, which
+    # is different on the straight and up against the limit in a corner.
+    # Closing the loop on measured speed is the first thing to do here -
+    # see roboracer_baselines/control.py.
+    cruise_throttle: 0.20
+    min_throttle: 0.08
+
+    # Steering is also normalised: 1.0 is full lock, which is 0.5236 rad.
+    max_steering: 0.90
+
+    field_of_view: 2.00       # [rad] total, centred ahead
+    max_range: 4.0            # [m]; the LiDAR itself reaches 10 m
+    bubble_radius: 0.50       # [m] around the closest return
+    steering_gain: 1.2

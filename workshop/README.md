@@ -25,12 +25,31 @@ container. The concepts are unchanged; the paths are not.
 | `/f1tenth_workshop/` inside the container | `/hackathon/` |
 | `/f1tenth_workshop/f1tenth_simulator` | `race_ws/src/roboracer_baselines/` |
 | `ros2_ws` | `race_ws` for your entry; `workshop/ros2_ws` for these teaching packages |
-| Edit `sim.yaml` and rebuild to change map | `ros2 launch roboracer_referee simulator.launch.py track:=Nuerburgring` |
+| Edit `sim.yaml` and rebuild to change map | `ros2 launch roboracer_referee simulator.launch.py` |
 
-Also note that F1TENTH is now **RoboRacer**. The upstream simulator
-repositories are still published under the old name (`f1tenth_gym`,
-`f1tenth_gym_ros`, `f1tenth_racetracks`), so those names appear throughout the
-code and are correct.
+Also note that F1TENTH is now **RoboRacer**. The older simulator repositories
+are still published under the old name (`f1tenth_gym`, `f1tenth_gym_ros`,
+`f1tenth_racetracks`), so those names appear in these slides and were correct
+when they were written.
+
+## The simulator sections are Track 1's, not this one
+
+Anything in here about `f1tenth_gym`, `/scan`, `/drive` or
+`AckermannDriveStamped` describes the **Track 1** environment. Track 2 runs the
+AutoDRIVE Simulator, where the topics live under `/autodrive/roboracer_1/` and
+the car takes a normalised throttle rather than a speed:
+
+| Slides say | Track 2 |
+| --- | --- |
+| `/scan` | `/autodrive/roboracer_1/lidar` |
+| `/ego_racecar/odom` | `/autodrive/roboracer_1/odom` |
+| `/drive` (`AckermannDriveStamped`) | `/autodrive/roboracer_1/throttle_command` and `/steering_command`, both `std_msgs/Float32` |
+| `ros2 launch f1tenth_gym_ros gym_launch.py` | `ros2 launch roboracer_referee simulator.launch.py` |
+
+The ROS 2 concepts — nodes, topics, messages, parameters, launch files,
+`colcon` — are identical and are the reason to read this material.
+[docs/02-simulator.md](../docs/02-simulator.md) is the authority on what Track 2
+actually publishes.
 
 ---
 

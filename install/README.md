@@ -14,7 +14,7 @@ Each folder has the same four scripts:
 
 | Script | What it does |
 | --- | --- |
-| `setup.sh` | Builds the Docker image. Run once, takes 15-30 minutes. |
+| `setup.sh` | Builds the Docker image. Run once, takes 10-20 minutes. |
 | `run.sh` | Starts the container and drops you into a shell. |
 | `shell.sh` | Opens another shell in the running container. You will want three or four. |
 | `stop.sh` | Stops everything. Your code is on a bind mount and is never touched. |
@@ -30,13 +30,25 @@ The scripts share their implementation in [`common.sh`](common.sh); the per-OS
 files only pick the right display mode and platform checks. They are safe to
 re-run, and they tell you what to fix rather than failing silently.
 
+## Before any of this: fetch the simulator
+
+The AutoDRIVE Simulator is a separate 140 MB download and is not part of the
+image. Once, on your host:
+
+```sh
+./scripts/fetch_simulator.sh
+```
+
 ## Display
 
-The simulator needs somewhere to draw its window.
+You do not need a window to race — a scored run is headless. You will want one
+to watch.
 
-- **Linux and Windows/WSL** render to the host X server (WSLg on Windows).
-- **macOS** renders to a browser: open <http://localhost:8080/vnc.html> and
-  click *Connect*.
+- **Linux and Windows/WSL** render to the host X server (WSLg on Windows), and
+  the simulator runs inside the container.
+- **macOS** cannot run the Linux simulator in the container at all. Fetch the
+  native build and run it on your Mac, talking to the bridge in the container
+  over port 4567 — [docs/01-setup.md §1.6](../docs/01-setup.md).
 
-If the window never appears on Linux or WSL, fall back to the browser with
-`./install/<your-os>/run.sh --novnc`.
+If a window never appears on Linux or WSL, fall back to the browser with
+`./install/<your-os>/run.sh --novnc` and open <http://localhost:8080/vnc.html>.

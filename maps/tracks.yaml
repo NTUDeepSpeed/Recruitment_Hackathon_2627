@@ -1,49 +1,53 @@
-# Track definition for the NTU DeepSpeed Recruitment Hackathon 26/27 - Track 1.
+# Track metadata for the NTU DeepSpeed Recruitment Hackathon 26/27 - Track 2.
 #
-# There is exactly one circuit: icra26, the official hackathon track. Both the
-# simulator launch file and the referee read this file, so nothing else needs
-# to know which map is in use:
+# READ THIS FIRST: nothing in this file scores a run.
 #
-#     ros2 launch roboracer_referee simulator.launch.py
+# On Track 2 the circuit lives inside the AutoDRIVE Simulator build. The
+# simulator owns the start/finish line, counts the laps, times them and detects
+# contact with the track boundary, and publishes all of it through the devkit
+# bridge. The referee reads those numbers. It never opens a map.
 #
-# Fields
-#   map_path           absolute path inside the container, WITHOUT the extension.
-#                      /hackathon is this repository, bind-mounted into the
-#                      container, so this is the copy you edit. The image
-#                      carries /opt/hackathon_maps as a fallback.
-#   map_image_ext      image extension for the map (.pgm here, .png is also fine)
-#   start_pose         [x, y, theta] where the car spawns; must be BEHIND the line
-#   finish_line        [[x1, y1], [x2, y2]] - spans the full width of the track
-#   crossing_direction optional +1/-1 override; inferred from the start heading
+# What this file is for:
+#   * the track name that lands in your result JSON;
+#   * pointing scripts/track_tool.py and roboracer_baselines/pure_pursuit at an
+#     occupancy grid of the circuit, once one has been published, so you can
+#     build a racing line or your own localisation against it.
 #
-# After any edit, check the numbers against the map image:
+# Fields (all optional except map_path)
+#   map_path           absolute path inside the container, WITHOUT the
+#                      extension. /hackathon is this repository, bind-mounted.
+#   map_image_ext      image extension for the map (.pgm or .png)
+#   simulator_build    the AutoDRIVE release this track ships in
+#   start_pose         [x, y, theta] in the simulator's `world` frame - planning
+#                      only, the simulator decides where the car spawns
+#   finish_line        [[x1, y1], [x2, y2]] - planning only, used by
+#                      track_tool.py to trace a closed lap
+#   crossing_direction optional +1/-1; inferred from the start heading
+#
+# After the map is published, check the numbers against the image:
 #     ./scripts/track_tool.py validate
 
-default: icra26
+default: icra26_compete
 
 tracks:
-  icra26:
+  icra26_compete:
     description: >-
-      The official hackathon circuit. A 17 x 18 m closed course, roughly 78 m
-      per lap, with a 1.8 m wide start/finish straight, two cone slaloms on the
-      right-hand side and a tight hairpin complex in the infield. Cone rows are
-      barriers: the course goes around their ends, never between them.
+      The official circuit: the "compete" phase track of the RoboRacer Sim
+      Racing League @ ICRA 2026, as shipped in the AutoDRIVE Simulator compete
+      build. Roughly 30 x 10 m, bounded by 33 cm air ducts, at least three car
+      widths (90 cm) wide throughout. You have never driven it and neither has
+      anyone else.
 
-    map_path: /hackathon/maps/icra26
+    simulator_build: 2026-icra/compete
+
+    # The occupancy grid is NOT part of the simulator download. It is published
+    # separately by the organisers and dropped in here; until then this path
+    # does not resolve and every tool that needs it says so and carries on.
+    # The referee does not need it, so a scored run works either way.
+    map_path: /hackathon/maps/icra26_compete
     map_image_ext: .pgm
 
-    # On the bottom straight, 3.0 m before the line, facing along +x. The
-    # corridor is 1.80 m wide here and centred on y = -0.01, so the car starts
-    # with 0.90 m of clearance either side.
-    start_pose: [-1.68, -0.01, 0.0]
-
-    # Perpendicular to the straight at x = +1.32, inset 5 cm inside each wall.
-    # The car's centre cannot physically reach that sliver, so a lap can never
-    # be missed by squeezing past an end of the line.
-    finish_line: [[1.32, -0.76], [1.32, 0.89]]
-
-    # Racing direction is counter-clockwise: east along the bottom straight,
-    # north up the right-hand side, west across the top, south down the left.
-    # To reverse the circuit, add pi to start_pose's theta - the crossing
-    # direction is then re-inferred automatically.
-    crossing_direction: -1
+    # Filled in when the map is published. Both are planning aids for
+    # track_tool.py; the simulator spawns the car and defines the line.
+    start_pose: null
+    finish_line: null

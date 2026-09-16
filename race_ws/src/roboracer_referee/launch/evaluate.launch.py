@@ -1,9 +1,9 @@
-"""Run one scored evaluation: simulator (optional), driver node, referee.
+"""Run one scored evaluation: simulator + bridge (optional), driver node, referee.
 
     # Full run, simulator included
     ros2 launch roboracer_referee evaluate.launch.py team:=my_team
 
-    # Against a simulator you already have open
+    # Against a simulator you already have open (e.g. running natively on macOS)
     ros2 launch roboracer_referee evaluate.launch.py team:=my_team simulator:=false
 
     # A different entry point or package
@@ -38,13 +38,17 @@ ARGUMENTS = [
     ("driver_exec", "driver", "Executable name of the driver node"),
     ("driver_params", "", "Optional parameter YAML passed to the driver node"),
     ("output_dir", "/hackathon/results", "Where the result JSON is written"),
-    ("simulator", "true", "Also start the simulator"),
-    ("rviz", "true", "Open RViz (ignored when simulator:=false)"),
-    ("referee_delay_s", "5.0", "Seconds to let the simulator settle before the referee starts"),
-    ("driver_delay_s", "15.0", "Seconds before the driver starts; must be after the referee has "
-                               "placed the car, or the car is driven off the grid mid-placement"),
+    ("simulator", "true", "Also start the simulator and the devkit bridge"),
+    ("headless", "true", "Run the simulator with no graphics device"),
+    ("rviz", "false", "Open RViz (ignored when simulator:=false)"),
+    ("host", "127.0.0.1", "Address the simulator dials to reach the bridge"),
+    ("port", "4567", "Port the bridge listens on"),
+    ("referee_delay_s", "3.0", "Seconds before the referee starts"),
+    ("driver_delay_s", "8.0", "Seconds before the driver starts; must be after the referee "
+                              "is up, so the referee sees the first drive command and can "
+                              "place the car before it moves"),
     ("timed_laps", "10", "Number of scored laps"),
-    ("warmup_laps", "1", "Unscored laps before timing starts"),
+    ("warmup_laps", "0", "Unscored laps before timing starts"),
     ("wall_timeout_s", "1800", "Hard wall-clock watchdog on the whole run, in seconds"),
 ]
 
@@ -90,22 +94,23 @@ def _setup(context, *_args, **_kwargs):
             PythonLaunchDescriptionSource(os.path.join(
                 get_package_share_directory("roboracer_referee"),
                 "launch", "simulator.launch.py")),
-            launch_arguments={"track": arg("track"),
-                              "track_config": arg("track_config"),
-                              "rviz": arg("rviz")}.items(),
+            launch_arguments={"headless": arg("headless"),
+                              "rviz": arg("rviz"),
+                              "host": arg("host"),
+                              "port": arg("port")}.items(),
         ))
 
-    # Order matters. The referee teleports the car onto the grid, and a driver
-    # that is already publishing will drive it straight back off again - the car
-    # then spends the whole startup racing unsupervised and is usually in a wall
-    # by the time the green flag drops. So: simulator settles, referee starts and
-    # parks the car, and only then does the driver come up.
+    # Order matters. The referee resets the car onto the grid and zeroes the
+    # simulator's lap timer at the moment it sees the first drive command, so
+    # it has to be listening before the driver says anything. A driver that
+    # starts first spends the startup racing unsupervised, and the reset then
+    # teleports it out of wherever it got to.
     referee_delay = float(arg("referee_delay_s"))
     driver_delay = float(arg("driver_delay_s"))
     if driver_delay <= referee_delay:
         raise RuntimeError(
             f"driver_delay_s ({driver_delay}) must be greater than referee_delay_s "
-            f"({referee_delay}); the referee has to place the car before the driver moves it."
+            f"({referee_delay}); the referee has to be watching before the driver moves."
         )
     actions.append(TimerAction(period=referee_delay, actions=[referee]))
     actions.append(TimerAction(period=driver_delay, actions=[driver]))

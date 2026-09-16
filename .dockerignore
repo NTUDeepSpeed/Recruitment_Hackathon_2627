@@ -4,12 +4,16 @@
 
 .git
 .github
-.gitmodules
 
 docs
 workshop
 results
 scripts
+
+# The AutoDRIVE Simulator is 140 MB of Unity binary and arrives through the
+# bind mount at /hackathon, never through the image. scripts/fetch_simulator.sh
+# puts it here.
+simulator
 
 race_ws/build
 race_ws/install
@@ -26,8 +30,9 @@ docker/.env
 docker/.x11-placeholder
 
 # Kept on purpose, because the Dockerfile copies them:
-#   external/f1tenth_gym, external/f1tenth_gym_ros   (simulator sources)
-#   maps/                                            (the circuit)
-#   docker/entrypoint.sh                             (shell setup)
-#   race_ws/src/team_driver/*.txt                    (declared dependencies)
+#   external/autodrive_devkit          the AutoDRIVE Devkit (ROS 2 API)
+#   maps/                              the circuit
+#   docker/entrypoint.sh               shell setup
+#   docker/devkit-requirements.txt     the devkit's Python dependencies
+#   race_ws/src/team_driver/*.txt      declared dependencies
 **/.git

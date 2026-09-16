@@ -1,57 +1,45 @@
-# The circuit
+# maps/
+
+**Nothing in this directory is used to score a run.** The AutoDRIVE Simulator
+owns the circuit, the start/finish line, the lap counter and the collision
+detection, and publishes all of it over the devkit bridge. The referee reads
+that telemetry. See [docs/04-evaluation.md](../docs/04-evaluation.md).
+
+What is here is for *your* planning.
 
 | File | What it is |
 | --- | --- |
-| `icra26.pgm` | The occupancy grid. 341 x 364 px at 5 cm, so 17.0 x 18.2 m. |
-| `icra26.yaml` | Map metadata: resolution and origin. Read by the simulator and by `map_server`. |
-| `tracks.yaml` | Where the car starts and where the start/finish line is. |
-| `icra26_centerline.csv` | A traced centreline, `x, y` in metres. Generated, not hand-drawn. |
+| `tracks.yaml` | Track metadata: the name in your result file, and where the map lives once it exists |
+| `icra26_compete.pgm` + `.yaml` | Occupancy grid of the compete circuit — **published separately by the organisers** |
+| `icra26_compete_centerline.csv` | Traced from the grid by `scripts/track_tool.py centerline` |
 
-Nothing here is loaded by path from your code: the simulator launch file and
-the referee both read `tracks.yaml`, so this is the one place a track is
-defined.
+## The map is not in the simulator download
+
+The AutoDRIVE Simulator ships the circuit as Unity geometry, not as an
+occupancy grid. If you want to plan against a grid — a racing line, a particle
+filter, a graph search — you need one, and there are two ways to get it:
+
+1. **Wait for ours.** The organisers publish `icra26_compete.pgm` and its
+   `.yaml` here and announce it in the team channel. Pull and it appears.
+2. **Build your own.** Drive the circuit, record `/autodrive/roboracer_1/lidar`
+   and `/autodrive/roboracer_1/ips`, and run SLAM over the bag. That is real
+   work and it is worth bonus marks at the interview if you can explain it —
+   see [rule 45](../docs/05-rules.md).
+
+Until a grid exists here, `./scripts/track_tool.py validate` reports the map as
+not yet published and exits cleanly, and `pure_pursuit` refuses to start with a
+message saying the same. Neither is a broken environment; a scored run does not
+touch this directory.
+
+## Adding your own
+
+Drop any `<name>.pgm` + `<name>.yaml` pair in here and point a tool at it.
+`pure_pursuit` takes a path CSV directly:
 
 ```sh
-./scripts/track_tool.py validate      # check the numbers against the map image
-./scripts/track_tool.py centerline    # regenerate icra26_centerline.csv
+ros2 run roboracer_baselines pure_pursuit --ros-args \
+    -p raceline_csv:=/hackathon/maps/my_line.csv
 ```
 
-## How the simulator reads the map
-
-`f1tenth_gym` ignores the thresholds in `icra26.yaml` and binarises the image
-at 128: **darker than 128 is a wall, anything lighter is drivable.** On this
-map that means the black outlines are the barriers and both the white track
-surface and the grey background are open floor. The grey is fully enclosed by
-black, so a car cannot reach it, but it is worth knowing when you are reasoning
-about what the LiDAR will return.
-
-`map_server`, which only draws the map in RViz, does use the thresholds.
-
-## The lap
-
-The start/finish line sits on the bottom straight at `x = +1.32`, spanning the
-full 1.80 m width of the corridor. The car is placed 3 m before it facing `+x`,
-and laps run **counter-clockwise**: east along the bottom straight, north up
-the right-hand side, west across the top, south down the left.
-
-A lap is about 78 m down the middle of the track. `track_tool.py validate`
-confirms a closed lap exists for a car of real width, which is the check worth
-re-running after any edit to `tracks.yaml`.
-
-Two things decide that route, and both matter:
-
-- **Clearance, 0.35 m.** Not the car's half width (0.155 m) but the radius its
-  corners sweep when turning. Plan with less and the search threads gaps the
-  car cannot take, which shows up as a car that scrapes the same places every
-  lap.
-- **Cone rows are sealed.** Neighbouring cones are joined into solid barriers
-  before the search runs, so no path can thread between them. Cones sit 0.25 to
-  0.50 m apart and the car is 0.31 m wide, so without this a shortest-path
-  search goes straight through a slalom. See rule 11.
-
-## The centreline is not a racing line
-
-`icra26_centerline.csv` is the middle of the corridor. The fast way round is
-not the middle: a racing line runs wide into a corner, clips the apex and runs
-wide again, and is both shorter and faster. Turning one into the other is the
-work — see [docs/03-baselines.md](../docs/03-baselines.md).
+Files you add here are yours and are not checked by
+`./scripts/verify_judging_env.sh` — unlike `tracks.yaml`, which is.

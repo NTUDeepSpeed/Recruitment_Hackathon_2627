@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the hackathon track and derive a centreline from its map.
+"""Validate the track metadata and derive a centreline from a map of it.
 
 Standard library plus PyYAML only, so it runs on the host as well as inside the
 container.
@@ -10,12 +10,19 @@ container.
     # Write a centreline CSV that pure_pursuit can follow
     ./scripts/track_tool.py centerline
 
-`validate` is the important one. It renders the start pose and the finish line
-onto the occupancy grid and fails if either is inside a wall, if the finish line
-does not span the corridor, or if no closed lap exists through the line at all.
-A finish line that stops short of a wall silently misses laps, and one that
-pokes through a wall counts phantom ones; neither is something to discover
-while a team is being scored.
+**This is a planning tool, not part of judging.** On Track 2 the AutoDRIVE
+Simulator owns the circuit, the start/finish line and the lap counter, and the
+referee scores from its telemetry. Nothing here can change a lap time.
+
+What it is for is the other half of the work: if you want to plan against an
+occupancy grid - a racing line, a graph search, a particle filter - you need a
+grid, a start pose and a line to trace a lap through, and this checks that what
+you have is usable and then traces it.
+
+The compete circuit does not ship with a grid. Until one is published in maps/
+or you build one yourself, `validate` reports the track as "map not published"
+and exits cleanly rather than failing: there is nothing wrong, the data simply
+is not there yet. See maps/README.md.
 """
 
 from __future__ import annotations
@@ -562,11 +569,6 @@ def _resolve_map_yaml(map_path: str, ext: str) -> Optional[str]:
     # map_path is an in-container path; on the host the same file lives under
     # the repository's maps/ directory.
     candidates.append(os.path.join(REPO_ROOT, "maps", os.path.basename(map_path)) + ".yaml")
-    marker = "/maps/"
-    if marker in map_path:
-        tail = map_path.split(marker, 1)[1]
-        candidates.append(
-            os.path.join(REPO_ROOT, "external", "f1tenth_gym_ros", "maps", tail) + ".yaml")
     for candidate in candidates:
         if os.path.isfile(candidate):
             return candidate
@@ -590,6 +592,7 @@ def cmd_validate(args) -> int:
     print(f"Checking {len(tracks)} track(s) from {args.config}\n")
 
     failures = 0
+    skipped = 0
     for name in sorted(tracks):
         track = tracks[name]
         problems: List[str] = []
@@ -598,12 +601,24 @@ def cmd_validate(args) -> int:
         yaml_path = _resolve_map_yaml(track.map_path, track.map_image_ext)
         grid: Optional[OccupancyMap] = None
         if yaml_path is None:
-            problems.append(f"no map found for map_path '{track.map_path}'")
+            # Not a failure. The circuit lives in the simulator; a grid is an
+            # optional extra that the organisers publish separately, and a
+            # scored run never touches it.
+            print(f"skip  {name:<16} map not published yet "
+                  f"(no {track.map_path}{track.map_image_ext}) - nothing to check")
+            skipped += 1
+            continue
         else:
             try:
                 grid = OccupancyMap(yaml_path)
             except Exception as exc:                              # noqa: BLE001
                 problems.append(f"could not read {yaml_path}: {exc}")
+
+        if grid is not None and track.start_pose is None:
+            print(f"skip  {name:<16} map is present but start_pose is not set in "
+                  f"{os.path.basename(args.config)}; fill it in to check the geometry")
+            skipped += 1
+            continue
 
         if grid is not None:
             sx, sy, _ = track.start_pose
@@ -617,6 +632,17 @@ def cmd_validate(args) -> int:
                         f"the car needs at least {args.half_width:.2f} m")
                 else:
                     notes.append(f"start clearance {room:.2f} m")
+
+            if track.finish_line is None:
+                notes.append("no finish_line set, so no lap trace was attempted")
+                if problems:
+                    failures += 1
+                    print(f"FAIL  {name}")
+                    for problem in problems:
+                        print(f"      - {problem}")
+                else:
+                    print(f"ok    {name:<16} " + ", ".join(notes))
+                continue
 
             a, b = track.finish_line
             clear, hit = grid.segment_is_clear(a, b)
@@ -653,14 +679,19 @@ def cmd_validate(args) -> int:
             for problem in problems:
                 print(f"      - {problem}")
         else:
-            print(f"ok    {name:<12} " + ", ".join(notes)
+            print(f"ok    {name:<16} " + ", ".join(notes)
                   + f", direction {track.crossing_direction:+d}")
 
     print()
     if failures:
         print(f"{failures} of {len(tracks)} track(s) failed validation.", file=sys.stderr)
         return 1
-    print(f"All {len(tracks)} track(s) valid.")
+    checked = len(tracks) - skipped
+    if skipped:
+        print(f"{checked} track(s) valid, {skipped} skipped for want of a map. "
+              f"Nothing here affects scoring - see maps/README.md.")
+    else:
+        print(f"All {len(tracks)} track(s) valid.")
     return 0
 
 

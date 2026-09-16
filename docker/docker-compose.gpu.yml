@@ -5,6 +5,10 @@
 #
 # install/<os>/run.sh adds this automatically; if attaching the GPU fails it
 # retries without it rather than leaving you with a dead container.
+#
+# What the GPU is for here: your own code, and rendering the simulator when you
+# want to watch it. A scored run is headless (-batchmode -nographics), which
+# creates no graphics device at all, so judging does not depend on this.
 
 services:
   sim:

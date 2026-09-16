@@ -1,11 +1,12 @@
-# RoboRacer Autonomous Racing — Track 1
+# RoboRacer Sim Racing — Track 2
 
 **NTU DeepSpeed Recruitment Hackathon 26/27**
 
 Write the software that drives a 1/10-scale racing car around a circuit it has
-never seen, as fast as it can, without hitting anything. Everything you need —
-the simulator, the judging environment, reference algorithms and every official
-track — is in this repository. You will not need to clone anything else.
+never seen, as fast as it can, without hitting anything. This track runs the
+**compete** phase of the [RoboRacer Sim Racing League @ ICRA 2026](https://autodrive-ecosystem.github.io/competitions/roboracer-sim-racing-icra-2026/)
+on the AutoDRIVE Simulator — the same vehicle, the same sensors, the same
+circuit and the same devkit the ICRA teams raced.
 
 > **Submission deadline: 18 October 2026, 23:59 (SGT)**
 
@@ -14,10 +15,11 @@ track — is in this repository. You will not need to clone anything else.
 ## Quick start
 
 ```sh
-git clone --recurse-submodules https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627.git
+git clone https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627.git
 cd Recruitment_Hackathon_2627
-git checkout track1
+git checkout track2
 
+./scripts/fetch_simulator.sh      # 140 MB, once
 ./install/linux/setup.sh          # or install/macos, or install/windows from WSL
 ./install/linux/run.sh            # builds if needed, then drops you into the container
 ```
@@ -28,7 +30,7 @@ Then, inside the container:
 cd /hackathon/race_ws && colcon build --symlink-install
 source install/local_setup.bash
 
-# Terminal 1 — the simulator
+# Terminal 1 — the simulator and the devkit bridge
 ros2 launch roboracer_referee simulator.launch.py
 
 # Terminal 2 — your car
@@ -42,39 +44,58 @@ Watch it drive, then go make it faster. When you want a score:
 ```
 
 Pushing also races your entry on GitHub Actions and writes the result to the
-workflow summary. On an untouched template it races the baselines instead, so
-you can see the times to beat before writing a line of code.
+workflow summary. On an untouched template it races the baseline instead, so
+you can see the time to beat before writing a line of code.
 
 Full walkthrough: **[docs/01-setup.md](docs/01-setup.md)**.
 
-> Cloned without `--recurse-submodules`, or downloaded a ZIP? Run
-> `git submodule update --init --recursive`. The setup scripts will also do it
-> for you. A ZIP download will not work — submodules need a real clone.
+> No submodules on this branch — a plain `git clone` is enough, and even a ZIP
+> download works. The AutoDRIVE Devkit is committed to this repository; the
+> simulator is a separate download that `./scripts/fetch_simulator.sh` handles.
 
 ---
 
 ## The challenge
 
-You get a LiDAR scan and the car's exact position. You publish a steering angle
-and a speed. That is the whole interface.
+You get a LiDAR scan, an IMU, wheel encoders, a camera and the car's exact
+position. You publish a throttle and a steering command. That is the whole
+interface.
 
 | | |
 | --- | --- |
-| **Car** | Ackermann steering, 0.33 m wheelbase, 0.31 × 0.58 m, steering limited to ±0.4189 rad |
-| **Sensor** | 819-beam LiDAR, 270° field of view, 25 m range |
-| **Localisation** | Ground-truth pose on `/ego_racecar/odom` — **allowed and recommended** |
-| **Track** | `icra26`, in this repository. 17 x 18 m, about 78 m a lap, cone slaloms and a hairpin complex. |
-| **Scored on** | Your single fastest lap, and your time for 10 consecutive laps |
-| **Penalties** | +10 s on the lap for each collision; more than 10 collisions is a disqualification |
-| **Judged on** | One machine: i9-14900HX, 32 GB, RTX 5060 Laptop. Times are in simulated seconds, so your own hardware does not affect your score. |
+| **Simulator** | AutoDRIVE Simulator, `2026-icra` **compete** build |
+| **Car** | RoboRacer digital twin. Ackermann steering, 0.324 m wheelbase, 0.27 × 0.50 m, 3.9 kg, steering limited to ±0.5236 rad |
+| **Sensor** | 1080-beam LiDAR, 270° field of view, 10 m range, 40 Hz — plus IMU, encoders and a front camera |
+| **Control** | **Normalised throttle and steering, both in [−1, 1].** Not a speed request — closing that loop is your problem |
+| **Localisation** | Ground-truth pose on `.../ips` and `.../odom` — **allowed and recommended** |
+| **Track** | The ICRA 2026 compete circuit, inside the simulator. About 30 × 10 m, bounded by 33 cm air ducts, at least three car widths wide throughout. **Nobody has driven it, including us.** |
+| **Scored on** | Your single fastest lap, and your adjusted race time over 10 laps |
+| **Penalties** | +10 s on the lap for each collision, and no upper limit — the penalty is the deterrent |
+| **Judged on** | One machine: i9-14900HX, 32 GB, RTX 5060 Laptop. Times come from the simulator's own clock, so your hardware does not affect your score. |
 
-Reactive algorithms like follow-the-gap will get you round. Planning against
-the map and your own position is where the lap time is. And you are not
-required to build on the baselines at all — **replacing the approach outright
-is encouraged**: reinforcement learning, MPC, a learned end-to-end policy,
-anything you can defend. The environment is ROS 2 Jazzy on Python 3.12 with a
-GPU available, so a learned policy is a realistic option. See
+Reactive algorithms like follow-the-gap will get you round. Planning — against
+the map you build yourself, and against your own position — is where the lap
+time is. And you are not required to build on the baselines at all —
+**replacing the approach outright is encouraged**: reinforcement learning, MPC,
+a learned end-to-end policy, anything you can defend. See
 [docs/03-baselines.md](docs/03-baselines.md).
+
+### What is different from Track 1
+
+Both tracks are RoboRacer, and the racing problem is the same. The environment
+is not, and four differences will bite you if you skim:
+
+| | Track 1 | Track 2 |
+| --- | --- | --- |
+| Simulator | `f1tenth_gym` + ROS bridge | **AutoDRIVE**, a Unity binary you download |
+| Control | `AckermannDriveStamped` — ask for a speed | **`Float32` throttle in [−1, 1]** — ask for torque |
+| Lap timing | Our referee, against a finish line in `maps/` | **The simulator's**, over the devkit bridge |
+| The map | Shipped as a `.pgm` you can plan against | **Not shipped.** Build one or wait for ours |
+
+The throttle one is the big one. There is no speed controller between your node
+and the motor any more, so "take this corner at 3 m/s" is a control problem you
+now own. [`control.py`](race_ws/src/roboracer_baselines/roboracer_baselines/control.py)
+has a worked example to copy.
 
 ---
 
@@ -89,10 +110,11 @@ Recruitment_Hackathon_2627/
 │   ├── team_driver/            ★ YOUR CODE GOES HERE
 │   ├── roboracer_baselines/      Reference algorithms to read, race and beat
 │   └── roboracer_referee/        The judging environment — do not modify
-├── scripts/                    evaluate.sh, leaderboard.py, track_tool.py, …
-├── maps/                       The circuit: icra26.pgm, its yaml, tracks.yaml
-├── docker/                     Image definition (ROS 2 Jazzy) and compose files
-├── external/                   Upstream simulator sources, as git submodules
+├── external/autodrive_devkit/  The AutoDRIVE Devkit — do not modify
+├── simulator/                  The AutoDRIVE Simulator, fetched by script
+├── scripts/                    evaluate.sh, fetch_simulator.sh, leaderboard.py, …
+├── maps/                       Track metadata; the occupancy grid, once there is one
+├── docker/                     Image definition (ROS 2 Humble) and compose files
 ├── results/                    Where your run results land
 ├── .github/workflows/          Automated judging on every push
 ├── docs/                       This guide
@@ -108,9 +130,9 @@ The one file you are meant to open first:
 
 | Chapter | What is in it |
 | --- | --- |
-| **[1. Setup](docs/01-setup.md)** | Installing Docker, building the image, first run, troubleshooting |
-| **[2. The simulator](docs/02-simulator.md)** | Topics, message types, changing tracks, RViz, ground-truth odometry |
-| **[3. Baseline algorithms](docs/03-baselines.md)** | Wall following, follow-the-gap, pure pursuit — how they work and where they break |
+| **[1. Setup](docs/01-setup.md)** | Installing Docker, fetching the simulator, building the image, first run, troubleshooting |
+| **[2. The simulator](docs/02-simulator.md)** | AutoDRIVE, the bridge, every topic, the vehicle and sensor specifications |
+| **[3. Baseline algorithms](docs/03-baselines.md)** | Wall following, follow-the-gap, pure pursuit, and the speed controller you now need |
 | **[4. Evaluation](docs/04-evaluation.md)** | Scoring yourself, reading result files, how judging day runs |
 | **[5. Rules](docs/05-rules.md)** | The rules, the scoring formula, and what gets you disqualified |
 | **[6. Submission](docs/06-submission.md)** | What to hand in, how, and what the interview covers |
@@ -127,34 +149,41 @@ counts. The short version:
 - **Deadline: 18 October 2026, 23:59 SGT.** Late entries are not scored.
 - **AI assistants are allowed.** You will be asked to explain your code at the
   interview, so do not submit anything you cannot defend.
-- **Do not modify the judging environment.** Check yourself with
-  `./scripts/verify_judging_env.sh`.
+- **Do not modify the judging environment, and do not modify the AutoDRIVE
+  Devkit.** Check yourself with `./scripts/verify_judging_env.sh`.
+- **Every sensor topic is open to you, including ground-truth pose.** The
+  AutoDRIVE competition marks some of those "restricted at race time"; this
+  hackathon does not. The one thing you may not publish is
+  `/autodrive/reset_command` — that is the referee's.
 - **Score (out of 100):**
 
   | | Weight | Formula |
   | --- | --- | --- |
   | Fastest single lap | 50 | `50 × (fastest lap of any team ÷ your fastest lap)` |
-  | 10-lap total | 50 | `50 × (fastest 10-lap total ÷ your 10-lap total)` |
+  | Adjusted race time | 50 | `50 × (fastest race time of any team ÷ your race time)` |
 
-  One warm-up lap is granted before timing starts. Each collision adds 10 s to
-  the lap it happened on. More than 10 collisions in a run is a
-  disqualification.
+  Ten laps from a standing start, as ICRA runs it. Each collision adds 10 s to
+  the lap it happened on — about half a lap on this circuit, which makes
+  contact the single biggest thing to optimise.
 
 - **Bonus marks** at the interview, for work you can explain properly:
-  replacing the ground-truth odometry with your own localisation; generating a
-  racing line from the map at runtime; or **replacing the driving algorithm
-  entirely** — reinforcement learning, MPC, imitation learning, anything
-  beyond tuning what we gave you.
+  replacing the ground-truth pose with your own localisation; building a map of
+  the circuit and generating a racing line from it; or **replacing the driving
+  algorithm entirely** — reinforcement learning, MPC, imitation learning,
+  anything beyond tuning what we gave you.
 
 ---
 
 ## Getting help
 
 - Check the troubleshooting section at the end of
-  [docs/01-setup.md](docs/01-setup.md) first — most problems are there.
+  [docs/01-setup.md](docs/01-setup.md) first — most problems are there, and the
+  two most common ones (a bridge that connects and then publishes nothing, and
+  a simulator that cannot find the bridge) both look like something else.
 - Bring the exact error text and what you ran to the team channel.
 - `./scripts/verify_judging_env.sh` will tell you if your environment has
   drifted from the official one.
-- You may email `ntu-deepspeed@e.ntu.edu.sg` for further inquiries if you cannot solve the issues after troubleshooting.
+- You may email `ntu-deepspeed@e.ntu.edu.sg` for further inquiries if you cannot
+  solve the issues after troubleshooting.
 
 Good luck. Go fast.

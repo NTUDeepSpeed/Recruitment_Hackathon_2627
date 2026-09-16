@@ -2,9 +2,9 @@
 #
 # Check that the judging environment is untouched.
 #
-# Rule 1 says not to modify the judging environment. This makes that checkable
+# Rule 28 says not to modify the judging environment. This makes that checkable
 # rather than a matter of trust: it hashes every file the judges rely on and
-# compares against a manifest, and checks the pinned submodule commits.
+# compares against a manifest, and looks for files added into those directories.
 #
 #   ./scripts/verify_judging_env.sh           # check (what the judges run)
 #   ./scripts/verify_judging_env.sh --update  # regenerate the manifest (organisers)
@@ -16,18 +16,30 @@ set -euo pipefail
 source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../install" && pwd)/common.sh"
 
 MANIFEST="${REPO_ROOT}/scripts/judging_manifest.sha256"
-SUBMODULE_PINS="${REPO_ROOT}/scripts/judging_submodules.txt"
 
 # Everything a scored run depends on. team_driver and the docs are absent on
 # purpose: those are yours to change.
+#
+# Note what is NOT here: maps/ as a directory. Only maps/tracks.yaml is
+# protected, because the rest of that folder is where you put a racing line or
+# an occupancy grid of your own, and those are yours. On Track 2 the map is not
+# part of judging at all - the simulator is - so there is nothing to protect.
+#
+# external/autodrive_devkit IS here. Rule 29 of the AutoDRIVE competition
+# forbids modifying the devkit, and the hackathon keeps that rule, so the
+# vendored copy is hashed like anything else in the judging environment.
 PROTECTED_PATHS=(
     "race_ws/src/roboracer_referee"
+    "external/autodrive_devkit"
     "docker/Dockerfile"
     "docker/entrypoint.sh"
+    "docker/devkit-requirements.txt"
     "docker/docker-compose.yml"
     "docker/docker-compose.gpu.yml"
-    "maps"
+    "maps/tracks.yaml"
     "scripts/evaluate.sh"
+    "scripts/fetch_simulator.sh"
+    "scripts/run_simulator.sh"
     "scripts/leaderboard.py"
     "scripts/track_tool.py"
     "scripts/detect_submission.sh"
@@ -66,17 +78,10 @@ generate_manifest() {
     ( cd "${REPO_ROOT}" && list_protected_files | tr '\n' '\0' | xargs -0 sha256sum )
 }
 
-generate_pins() {
-    git -C "${REPO_ROOT}" submodule status --cached \
-        | sed 's/^[-+U ]//' | awk '{print $1, $2}' | LC_ALL=C sort
-}
-
 if [ "${UPDATE}" = "1" ]; then
     info "Regenerating the judging manifest."
     generate_manifest > "${MANIFEST}"
-    generate_pins > "${SUBMODULE_PINS}"
     ok "Wrote $(wc -l < "${MANIFEST}") file hashes to ${MANIFEST}"
-    ok "Wrote $(wc -l < "${SUBMODULE_PINS}") submodule pins to ${SUBMODULE_PINS}"
     exit 0
 fi
 
@@ -108,17 +113,6 @@ else
     ok "No unexpected files."
 fi
 
-if [ -f "${SUBMODULE_PINS}" ]; then
-    info "Checking submodule pins."
-    if diff -u "${SUBMODULE_PINS}" <(generate_pins) > "${work}/pins" 2>&1; then
-        ok "Submodules are at the pinned commits."
-    else
-        failures=1
-        printf '%s\n' "${_C_RED}Submodules are not at the pinned commits:${_C_OFF}" >&2
-        sed 's/^/  /' "${work}/pins" >&2
-    fi
-fi
-
 echo
 if [ "${failures}" = "0" ]; then
     ok "Judging environment is intact."
@@ -129,8 +123,8 @@ cat >&2 <<'MSG'
 The judging environment does not match the official one.
 
 If you changed these files by accident, restore them:
-    git checkout -- race_ws/src/roboracer_referee docker maps scripts install
-    git submodule update --init --recursive
+    git checkout -- race_ws/src/roboracer_referee external/autodrive_devkit \
+                    docker maps/tracks.yaml scripts install
 
 If you changed them on purpose, move your work into race_ws/src/team_driver
 before submitting. Entries that modify the judging environment are not scored.

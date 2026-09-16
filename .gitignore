@@ -18,6 +18,13 @@ workshop/ros2_ws/build/
 workshop/ros2_ws/install/
 workshop/ros2_ws/log/
 
+# --- AutoDRIVE Simulator ---
+# ~140 MB of Unity binary per platform, fetched by scripts/fetch_simulator.sh.
+# Never committed; the fetch script re-downloads it and verifies the size.
+simulator/*
+!simulator/.gitkeep
+!simulator/README.md
+
 # --- Docker helper state, written by install/<os>/run.sh ---
 docker/.env
 docker/.x11-placeholder/

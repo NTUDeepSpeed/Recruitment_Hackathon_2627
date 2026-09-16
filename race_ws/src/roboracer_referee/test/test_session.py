@@ -1,243 +1,332 @@
 """Rule tests for the referee's scoring logic.
 
 Run inside the container with:  colcon test --packages-select roboracer_referee
-or directly with:               python3 -m pytest race_ws/src/roboracer_referee/test
+or directly with:               python3 race_ws/src/roboracer_referee/test/test_session.py
+
+No ROS and no simulator: the session is fed the same telemetry the AutoDRIVE
+bridge publishes, as plain numbers.
 """
 
-import math
 import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from roboracer_referee.geometry import (          # noqa: E402
-    line_from_pose_and_width, segment_crossing_fraction, signed_side,
-)
 from roboracer_referee.session import (           # noqa: E402
     RaceSession, Rules, Status,
 )
 
-# A straight 100 m loop: the car runs from x=-50 to x=+50 and teleports back.
-# Lap distance is therefore 100 m and the finish line sits at x=0.
-LINE_A, LINE_B = (0.0, -2.0), (0.0, 2.0)
-LOOP_HALF = 50.0
-DT = 0.02
+
+class Simulator:
+    """A stand-in for the AutoDRIVE Simulator's race telemetry.
+
+    It publishes exactly what the real one does: cumulative lap and collision
+    counters, the elapsed time of the current lap, and the time of the last one
+    that closed. The counters deliberately do not start at zero, because in a
+    real run they do not either - the referee baselines them at the green flag.
+    """
+
+    def __init__(self, lap_count=7, collision_count=3, speed=4.0):
+        self.lap_count = lap_count
+        self.collision_count = collision_count
+        self.lap_time = 0.0
+        self.last_lap_time = 0.0
+        self.speed = speed
+        self.race_time = 0.0
+
+    def tick(self, dt=0.025):
+        self.lap_time += dt
+        self.race_time += dt
+
+    def close_lap(self, lap_time):
+        self.last_lap_time = lap_time
+        self.lap_count += 1
+        self.lap_time = 0.0
+
+    def collide(self, count=1):
+        self.collision_count += count
+
+    def feed(self, session):
+        return session.update(self.lap_time, self.lap_count, self.last_lap_time,
+                              self.collision_count, self.speed)
 
 
-def direction_for_positive_x_travel():
-    """signed_side decreases as x grows for this line, so crossings are -1."""
-    return -1
+def start(session, sim):
+    session.start(sim.lap_count, sim.collision_count)
+    sim.feed(session)
 
 
-def drive(session, laps, speed, dt=DT, start_x=-45.0, collide_at=()):
-    """Run the car around the loop, optionally colliding at given distances travelled."""
-    x = start_x
-    t = 0.0
-    collide_at = sorted(collide_at)
-    next_collision = 0
-    distance = 0.0
-    total_distance = laps * 2 * LOOP_HALF
-    while distance < total_distance and not session.finished:
-        x += speed * dt
-        distance += speed * dt
-        t += dt
-        if x > LOOP_HALF:
-            x -= 2 * LOOP_HALF
-            # Teleport: reseed so the wrap is not mistaken for a crossing.
-            session.update(t, x, 0.0, speed)
-            continue
-        while next_collision < len(collide_at) and distance >= collide_at[next_collision]:
-            session.register_collision(t)
-            next_collision += 1
-        session.update(t, x, 0.0, speed)
-    return t
+def run_laps(session, sim, times, collisions_per_lap=()):
+    """Drive a sequence of laps, colliding the given number of times on each."""
+    collisions_per_lap = list(collisions_per_lap) + [0] * len(times)
+    for lap_time, hits in zip(times, collisions_per_lap):
+        for _ in range(hits):
+            sim.collide()
+            sim.feed(session)
+        # Advance the simulator's clock through the lap, then close it.
+        sim.lap_time = lap_time
+        sim.race_time += lap_time
+        sim.feed(session)
+        sim.close_lap(lap_time)
+        sim.feed(session)
+        if session.finished:
+            break
 
 
-def make_session(**kwargs):
-    rules = Rules(**kwargs)
-    return RaceSession(rules, LINE_A, LINE_B, direction_for_positive_x_travel())
+# ---------------------------------------------------------------------------
+# The happy path
+# ---------------------------------------------------------------------------
+
+def test_ten_clean_laps_score():
+    session = RaceSession(Rules(timed_laps=10, warmup_laps=0))
+    sim = Simulator()
+    start(session, sim)
+    run_laps(session, sim, [6.5] * 10)
+
+    assert session.status is Status.COMPLETE, session.status
+    assert session.scored
+    assert session.timed_laps_done == 10
+    assert session.collision_events == 0
+    assert abs(session.total_time() - 65.0) < 1e-6, session.total_time()
+    assert abs(session.best_lap().net_time - 6.5) < 1e-6
 
 
-def test_geometry_basics():
-    assert signed_side((0, -1), (0, 1), (-1, 0)) > 0
-    assert signed_side((0, -1), (0, 1), (1, 0)) < 0
-    assert segment_crossing_fraction((-1, 0), (1, 0), (0, -1), (0, 1)) == 0.5
-    assert segment_crossing_fraction((-2, 0), (-1, 0), (0, -1), (0, 1)) is None
-    # Misses the finite segment even though the infinite lines cross.
-    assert segment_crossing_fraction((-1, 9), (1, 9), (0, -1), (0, 1)) is None
-    a, b = line_from_pose_and_width(3.0, 4.0, 0.0, 2.0)
-    assert math.isclose(math.dist(a, b), 2.0)
+def test_cumulative_counters_are_baselined_not_assumed_zero():
+    """A simulator that has already been driven must not hand the team free laps."""
+    session = RaceSession(Rules(timed_laps=3, warmup_laps=0))
+    sim = Simulator(lap_count=41, collision_count=9)
+    start(session, sim)
+    run_laps(session, sim, [5.0, 5.0, 5.0])
+
+    assert session.timed_laps_done == 3
+    assert session.collision_events == 0, "pre-existing collisions must not be scored"
+    assert session.status is Status.COMPLETE
 
 
-def test_clean_run_scores_ten_laps():
-    s = make_session(warmup_laps=1, timed_laps=10)
-    drive(s, laps=13, speed=10.0)
-    assert s.status is Status.COMPLETE, s.result()
-    r = s.result()
-    assert r["laps_completed"] == 10
-    assert r["collisions"] == 0
-    # 100 m at 10 m/s = 10 s per lap.
-    assert math.isclose(r["best_lap_time"], 10.0, abs_tol=0.05), r["best_lap_time"]
-    assert math.isclose(r["total_time"], 100.0, abs_tol=0.5), r["total_time"]
-    assert r["total_time_raw"] == r["total_time"]
+def test_best_lap_is_the_best_after_penalties():
+    """The quickest lap as driven is not the quickest lap as scored."""
+    session = RaceSession(Rules(timed_laps=3, warmup_laps=0, collision_penalty_s=10.0))
+    sim = Simulator()
+    start(session, sim)
+    # Lap 2 is quickest on the road but picks up a collision doing it.
+    run_laps(session, sim, [7.0, 6.0, 7.5], collisions_per_lap=[0, 1, 0])
+
+    best = session.best_lap()
+    assert best.number == 1, f"expected lap 1, got {best.number}"
+    assert abs(best.net_time - 7.0) < 1e-6
+    assert abs(session.total_time() - (7.0 + 16.0 + 7.5)) < 1e-6
 
 
-def test_warmup_lap_is_not_scored():
-    s = make_session(warmup_laps=1, timed_laps=2)
-    drive(s, laps=5, speed=10.0)
-    assert s.timed_laps_done == 2
-    # 2 timed laps only, even though 4+ line crossings happened.
-    assert len(s.result()["laps"]) == 2
+# ---------------------------------------------------------------------------
+# Collisions
+# ---------------------------------------------------------------------------
 
+def test_collision_adds_penalty_to_the_lap_it_happened_on():
+    session = RaceSession(Rules(timed_laps=2, warmup_laps=0, collision_penalty_s=10.0))
+    sim = Simulator()
+    start(session, sim)
+    run_laps(session, sim, [10.0, 10.0], collisions_per_lap=[2, 0])
 
-def test_collision_adds_ten_seconds_to_that_lap():
-    s = make_session(warmup_laps=1, timed_laps=3)
-    # First collision lands inside timed lap 1: after the out lap (5 m to the
-    # line) plus one warm-up lap (100 m), i.e. around 150 m travelled.
-    drive(s, laps=6, speed=10.0, collide_at=[150.0])
-    r = s.result()
-    assert r["collisions"] == 1
-    penalised = [lap for lap in r["laps"] if lap["collisions"] == 1]
-    assert len(penalised) == 1
-    assert penalised[0]["penalty_s"] == 10.0
-    assert math.isclose(penalised[0]["net_time"], penalised[0]["raw_time"] + 10.0)
-    assert math.isclose(r["total_time"], r["total_time_raw"] + 10.0, abs_tol=1e-6)
-
-
-def test_pulses_are_rate_limited_not_collapsed():
-    """One hit is one collision, but the rate limit does not reset on contact."""
-    s = make_session(collision_interval_s=1.0)
-    s.update(0.0, -45.0, 0.0, 5.0)
-    s.update(0.1, -44.5, 0.0, 5.0)
-    # 50 pulses over half a second is a single impact, not 50 collisions.
-    for i in range(50):
-        s.register_collision(0.2 + i * 0.01)
-    assert s.collision_events == 1
-
-
-def test_continuous_contact_keeps_counting():
-    """A car that stays on the barrier pays again every interval."""
-    s = make_session(collision_interval_s=1.0, max_collisions=100)
-    s.update(0.0, -45.0, 0.0, 5.0)
-    s.update(0.1, -44.5, 0.0, 5.0)
-    # Five seconds of unbroken contact at the simulator's ~100 Hz report rate.
-    for i in range(500):
-        s.register_collision(1.0 + i * 0.01)
-    # t=1.0, 2.0, 3.0, 4.0, 5.0 -> five collisions, not one.
-    assert s.collision_events == 5, s.collision_events
-
-
-def test_sitting_on_a_barrier_disqualifies():
-    """Never getting off the wall runs through the limit and ends the run."""
-    s = make_session(collision_interval_s=1.0, max_collisions=10)
-    s.update(0.0, -45.0, 0.0, 5.0)
-    s.update(0.1, -44.5, 0.0, 5.0)
-    for i in range(3000):                      # 30 s of contact, if it got that far
-        s.register_collision(1.0 + i * 0.01)
-    assert s.status is Status.DISQUALIFIED
-    assert s.collision_events == 11            # stops counting once the run ends
-
-
-def test_sustained_contact_penalises_the_lap_it_happened_on():
-    s = make_session(warmup_laps=0, timed_laps=2, collision_interval_s=1.0,
-                     max_collisions=100, min_lap_time_s=0.0)
-    t = 0.0
-    for x in (-3.0, -1.0, 1.0, 3.0):           # cross the line, timing starts
-        t += 0.1
-        s.update(t, x, 0.0, 10.0)
-    for i in range(300):                       # 3 s of grinding inside lap 1
-        s.register_collision(1.0 + i * 0.01)
-    assert s._current_lap_collisions == 3
-    assert s.collision_events == 3
+    laps = session.timed()
+    assert laps[0].collisions == 2 and abs(laps[0].penalty_s - 20.0) < 1e-6
+    assert laps[1].collisions == 0 and laps[1].penalty_s == 0.0
+    assert abs(session.total_time() - 40.0) < 1e-6
 
 
 def test_exceeding_the_collision_limit_disqualifies():
-    s = make_session(max_collisions=10, collision_interval_s=0.001)
-    s.update(0.0, -45.0, 0.0, 5.0)
-    s.update(0.1, -44.5, 0.0, 5.0)
-    for i in range(10):
-        s.register_collision(float(i))
-    assert s.status is not Status.DISQUALIFIED, "exactly 10 is still legal"
-    s.register_collision(10.0)
-    assert s.status is Status.DISQUALIFIED
-    r = s.result()
-    assert r["scored"] is False
-    assert r["best_lap_time"] is None and r["total_time"] is None
+    session = RaceSession(Rules(timed_laps=10, warmup_laps=0, max_collisions=3))
+    sim = Simulator()
+    start(session, sim)
+    for _ in range(4):
+        sim.collide()
+        sim.feed(session)
+
+    assert session.status is Status.DISQUALIFIED
+    assert not session.scored
+    assert session.total_time() is None
+    assert session.result()["best_lap_time"] is None
 
 
-def test_reverse_crossings_do_not_count():
-    s = make_session(warmup_laps=0, timed_laps=1, min_lap_time_s=0.0)
-    t = 0.0
-    # Approach and cross forwards to start timing.
-    for x in (-3.0, -1.0, 1.0, 3.0):
-        t += 0.1
-        s.update(t, x, 0.0, 10.0)
-    assert s._crossings == 1
-    # Now shuffle back and forth over the line. Starting from x=3 the moves are
-    # 3->1 (back), 1->-1 (back), -1->1 (forward), 1->-1 (back): exactly one of
-    # them is a crossing in the racing direction.
-    for x in (1.0, -1.0, 1.0, -1.0):
-        t += 0.1
-        s.update(t, x, 0.0, 10.0)
-    assert s._crossings == 2, s._crossings
+def test_the_limit_itself_is_not_a_disqualification():
+    session = RaceSession(Rules(timed_laps=1, warmup_laps=0, max_collisions=3))
+    sim = Simulator()
+    start(session, sim)
+    for _ in range(3):
+        sim.collide()
+        sim.feed(session)
+    assert session.status is Status.RUNNING
+    run_laps(session, sim, [5.0])
+    assert session.status is Status.COMPLETE
 
 
-def test_min_lap_time_rejects_double_counting():
-    s = make_session(warmup_laps=0, timed_laps=5, min_lap_time_s=5.0)
-    t = 0.0
-    for x in (-3.0, -1.0, 1.0, 3.0):
-        t += 0.1
-        s.update(t, x, 0.0, 10.0)
-    first = s._crossings
-    # Loop back round and cross again well inside the minimum lap time.
-    s.update(t + 0.1, -3.0, 0.0, 10.0)
-    s.update(t + 0.2, 3.0, 0.0, 10.0)
-    assert s._crossings == first, "crossing inside min_lap_time_s must be ignored"
+def test_several_collisions_between_two_samples_all_count():
+    """The bridge publishes a counter, not an event, so a jump is real."""
+    session = RaceSession(Rules(timed_laps=1, warmup_laps=0, max_collisions=10))
+    sim = Simulator()
+    start(session, sim)
+    sim.collide(4)
+    sim.feed(session)
+    assert session.collision_events == 4
 
 
-def test_stuck_car_is_dnf():
-    s = make_session(stuck_timeout_s=5.0)
-    s.update(0.0, -45.0, 0.0, 5.0)
-    s.update(0.1, -44.5, 0.0, 5.0)
-    assert s.status is Status.RUNNING
-    t = 0.2
-    while t < 12.0 and not s.finished:
-        s.update(t, -44.5, 0.0, 0.0)
-        t += 0.1
-    assert s.status is Status.DNF_STUCK
+def test_a_counter_going_backwards_is_a_reset_not_a_credit():
+    session = RaceSession(Rules(timed_laps=2, warmup_laps=0))
+    sim = Simulator(collision_count=5)
+    start(session, sim)
+    sim.collide(2)
+    sim.feed(session)
+    assert session.collision_events == 2
+
+    # The simulator was reset underneath the referee.
+    sim.collision_count = 0
+    sim.feed(session)
+    assert session.collision_events == 2, "a reset must not refund collisions"
+    sim.collide()
+    sim.feed(session)
+    assert session.collision_events == 3
 
 
-def test_session_timeout_is_dnf():
-    s = make_session(session_timeout_s=30.0, timed_laps=10)
-    drive(s, laps=50, speed=2.0)
-    assert s.status is Status.DNF_TIMEOUT
-    assert s.result()["total_time"] is None
-    assert s.result()["laps_completed"] < 10
+# ---------------------------------------------------------------------------
+# Warm-up laps
+# ---------------------------------------------------------------------------
+
+def test_warmup_laps_are_not_scored():
+    session = RaceSession(Rules(timed_laps=2, warmup_laps=1))
+    sim = Simulator()
+    start(session, sim)
+    run_laps(session, sim, [99.0, 5.0, 6.0])
+
+    assert session.timed_laps_done == 2
+    assert abs(session.total_time() - 11.0) < 1e-6, "the warm-up lap must not be in the total"
+    assert session.best_lap().number == 1
 
 
-def test_car_that_never_moves_stays_pending():
-    s = make_session()
-    for i in range(100):
-        s.update(i * 0.1, -45.0, 0.0, 0.0)
-    assert s.status is Status.PENDING
-    assert s.result()["scored"] is False
+def test_collisions_on_a_warmup_lap_count_but_carry_no_penalty():
+    session = RaceSession(Rules(timed_laps=1, warmup_laps=1, max_collisions=10))
+    sim = Simulator()
+    start(session, sim)
+    run_laps(session, sim, [8.0, 5.0], collisions_per_lap=[2, 0])
 
+    assert session.collision_events == 2, "they still count towards disqualification"
+    assert session.result()["total_penalty_s"] == 0.0, "no scored lap to penalise"
+    assert abs(session.total_time() - 5.0) < 1e-6
+
+
+# ---------------------------------------------------------------------------
+# Ending early
+# ---------------------------------------------------------------------------
+
+def test_a_stopped_car_is_a_dnf():
+    session = RaceSession(Rules(timed_laps=10, warmup_laps=0, stuck_timeout_s=15.0))
+    sim = Simulator(speed=0.0)
+    start(session, sim)
+    for _ in range(int(20.0 / 0.025)):
+        sim.tick()
+        sim.feed(session)
+        if session.finished:
+            break
+
+    assert session.status is Status.DNF_STUCK
+    assert not session.scored
+
+
+def test_running_out_of_session_time_is_a_dnf():
+    """Three 10 s laps fit inside a 35 s session; the fourth runs out of road."""
+    session = RaceSession(Rules(timed_laps=10, warmup_laps=0, session_timeout_s=35.0))
+    sim = Simulator()
+    start(session, sim)
+    run_laps(session, sim, [10.0, 10.0, 10.0, 10.0])
+
+    assert session.status is Status.DNF_TIMEOUT
+    assert not session.scored
+    assert session.result()["laps_completed"] == 3, "the completed laps are still reported"
+    assert session.race_time >= 35.0
+
+
+def test_an_unfinished_run_scores_nothing():
+    session = RaceSession(Rules(timed_laps=10, warmup_laps=0))
+    sim = Simulator()
+    start(session, sim)
+    run_laps(session, sim, [5.0] * 9)
+    session.abort("test")
+
+    result = session.result()
+    assert result["status"] == "ABORTED"
+    assert result["scored"] is False
+    assert result["best_lap_time"] is None and result["total_time"] is None
+    assert result["laps_completed"] == 9, "the laps are still reported, just not scored"
+
+
+# ---------------------------------------------------------------------------
+# Telemetry the simulator should never send
+# ---------------------------------------------------------------------------
+
+def test_an_impossibly_short_lap_is_recorded_with_a_warning():
+    session = RaceSession(Rules(timed_laps=1, warmup_laps=0, min_lap_time_s=1.0))
+    sim = Simulator()
+    start(session, sim)
+    run_laps(session, sim, [0.01])
+
+    assert session.status is Status.COMPLETE
+    assert session.result()["warnings"], "a sub-minimum lap must be flagged"
+
+
+def test_two_laps_closing_between_samples_is_flagged():
+    session = RaceSession(Rules(timed_laps=5, warmup_laps=0))
+    sim = Simulator()
+    start(session, sim)
+    sim.lap_count += 2
+    sim.last_lap_time = 5.0
+    sim.feed(session)
+
+    assert session.result()["warnings"], "a skipped lap must be flagged, not invented"
+
+
+def test_nothing_happens_before_the_green_flag():
+    session = RaceSession(Rules())
+    sim = Simulator()
+    sim.collide(5)
+    sim.close_lap(4.0)
+    assert sim.feed(session) == []
+    assert session.collision_events == 0
+    assert session.timed_laps_done == 0
+    assert session.status is Status.PENDING
+
+
+# ---------------------------------------------------------------------------
+# Rule validation
+# ---------------------------------------------------------------------------
 
 def test_invalid_rules_are_rejected():
-    for bad in (dict(timed_laps=0), dict(warmup_laps=-1), dict(session_timeout_s=0)):
+    for bad in (Rules(timed_laps=0), Rules(collision_penalty_s=-1.0),
+                Rules(session_timeout_s=0.0), Rules(warmup_laps=-1),
+                Rules(min_lap_time_s=-1.0), Rules(stuck_timeout_s=0.0)):
         try:
-            Rules(**bad).validate()
+            RaceSession(bad)
         except ValueError:
             continue
         raise AssertionError(f"{bad} should have been rejected")
 
 
-def test_degenerate_finish_line_is_rejected():
-    try:
-        RaceSession(Rules(), (1.0, 1.0), (1.0, 1.0), 1)
-    except ValueError:
-        return
-    raise AssertionError("identical finish line endpoints should be rejected")
+def test_the_official_defaults_are_the_icra_format():
+    rules = Rules()
+    assert rules.timed_laps == 10
+    assert rules.collision_penalty_s == 10.0
+    assert rules.warmup_laps == 0, "ICRA races a standing start"
+    assert rules.max_collisions < 0, "ICRA has no collision limit"
+
+
+def test_no_collision_limit_by_default():
+    """A scruffy run finishes and scores badly; it is not thrown out."""
+    session = RaceSession(Rules(timed_laps=2, warmup_laps=0))
+    sim = Simulator()
+    start(session, sim)
+    run_laps(session, sim, [20.0, 20.0], collisions_per_lap=[40, 40])
+
+    assert session.status is Status.COMPLETE
+    assert session.collision_events == 80
+    assert session.result()["collision_limit"] is None
+    assert abs(session.total_time() - (40.0 + 80 * 10.0)) < 1e-6
 
 
 if __name__ == "__main__":

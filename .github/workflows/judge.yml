@@ -13,9 +13,9 @@ name: Judge
 
 on:
   push:
-    branches: [track1, main]
+    branches: [track2, main]
   pull_request:
-    branches: [track1, main]
+    branches: [track2, main]
   workflow_dispatch:
     inputs:
       laps:
@@ -34,14 +34,18 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_NAME: roboracer_track1
+  IMAGE_NAME: roboracer_track2
   LAPS: ${{ github.event.inputs.laps || '10' }}
   RUNS: ${{ github.event.inputs.runs || '1' }}
+  # Pinned so a run is reproducible, and so a new AutoDRIVE release cannot
+  # change what CI races without a commit that says so.
+  SIM_RELEASE: "2026-icra"
 
 jobs:
   # ---------------------------------------------------------------------
-  # Fast feedback. None of this needs Docker, so it fails in under a minute
-  # when something is obviously wrong rather than 30 minutes into a build.
+  # Fast feedback. None of this needs Docker or the simulator, so it fails
+  # in under a minute when something is obviously wrong rather than 30
+  # minutes into a build.
   # ---------------------------------------------------------------------
   checks:
     name: Checks
@@ -51,12 +55,11 @@ jobs:
       mode: ${{ steps.detect.outputs.mode }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          # Matches the image: ROS 2 Humble is Python 3.10.
+          python-version: "3.10"
 
       - name: Install tooling
         run: python -m pip install --quiet pyyaml
@@ -64,7 +67,9 @@ jobs:
       - name: Referee rule tests
         run: python3 race_ws/src/roboracer_referee/test/test_session.py
 
-      - name: Track definition is valid
+      - name: Track metadata is valid
+        # Passes cleanly while the compete map has not been published - the
+        # circuit lives in the simulator and a scored run never reads a map.
         run: ./scripts/track_tool.py validate
 
       - name: Judging environment is unmodified
@@ -80,7 +85,7 @@ jobs:
             {
               echo "### Judging environment"
               echo
-              echo "Intact. Nothing in the referee, the circuit, the image"
+              echo "Intact. Nothing in the referee, the AutoDRIVE Devkit, the image"
               echo "definition or the evaluation scripts has been changed."
             } >> "$GITHUB_STEP_SUMMARY"
             exit 0
@@ -91,8 +96,8 @@ jobs:
             echo "# DISQUALIFIED - judging environment modified"
             echo
             echo "> [!CAUTION]"
-            echo "> This entry would **not be scored**. Rule 24 forbids changing the"
-            echo "> judging environment, and rule 27 makes an entry that does so"
+            echo "> This entry would **not be scored**. Rule 28 forbids changing the"
+            echo "> judging environment, and rule 30 makes an entry that does so"
             echo "> ineligible. No race was run."
             echo
             echo "## What changed"
@@ -109,8 +114,8 @@ jobs:
             echo "If this was accidental, restore the official files:"
             echo
             echo '```sh'
-            echo "git checkout -- race_ws/src/roboracer_referee docker maps scripts install"
-            echo "git submodule update --init --recursive"
+            echo "git checkout -- race_ws/src/roboracer_referee external/autodrive_devkit \\"
+            echo "                docker maps/tracks.yaml scripts install"
             echo '```'
             echo
             echo "Then check it locally before pushing again:"
@@ -122,7 +127,7 @@ jobs:
             echo "If the change was deliberate, move it into"
             echo '`race_ws/src/team_driver/`, which is yours to edit. If you believe'
             echo "something in the judging environment is genuinely broken, raise it"
-            echo "with the organisers rather than patching around it (rule 27)."
+            echo "with the organisers rather than patching around it (rule 30)."
           } >> "$GITHUB_STEP_SUMMARY"
           exit 1
 
@@ -151,26 +156,39 @@ jobs:
     name: Race
     needs: checks
     runs-on: ubuntu-latest
-    # The image build is 15-30 minutes and each run is 11 laps of simulated
-    # racing on a two-core runner, so this is generous on purpose.
-    timeout-minutes: 300
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.10"
 
       - name: Install tooling
         run: python -m pip install --quiet pyyaml
 
       - name: Free up disk space
-        # The image is large and a hosted runner starts with little headroom.
+        # The image plus the simulator is several GB and a hosted runner starts
+        # with little headroom.
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc || true
           df -h /
+
+      - name: Cache the AutoDRIVE Simulator
+        id: sim-cache
+        uses: actions/cache@v4
+        with:
+          path: simulator
+          # The release tag is the whole key: these assets are immutable once
+          # published, so a hit is always the right binary.
+          key: autodrive-sim-linux-${{ env.SIM_RELEASE }}
+
+      - name: Fetch the AutoDRIVE Simulator
+        if: steps.sim-cache.outputs.cache-hit != 'true'
+        run: ./scripts/fetch_simulator.sh --platform linux
+
+      - name: Check the simulator is installed
+        run: ./scripts/fetch_simulator.sh --check --platform linux
 
       - uses: docker/setup-buildx-action@v3
 
@@ -194,12 +212,15 @@ jobs:
 
           # One shot per driver. The container runs evaluate.sh natively - it
           # detects that it is already inside and skips the docker hop.
+          #
+          # The simulator and the bridge both live in this container and talk
+          # over its own loopback, so no port needs publishing.
           race() {
             local team="$1" pkg="$2" exec_name="$3"
             echo "::group::Racing ${team} (${pkg}/${exec_name})"
             docker run --rm \
               -v "${PWD}:/hackathon" \
-              -e ROS_LOCALHOST_ONLY=1 \
+              --shm-size=2gb \
               "${IMAGE_NAME}:ci" \
               /hackathon/scripts/evaluate.sh \
                 --team "${team}" \
@@ -208,8 +229,8 @@ jobs:
                 --laps "${LAPS}" \
                 --runs "${RUNS}" \
                 --headless \
-                --timeout 7200 \
-                --wall-timeout 7200 \
+                --timeout 5400 \
+                --wall-timeout 5400 \
               || echo "::warning::${team} did not finish cleanly; see the log above."
             echo "::endgroup::"
           }
@@ -217,15 +238,15 @@ jobs:
           if [ "${MODE}" = "submission" ]; then
             race "team_driver" "team_driver" "driver"
           else
-            # wall_follower is deliberately absent: it cannot complete this
-            # circuit (see docs/03-baselines.md), so racing it would only ever
-            # report a disqualification.
+            # pure_pursuit is deliberately absent: it needs a path CSV, and the
+            # compete circuit has no published occupancy grid to trace one from
+            # (see maps/README.md), so racing it would only ever report a
+            # driver that refused to start.
             race "baseline_gap_follower" "roboracer_baselines" "gap_follower"
-            race "baseline_pure_pursuit" "roboracer_baselines" "pure_pursuit"
           fi
 
           # The container writes as root through the bind mount.
-          sudo chown -R "$(id -u):$(id -g)" results || true
+          sudo chown -R "$(id -u):$(id -g)" results race_ws/build race_ws/install race_ws/log || true
           ls -la results/
 
       - name: Write the summary
@@ -250,7 +271,7 @@ jobs:
             {
               echo "# Judging results"
               echo
-              echo "Your entry, raced on \`icra26\` over ${LAPS} scored laps."
+              echo "Your entry, raced on the AutoDRIVE compete circuit over ${LAPS} scored laps."
               echo
               ./scripts/leaderboard.py summarise results/ --markdown --title "Runs"
               echo
@@ -264,8 +285,8 @@ jobs:
               echo "# Baseline results"
               echo
               echo "\`race_ws/src/team_driver\` is still the template, so there is no"
-              echo "entry to score. These are the reference algorithms on \`icra26\`,"
-              echo "over ${LAPS} scored laps - the numbers to beat."
+              echo "entry to score. This is the reference reactive algorithm on the"
+              echo "compete circuit, over ${LAPS} scored laps - the number to beat."
               echo
               ./scripts/leaderboard.py rank results/ --markdown --title "Baselines"
               echo

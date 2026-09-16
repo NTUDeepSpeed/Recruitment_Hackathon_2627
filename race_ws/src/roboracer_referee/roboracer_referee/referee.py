@@ -1,16 +1,23 @@
 #!/usr/bin/env python3
-"""The official Track 1 referee.
+"""The official Track 2 referee.
 
-Watches a run, times it, applies the collision penalties and writes a result
-file. It only ever observes the car - it never sends a drive command - so the
-same node is used for practice and for judging.
+Watches a run, records it, applies the collision penalties and writes a result
+file. It only ever observes the car - it never sends a throttle or steering
+command - so the same node is used for practice and for judging.
 
     ros2 run roboracer_referee referee --ros-args -p team:=my_team
     ros2 launch roboracer_referee evaluate.launch.py team:=my_team driver_pkg:=team_driver
 
-Timing runs on the simulated clock the gym bridge publishes on /clock, not on
-the wall clock. A run therefore scores the same on a fast desktop and a tired
-laptop; see docs/04-evaluation.md.
+Where Track 1's referee timed laps itself against a finish line it knew the
+coordinates of, this one does not: the AutoDRIVE Simulator owns the
+start/finish line and the track boundaries and publishes lap count, lap times
+and a collision count through the devkit bridge. The referee reads those,
+applies the hackathon's rules to them, and writes the result. That makes a
+scored run independent of the map file entirely - which matters, because the
+compete circuit is released as a simulator build, not as an occupancy grid.
+
+Timing is the simulator's own. It runs on simulated time, so a run scores the
+same on a fast desktop and a tired laptop; see docs/04-evaluation.md.
 """
 
 from __future__ import annotations
@@ -27,19 +34,19 @@ from datetime import datetime, timezone
 from typing import Optional
 
 import rclpy
-from ackermann_msgs.msg import AckermannDriveStamped
-from geometry_msgs.msg import Point, PoseWithCovarianceStamped
+from geometry_msgs.msg import Point
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
-from rosgraph_msgs.msg import Clock
-from std_msgs.msg import Bool
+from rclpy.qos import (QoSDurabilityPolicy, QoSHistoryPolicy, QoSProfile,
+                       QoSReliabilityPolicy)
+from std_msgs.msg import Bool, Float32, Int32
 from visualization_msgs.msg import Marker
 
 from .session import RaceSession, Rules, Status
 from .tracks import TrackError, load_track
 
-REFEREE_VERSION = "1.0.0"
-RESULT_SCHEMA_VERSION = 2
+REFEREE_VERSION = "2.0.0"
+RESULT_SCHEMA_VERSION = 3
 
 # Node exit codes, so a shell harness can branch on the outcome.
 EXIT_OK = 0
@@ -47,10 +54,25 @@ EXIT_NOT_SCORED = 2       # ran, but DNF or disqualified
 EXIT_SETUP_FAILED = 3     # never got as far as racing
 
 
+def devkit_qos() -> QoSProfile:
+    """Match the profile the AutoDRIVE bridge publishes with.
+
+    The bridge uses RELIABLE / KEEP_LAST(1) / VOLATILE. A deeper queue on this
+    side would only ever hand the referee stale telemetry after a hiccup, and
+    stale telemetry is how a lap gets counted twice.
+    """
+    return QoSProfile(
+        durability=QoSDurabilityPolicy.VOLATILE,
+        reliability=QoSReliabilityPolicy.RELIABLE,
+        history=QoSHistoryPolicy.KEEP_LAST,
+        depth=1,
+    )
+
+
 class Phase:
-    WAIT_TOPICS = "waiting for the simulator"
-    RESETTING = "placing the car on the grid"
+    WAIT_TELEMETRY = "waiting for the simulator"
     WAIT_DRIVER = "waiting for the driver node"
+    RESETTING = "placing the car on the grid"
     RACING = "racing"
     DONE = "finished"
 
@@ -67,25 +89,25 @@ class Referee(Node):
         self.declare_parameter("track_config", "")
         self.declare_parameter("output_dir", "/hackathon/results")
 
-        self.declare_parameter("warmup_laps", 1)
+        self.declare_parameter("warmup_laps", 0)
         self.declare_parameter("timed_laps", 10)
         self.declare_parameter("collision_penalty_s", 10.0)
-        self.declare_parameter("max_collisions", 10)
-        self.declare_parameter("collision_interval_s", 1.0)
-        self.declare_parameter("min_lap_time_s", 2.0)
-        self.declare_parameter("session_timeout_s", 900.0)
+        self.declare_parameter("max_collisions", -1)   # negative = no limit (ICRA format)
+        self.declare_parameter("min_lap_time_s", 1.0)
+        self.declare_parameter("session_timeout_s", 600.0)
         self.declare_parameter("stuck_speed_mps", 0.05)
         self.declare_parameter("stuck_timeout_s", 15.0)
 
-        self.declare_parameter("startup_timeout_s", 60.0)
+        self.declare_parameter("startup_timeout_s", 120.0)
         self.declare_parameter("driver_timeout_s", 60.0)
         self.declare_parameter("wall_timeout_s", 1800.0)
         self.declare_parameter("reset_car", True)
+        self.declare_parameter("reset_hold_s", 0.5)
+        self.declare_parameter("reset_settle_s", 1.0)
+        self.declare_parameter("lap_settle_s", 0.2)
 
-        self.declare_parameter("odom_topic", "/ego_racecar/odom")
-        self.declare_parameter("collision_topic", "/ego_racecar/collision")
-        self.declare_parameter("sim_time_topic", "/clock")
-        self.declare_parameter("drive_topic", "/drive")
+        self.declare_parameter("vehicle_ns", "/autodrive/roboracer_1")
+        self.declare_parameter("reset_topic", "/autodrive/reset_command")
 
         self.team = str(self.get_parameter("team").value).strip() or "unnamed_team"
         self.run_id = str(self.get_parameter("run_id").value).strip() \
@@ -95,8 +117,13 @@ class Referee(Node):
         self.driver_timeout_s = float(self.get_parameter("driver_timeout_s").value)
         self.wall_timeout_s = float(self.get_parameter("wall_timeout_s").value)
         self.reset_car = bool(self.get_parameter("reset_car").value)
+        self.reset_hold_s = float(self.get_parameter("reset_hold_s").value)
+        self.reset_settle_s = float(self.get_parameter("reset_settle_s").value)
+        self.lap_settle_s = float(self.get_parameter("lap_settle_s").value)
 
         # -- track ---------------------------------------------------------
+        # Metadata only: the name that goes in the result file, and the map a
+        # team may have used for planning. Nothing here is used to score.
         track_name = str(self.get_parameter("track").value).strip() or None
         track_config = str(self.get_parameter("track_config").value).strip() or None
         try:
@@ -110,51 +137,58 @@ class Referee(Node):
             timed_laps=int(self.get_parameter("timed_laps").value),
             collision_penalty_s=float(self.get_parameter("collision_penalty_s").value),
             max_collisions=int(self.get_parameter("max_collisions").value),
-            collision_interval_s=float(self.get_parameter("collision_interval_s").value),
             min_lap_time_s=float(self.get_parameter("min_lap_time_s").value),
             session_timeout_s=float(self.get_parameter("session_timeout_s").value),
             stuck_speed_mps=float(self.get_parameter("stuck_speed_mps").value),
             stuck_timeout_s=float(self.get_parameter("stuck_timeout_s").value),
         )
         try:
-            self.session = RaceSession(
-                rules, self.track.finish_line[0], self.track.finish_line[1],
-                self.track.crossing_direction,
-            )
+            self.session = RaceSession(rules)
         except ValueError as exc:
             self.get_logger().fatal(str(exc))
             raise SystemExit(EXIT_SETUP_FAILED)
 
         # -- state ---------------------------------------------------------
-        self.phase = Phase.WAIT_TOPICS
-        self.sim_time: Optional[float] = None
-        self.first_sim_time: Optional[float] = None
-        self.last_sim_time: Optional[float] = None
-        self.last_odom_time: Optional[float] = None
-        self.last_position: Optional[tuple] = None
+        self.phase = Phase.WAIT_TELEMETRY
+        self.lap_count: Optional[int] = None
+        self.lap_time: float = 0.0
+        self.last_lap_time: float = 0.0
+        self.best_lap_time: float = 0.0
+        self.collision_count: Optional[int] = None
+        self.speed: float = 0.0
+        self.position: Optional[tuple] = None
+        self.last_odom_wall: Optional[float] = None
         self.driver_seen = False
-        self.reset_requested_at: Optional[float] = None
         self.phase_started_wall = time.monotonic()
         self.started_wall = time.monotonic()
         self.result_written = False
+        self._racing_started_wall: Optional[float] = None
+        self._stable_lap_count: Optional[int] = None
+        self._pending_lap_count: Optional[int] = None
+        self._pending_lap_since: Optional[float] = None
+        self._reset_released = False
         self._callback_errors = 0
 
         # -- ROS interfaces ------------------------------------------------
-        odom_topic = str(self.get_parameter("odom_topic").value)
-        collision_topic = str(self.get_parameter("collision_topic").value)
-        sim_time_topic = str(self.get_parameter("sim_time_topic").value)
-        drive_topic = str(self.get_parameter("drive_topic").value)
+        ns = str(self.get_parameter("vehicle_ns").value).rstrip("/")
+        qos = devkit_qos()
 
-        self.create_subscription(Odometry, odom_topic, self._on_odom, 10)
-        self.create_subscription(Bool, collision_topic, self._on_collision, 50)
-        self.create_subscription(Clock, sim_time_topic, self._on_sim_time, 10)
-        self.create_subscription(AckermannDriveStamped, drive_topic, self._on_drive, 10)
+        self.create_subscription(Int32, f"{ns}/lap_count", self._on_lap_count, qos)
+        self.create_subscription(Float32, f"{ns}/lap_time", self._on_lap_time, qos)
+        self.create_subscription(Float32, f"{ns}/last_lap_time", self._on_last_lap_time, qos)
+        self.create_subscription(Float32, f"{ns}/best_lap_time", self._on_best_lap_time, qos)
+        self.create_subscription(Int32, f"{ns}/collision_count", self._on_collisions, qos)
+        self.create_subscription(Odometry, f"{ns}/odom", self._on_odom, qos)
+        # Either command is proof of life; a driver may legitimately hold one
+        # of them at zero for a while (a straight needs no steering input).
+        self.create_subscription(Float32, f"{ns}/throttle_command", self._on_driver, qos)
+        self.create_subscription(Float32, f"{ns}/steering_command", self._on_driver, qos)
 
-        self.reset_pub = self.create_publisher(PoseWithCovarianceStamped, "/initialpose", 10)
-        self.line_pub = self.create_publisher(Marker, "/referee/finish_line", 1)
+        self.reset_pub = self.create_publisher(
+            Bool, str(self.get_parameter("reset_topic").value), qos)
         self.status_pub = self.create_publisher(Marker, "/referee/status", 1)
 
-        self.create_timer(0.2, self._tick)
+        self.create_timer(0.05, self._tick)
         self.create_timer(1.0, self._publish_markers)
 
         self._log_banner()
@@ -163,22 +197,19 @@ class Referee(Node):
 
     def _log_banner(self) -> None:
         rules = self.session.rules
-        (ax, ay), (bx, by) = self.track.finish_line
+        limit = (f", DQ above {rules.max_collisions}" if rules.max_collisions >= 0
+                 else " (no limit)")
         self.get_logger().info(
             "\n"
             "=========================================================\n"
-            f" RoboRacer Track 1 referee v{REFEREE_VERSION}\n"
+            f" RoboRacer Track 2 referee v{REFEREE_VERSION}\n"
             "=========================================================\n"
             f" team          : {self.team}\n"
             f" run id        : {self.run_id}\n"
             f" track         : {self.track.name}\n"
-            f" map           : {self.track.map_path}\n"
-            f" grid slot     : ({self.track.start_pose[0]:.2f}, {self.track.start_pose[1]:.2f}, "
-            f"{math.degrees(self.track.start_pose[2]):.1f} deg)\n"
-            f" finish line   : ({ax:.2f}, {ay:.2f}) -> ({bx:.2f}, {by:.2f})\n"
+            f" simulator     : AutoDRIVE (compete build)\n"
             f" format        : {rules.warmup_laps} warm-up lap(s) + {rules.timed_laps} timed lap(s)\n"
-            f" penalty       : +{rules.collision_penalty_s:.0f}s per collision, "
-            f"DQ above {rules.max_collisions}\n"
+            f" penalty       : +{rules.collision_penalty_s:.0f}s per collision{limit}\n"
             f" results       : {self.output_dir}\n"
             "========================================================="
         )
@@ -193,48 +224,48 @@ class Referee(Node):
         elif self._callback_errors == 6:
             self.get_logger().error(f"{where}: further callback errors suppressed")
 
-    def _on_sim_time(self, msg: Clock) -> None:
+    def _on_lap_count(self, msg: Int32) -> None:
         try:
-            value = msg.clock.sec + msg.clock.nanosec * 1e-9
-            if not math.isfinite(value):
-                return
-            self.sim_time = value
-            if self.first_sim_time is None:
-                self.first_sim_time = value
-            self.last_sim_time = value
+            self.lap_count = int(msg.data)
         except Exception as exc:                            # noqa: BLE001
-            self._guard("sim_time callback", exc)
+            self._guard("lap_count callback", exc)
 
-    def _on_drive(self, _msg: AckermannDriveStamped) -> None:
-        self.driver_seen = True
-
-    def _on_collision(self, msg: Bool) -> None:
+    def _on_lap_time(self, msg: Float32) -> None:
         try:
-            if not msg.data or self.phase != Phase.RACING or self.sim_time is None:
-                return
-            if self.session.register_collision(self.sim_time):
-                self.get_logger().warn(
-                    f"COLLISION {self.session.collision_events}/"
-                    f"{self.session.rules.max_collisions} "
-                    f"(+{self.session.rules.collision_penalty_s:.0f}s on this lap)"
-                )
+            value = float(msg.data)
+            if math.isfinite(value):
+                self.lap_time = value
         except Exception as exc:                            # noqa: BLE001
-            self._guard("collision callback", exc)
+            self._guard("lap_time callback", exc)
+
+    def _on_last_lap_time(self, msg: Float32) -> None:
+        try:
+            self.last_lap_time = float(msg.data)
+        except Exception as exc:                            # noqa: BLE001
+            self._guard("last_lap_time callback", exc)
+
+    def _on_best_lap_time(self, msg: Float32) -> None:
+        try:
+            self.best_lap_time = float(msg.data)
+        except Exception as exc:                            # noqa: BLE001
+            self._guard("best_lap_time callback", exc)
+
+    def _on_collisions(self, msg: Int32) -> None:
+        try:
+            self.collision_count = int(msg.data)
+        except Exception as exc:                            # noqa: BLE001
+            self._guard("collision_count callback", exc)
 
     def _on_odom(self, msg: Odometry) -> None:
         try:
-            self.last_odom_time = time.monotonic()
-            self.last_position = (msg.pose.pose.position.x, msg.pose.pose.position.y)
-            if self.phase != Phase.RACING or self.sim_time is None:
-                return
-            speed = math.hypot(msg.twist.twist.linear.x, msg.twist.twist.linear.y)
-            for event in self.session.update(
-                    self.sim_time, self.last_position[0], self.last_position[1], speed):
-                self.get_logger().info(event)
-            if self.session.finished:
-                self._conclude()
+            self.last_odom_wall = time.monotonic()
+            self.position = (msg.pose.pose.position.x, msg.pose.pose.position.y)
+            self.speed = math.hypot(msg.twist.twist.linear.x, msg.twist.twist.linear.y)
         except Exception as exc:                            # noqa: BLE001
             self._guard("odom callback", exc)
+
+    def _on_driver(self, _msg: Float32) -> None:
+        self.driver_seen = True
 
     # -- phases ------------------------------------------------------------
 
@@ -245,6 +276,11 @@ class Referee(Node):
 
     def _phase_elapsed(self) -> float:
         return time.monotonic() - self.phase_started_wall
+
+    @property
+    def _have_telemetry(self) -> bool:
+        return (self.lap_count is not None and self.collision_count is not None
+                and self.last_odom_wall is not None)
 
     def _tick(self) -> None:
         try:
@@ -259,137 +295,174 @@ class Referee(Node):
                 self._conclude()
                 return
 
-            if self.phase == Phase.WAIT_TOPICS:
-                self._tick_wait_topics()
-            elif self.phase == Phase.RESETTING:
-                self._tick_resetting()
+            if self.phase == Phase.WAIT_TELEMETRY:
+                self._tick_wait_telemetry()
             elif self.phase == Phase.WAIT_DRIVER:
                 self._tick_wait_driver()
-            elif self.phase == Phase.RACING and self.session.finished:
-                self._conclude()
+            elif self.phase == Phase.RESETTING:
+                self._tick_resetting()
+            elif self.phase == Phase.RACING:
+                self._tick_racing()
         except SystemExit:
             raise
         except Exception as exc:                            # noqa: BLE001
             self._guard("referee tick", exc)
 
-    def _tick_wait_topics(self) -> None:
-        have_sim_time = self.sim_time is not None
-        have_odom = self.last_odom_time is not None
-        if have_sim_time and have_odom:
-            if self.reset_car:
-                self._enter(Phase.RESETTING)
-            else:
-                self._enter(Phase.WAIT_DRIVER)
+    def _tick_wait_telemetry(self) -> None:
+        if self._have_telemetry:
+            self.get_logger().info(
+                f"Simulator connected (lap_count={self.lap_count}, "
+                f"collisions={self.collision_count})."
+            )
+            self._enter(Phase.WAIT_DRIVER)
             return
 
         if self._phase_elapsed() < self.startup_timeout_s:
-            if int(self._phase_elapsed()) % 5 == 0:
-                missing = []
-                if not have_sim_time:
-                    missing.append(str(self.get_parameter("sim_time_topic").value))
-                if not have_odom:
-                    missing.append(str(self.get_parameter("odom_topic").value))
-                self.get_logger().info(f"Waiting for: {', '.join(missing)}", throttle_duration_sec=5)
+            missing = []
+            if self.lap_count is None:
+                missing.append("lap_count")
+            if self.collision_count is None:
+                missing.append("collision_count")
+            if self.last_odom_wall is None:
+                missing.append("odom")
+            self.get_logger().info(
+                f"Waiting for AutoDRIVE telemetry: {', '.join(missing)}",
+                throttle_duration_sec=5,
+            )
             return
 
-        if not have_odom:
-            self._fail_setup(
-                f"No odometry on {self.get_parameter('odom_topic').value} after "
-                f"{self.startup_timeout_s:.0f}s. Is the simulator running? Start it with:\n"
-                "    ros2 launch roboracer_referee simulator.launch.py"
-            )
-        else:
-            self._fail_setup(
-                f"No simulated clock on {self.get_parameter('sim_time_topic').value} after "
-                f"{self.startup_timeout_s:.0f}s.\n"
-                "The simulator is running but is not publishing simulated time, so a fair run\n"
-                "cannot be timed. The bridge needs use_sim_time_bridge set, which\n"
-                "simulator.launch.py does for you:\n"
-                "    ros2 launch roboracer_referee simulator.launch.py"
-            )
-
-    def _tick_resetting(self) -> None:
-        # The car is teleported onto the grid so that every run starts from an
-        # identical state. Repeat the request: /initialpose is best-effort and
-        # the bridge may not have wired up its subscription on the first try.
-        if self._phase_elapsed() < 3.0:
-            self.reset_pub.publish(self._start_pose_msg())
-            return
-
-        near_start = (getattr(self, "last_position", None) is not None
-                      and math.dist(self.last_position, self.track.start_pose[:2]) < 1.0)
-        if near_start:
-            self.get_logger().info("Car is on the grid.")
-            self._enter(Phase.WAIT_DRIVER)
-        elif self._phase_elapsed() > 15.0:
-            self.get_logger().warn(
-                "The car did not move to the grid slot. Continuing from wherever it is; "
-                "lap counting still works, but the out lap will be a different length."
-            )
-            self._enter(Phase.WAIT_DRIVER)
-        else:
-            self.reset_pub.publish(self._start_pose_msg())
+        self._fail_setup(
+            f"No telemetry from the AutoDRIVE bridge after {self.startup_timeout_s:.0f}s.\n"
+            "Two things have to be running and talking to each other:\n"
+            "  1. the devkit bridge   ros2 launch autodrive_roboracer bringup_headless.launch.py\n"
+            "  2. the simulator       ./scripts/run_simulator.sh --headless\n"
+            "The simulator connects OUT to the bridge on port 4567, so the bridge has to be\n"
+            "up first. Check with:  ros2 topic hz /autodrive/roboracer_1/lap_count\n"
+            "Starting both at once is what `ros2 launch roboracer_referee simulator.launch.py`\n"
+            "is for."
+        )
 
     def _tick_wait_driver(self) -> None:
         if self.driver_seen:
-            self.get_logger().info("Driver is publishing. Green flag.")
-            self._enter(Phase.RACING)
+            self.get_logger().info("Driver is publishing.")
+            if self.reset_car:
+                self._enter(Phase.RESETTING)
+            else:
+                self._green_flag()
             return
         if self._phase_elapsed() > self.driver_timeout_s:
+            ns = str(self.get_parameter("vehicle_ns").value).rstrip("/")
             self._fail_setup(
-                f"Nothing published on {self.get_parameter('drive_topic').value} after "
-                f"{self.driver_timeout_s:.0f}s.\n"
+                f"Nothing published on {ns}/throttle_command or {ns}/steering_command "
+                f"after {self.driver_timeout_s:.0f}s.\n"
                 "Start your driver node, e.g.:\n"
                 "    ros2 run team_driver driver"
             )
         else:
-            self.get_logger().info(
-                f"Waiting for drive commands on {self.get_parameter('drive_topic').value}",
-                throttle_duration_sec=5,
-            )
+            self.get_logger().info("Waiting for drive commands", throttle_duration_sec=5)
 
-    def _start_pose_msg(self) -> PoseWithCovarianceStamped:
-        x, y, theta = self.track.start_pose
-        msg = PoseWithCovarianceStamped()
-        msg.header.frame_id = "map"
-        msg.header.stamp = self.get_clock().now().to_msg()
-        msg.pose.pose.position.x = x
-        msg.pose.pose.position.y = y
-        msg.pose.pose.orientation.z = math.sin(theta / 2.0)
-        msg.pose.pose.orientation.w = math.cos(theta / 2.0)
-        msg.pose.covariance = [0.0] * 36
-        return msg
+    def _tick_resetting(self) -> None:
+        """Teleport the car to the grid and zero the simulator's race counters.
+
+        /autodrive/reset_command is restricted for publishing (rule 31): the
+        referee may use it, an entry may not. It is level-triggered, so it has
+        to be released again or the simulator resets forever - which is what
+        the devkit's own warning about toggling it back to False is about.
+        """
+        elapsed = self._phase_elapsed()
+
+        if elapsed < self.reset_hold_s:
+            self.reset_pub.publish(Bool(data=True))
+            return
+
+        if not self._reset_released:
+            self.reset_pub.publish(Bool(data=False))
+            self._reset_released = True
+            return
+
+        # Keep holding it low while the telemetry catches up, so a dropped
+        # message cannot leave the simulator latched in reset.
+        self.reset_pub.publish(Bool(data=False))
+        if elapsed >= self.reset_hold_s + self.reset_settle_s:
+            if self.lap_count not in (0, None) or self.lap_time > 2.0:
+                self.get_logger().warn(
+                    f"After the reset the simulator still reports lap_count="
+                    f"{self.lap_count}, lap_time={self.lap_time:.2f}s. Scoring from "
+                    f"here anyway - the referee counts laps and collisions relative "
+                    f"to this moment, so the totals stay correct."
+                )
+            self._green_flag()
+
+    def _green_flag(self) -> None:
+        self.session.start(self.lap_count or 0, self.collision_count or 0)
+        self._racing_started_wall = time.monotonic()
+        self._stable_lap_count = self.lap_count or 0
+        self._pending_lap_count = self._stable_lap_count
+        self._pending_lap_since = None
+        self.get_logger().info("Green flag.")
+        self._enter(Phase.RACING)
+
+    def _tick_racing(self) -> None:
+        if self.session.finished:
+            self._conclude()
+            return
+        if not self._have_telemetry:
+            return
+
+        # The simulator reports the current lap's elapsed time and, at each
+        # crossing, the time of the lap that just closed. The session turns
+        # those into a race clock on the simulator's own time base, which is
+        # what the run limits are measured against.
+        for event in self.session.update(
+                max(0.0, self.lap_time), self._settled_lap_count(),
+                self.last_lap_time, self.collision_count, self.speed):
+            self.get_logger().info(event)
+
+        if self.session.finished:
+            self._conclude()
+
+    def _settled_lap_count(self) -> int:
+        """The lap count, held back until the rest of that frame has landed.
+
+        The bridge publishes one frame of telemetry as a burst of separate
+        messages, and it publishes `lap_count` *first* - before `last_lap_time`
+        and before `collision_count`. Those arrive on different topics and are
+        delivered independently, so a referee that acted on `lap_count` the
+        instant it changed would close the lap using the *previous* lap's time,
+        and would push a collision from the dying moments of that lap onto the
+        next one. Both are silent off-by-ones in the number being scored.
+
+        So a change in the lap count is only acted on once it has been stable
+        for `lap_settle_s`. At 40 Hz that is eight frames - the rest of the
+        burst has certainly arrived. Nothing is lost by waiting: the lap time
+        being recorded is the simulator's own, not a clock running here.
+        """
+        observed = self.lap_count if self.lap_count is not None else 0
+        now = time.monotonic()
+        if observed != self._pending_lap_count:
+            self._pending_lap_count = observed
+            self._pending_lap_since = now
+        if (self._pending_lap_since is not None
+                and now - self._pending_lap_since >= self.lap_settle_s):
+            self._stable_lap_count = self._pending_lap_count
+            self._pending_lap_since = None
+        return self._stable_lap_count if self._stable_lap_count is not None else observed
 
     # -- visualisation -----------------------------------------------------
 
     def _publish_markers(self) -> None:
         try:
-            (ax, ay), (bx, by) = self.track.finish_line
-            line = Marker()
-            line.header.frame_id = "map"
-            line.header.stamp = self.get_clock().now().to_msg()
-            line.ns = "referee"
-            line.id = 0
-            line.type = Marker.LINE_STRIP
-            line.action = Marker.ADD
-            line.scale.x = 0.15
-            line.color.r, line.color.g, line.color.b, line.color.a = 1.0, 0.85, 0.0, 1.0
-            line.pose.orientation.w = 1.0
-            line.points = [Point(x=ax, y=ay, z=0.0), Point(x=bx, y=by, z=0.0)]
-            self.line_pub.publish(line)
-
             text = Marker()
-            text.header.frame_id = "map"
-            text.header.stamp = line.header.stamp
+            text.header.frame_id = "world"
+            text.header.stamp = self.get_clock().now().to_msg()
             text.ns = "referee"
             text.id = 1
             text.type = Marker.TEXT_VIEW_FACING
             text.action = Marker.ADD
             text.scale.z = 0.6
             text.color.r = text.color.g = text.color.b = text.color.a = 1.0
-            text.pose.position.x = (ax + bx) / 2.0
-            text.pose.position.y = (ay + by) / 2.0
-            text.pose.position.z = 1.5
+            x, y = self.position or (0.0, 0.0)
+            text.pose.position = Point(x=x, y=y, z=1.5)
             text.pose.orientation.w = 1.0
             text.text = self._status_line()
             self.status_pub.publish(text)
@@ -398,13 +471,14 @@ class Referee(Node):
 
     def _status_line(self) -> str:
         rules = self.session.rules
-        if self.phase != Phase.RACING and self.phase != Phase.DONE:
+        if self.phase not in (Phase.RACING, Phase.DONE):
             return f"{self.team} | {self.phase}"
         best = self.session.best_lap()
         parts = [
             f"{self.team}",
             f"lap {self.session.timed_laps_done}/{rules.timed_laps}",
-            f"collisions {self.session.collision_events}/{rules.max_collisions}",
+            f"collisions {self.session.collision_events}"
+            + (f"/{rules.max_collisions}" if rules.max_collisions >= 0 else ""),
         ]
         if best:
             parts.append(f"best {best.net_time:.2f}s")
@@ -430,28 +504,38 @@ class Referee(Node):
         self._shutdown(EXIT_OK if self.session.scored else EXIT_NOT_SCORED)
 
     def real_time_factor(self) -> Optional[float]:
-        if self.first_sim_time is None or self.last_sim_time is None:
+        """Simulated seconds raced per wall-clock second of racing.
+
+        Measured from the green flag, not from node start, so the simulator's
+        boot time does not drag it down. Around 1.0 is healthy: AutoDRIVE
+        advances in real time when the machine can keep up. Well below it means
+        the machine could not, which costs patience rather than lap time - the
+        recorded times are the simulator's own.
+        """
+        if self._racing_started_wall is None:
             return None
-        wall = time.monotonic() - self.started_wall
+        wall = time.monotonic() - self._racing_started_wall
         if wall <= 0:
             return None
-        return (self.last_sim_time - self.first_sim_time) / wall
+        return self.session.race_time / wall
 
     def _build_result(self) -> dict:
         rtf = self.real_time_factor()
         result = {
             "schema_version": RESULT_SCHEMA_VERSION,
             "referee_version": REFEREE_VERSION,
+            "track_variant": "track2",
+            "simulator": "autodrive",
             "team": self.team,
             "run_id": self.run_id,
             "track": self.track.name,
             "map_path": self.track.map_path,
             "finished_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "simulator_best_lap_time": (round(self.best_lap_time, 4)
+                                        if math.isfinite(self.best_lap_time) else None),
             "environment": {
                 "real_time_factor": round(rtf, 3) if rtf else None,
                 "wall_duration_s": round(time.monotonic() - self.started_wall, 2),
-                "sim_duration_s": (round(self.last_sim_time - self.first_sim_time, 2)
-                                   if self.first_sim_time is not None else None),
                 "callback_errors": self._callback_errors,
             },
         }
@@ -506,7 +590,8 @@ class Referee(Node):
         if result.get("reason"):
             lines.append(f" reason        : {result['reason']}")
         lines.append(f" laps          : {result['laps_completed']}/{result['laps_required']}")
-        lines.append(f" collisions    : {result['collisions']}/{rules.max_collisions}"
+        limit = f"/{rules.max_collisions}" if rules.max_collisions >= 0 else ""
+        lines.append(f" collisions    : {result['collisions']}{limit}"
                      f"  (penalty {result['total_penalty_s']:.0f}s)")
 
         if result["laps"]:
@@ -517,10 +602,14 @@ class Referee(Node):
                              f"{lap['penalty_s']:>5.0f}  {lap['net_time']:>7.3f}")
 
         lines.append("")
+        if result.get("fastest_raw_lap_time") is not None:
+            lines.append(f" fastest lap as driven: {result['fastest_raw_lap_time']:.3f} s "
+                         f"(lap {result['fastest_raw_lap_number']}, before penalties)")
         if result["scored"]:
             lines.append(f" BEST LAP      : {result['best_lap_time']:.3f} s  "
                          f"(lap {result['best_lap_number']})")
-            lines.append(f" {rules.timed_laps}-LAP TOTAL  : {result['total_time']:.3f} s")
+            lines.append(f" RACE TIME     : {result['total_time']:.3f} s  "
+                         f"(adjusted, {rules.timed_laps} laps)")
         else:
             lines.append(" NOT SCORED - this run does not produce leaderboard times.")
 
@@ -529,6 +618,8 @@ class Referee(Node):
             lines.append(f" real-time factor: {rtf:.2f}x"
                          + ("  (machine could not keep up, but times are unaffected)"
                             if rtf < 0.8 else ""))
+        for warning in result.get("warnings", []):
+            lines.append(f" note          : {warning}")
         lines.append("=========================================================")
         self.get_logger().info("\n".join(lines))
 
@@ -566,7 +657,7 @@ def main(args=None) -> int:
         code = EXIT_SETUP_FAILED
     finally:
         if node is not None:
-            if not node.result_written and node.phase != Phase.WAIT_TOPICS:
+            if not node.result_written and node.phase != Phase.WAIT_TELEMETRY:
                 node.session.abort("referee stopped before the run finished")
                 node._write_result()
             node.destroy_node()

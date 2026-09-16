@@ -1,160 +1,142 @@
-"""Launch the RoboRacer simulator on the circuit from maps/tracks.yaml.
+"""Bring up the AutoDRIVE Simulator and the devkit bridge.
 
     ros2 launch roboracer_referee simulator.launch.py
-    ros2 launch roboracer_referee simulator.launch.py rviz:=false
+    ros2 launch roboracer_referee simulator.launch.py headless:=true rviz:=false
 
-This does not reimplement the upstream bridge launch. It writes a sim config
-derived from the track definition and hands it to f1tenth_gym_ros's own
-gym_bridge_launch.py, which owns the bridge, map server, URDFs and Foxglove.
-Anything upstream changes there we inherit rather than having to chase.
+    # against a simulator already running, here or on your host machine
+    ros2 launch roboracer_referee simulator.launch.py simulator:=false
 
-What it does set, and why:
+Two processes have to be running for a single topic to appear:
 
-  use_sim_time      the bridge publishes /clock, which is the only time base
-                    judging trusts - see docs/04-evaluation.md
-  lidar_noise_std   zero, so a run is reproducible. The default adds Gaussian
-                    noise, which would make the same submission score
-                    differently on every attempt.
-  open_foxglove     false, so a scored run never tries to open a browser.
+    AutoDRIVE Simulator  --(websocket, port 4567)-->  autodrive_bridge  --> ROS 2
+
+The direction matters and it is the opposite of what people expect. The
+**bridge is the server**: it listens on 4567. The **simulator is the client**:
+it is given an address with `-ip`/`-port` and dials out to it on startup. So
+the bridge has to be up first, which is what the delay below is for.
+
+This launch file does not reimplement the devkit's own bringup. It runs the
+devkit's `autodrive_bridge` through `roboracer_referee/sim_bridge`, which
+imports that node unmodified and guards one startup race that otherwise
+deadlocks every automated headless run. Read the docstring in sim_bridge.py
+before assuming it is a wrapper for the sake of one: it is the difference
+between a run that starts and a run that hangs with a full topic list and no
+messages on any of it.
 """
 
 import os
-import sys
-import tempfile
-from dataclasses import replace
+import shutil
 
-import yaml
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
+from launch.actions import (DeclareLaunchArgument, ExecuteProcess, LogInfo,
+                            OpaqueFunction, TimerAction)
 from launch.conditions import IfCondition
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
-from roboracer_referee.tracks import TrackError, load_track
-
-# Written over the upstream defaults. Everything not named here keeps whatever
-# the bridge's own sim.yaml says, so upstream stays the source of truth.
-# Where the Dockerfile puts the circuit, used when the repository is not mounted.
-IMAGE_MAPS = "/opt/hackathon_maps"
-
-JUDGING_OVERRIDES = {
-    "num_agents": 1,
-    "use_sim_time": True,          # bridge publishes /clock
-    "lidar_noise_std": 0.0,        # reproducibility beats realism when scoring
-    "kb_teleop": True,
-    "async_mode": True,
-    "vehicle_params": "f1tenth",
-    "scale": 1.0,
-}
+# Where scripts/fetch_simulator.sh puts the Unity build, in order of
+# preference. The bind-mounted repository first, so re-fetching a newer
+# simulator on the host is picked up without rebuilding anything.
+SIM_SEARCH_PATHS = (
+    "/hackathon/simulator/autodrive_simulator/AutoDRIVE Simulator.x86_64",
+    "/opt/autodrive_simulator/AutoDRIVE Simulator.x86_64",
+)
 
 
-def _write_sim_config(track, noise: float) -> str:
-    """Merge the track into the bridge's own sim.yaml and write it somewhere readable."""
-    sim_share = get_package_share_directory("f1tenth_gym_ros")
-    base_path = os.path.join(sim_share, "config", "sim.yaml")
-    if not os.path.isfile(base_path):
-        raise FileNotFoundError(
-            f"The simulator's sim.yaml is missing at {base_path}. "
-            "Is the image built? Try install/<your-os>/setup.sh"
-        )
-    with open(base_path, "r") as handle:
-        config = yaml.safe_load(handle)
-
-    params = config["bridge"]["ros__parameters"]
-    params.update(JUDGING_OVERRIDES)
-    params["lidar_noise_std"] = float(noise)
-    params["map_path"] = track.map_path
-    params["map_img_ext"] = track.map_image_ext
-    params["sx"], params["sy"], params["stheta"] = (float(v) for v in track.start_pose)
-
-    if "foxglove" in config:
-        config["foxglove"]["ros__parameters"]["open_foxglove"] = False
-
-    # A real file on disk, because the bridge launch reads it by path. Kept in
-    # a stable location so it can be inspected after a confusing run.
-    out_dir = os.path.join(tempfile.gettempdir(), "roboracer_sim_config")
-    os.makedirs(out_dir, exist_ok=True)
-    out_path = os.path.join(out_dir, "sim.yaml")
-    with open(out_path, "w") as handle:
-        yaml.safe_dump(config, handle, sort_keys=False)
-    return out_path
+def find_simulator() -> str:
+    """Locate the simulator executable, or return "" if it has not been fetched."""
+    override = os.environ.get("AUTODRIVE_SIM_PATH", "").strip()
+    candidates = ([override] if override else []) + list(SIM_SEARCH_PATHS)
+    for candidate in candidates:
+        if candidate and os.path.isfile(candidate):
+            return candidate
+    return ""
 
 
 def _setup(context, *_args, **_kwargs):
-    track_name = LaunchConfiguration("track").perform(context).strip() or None
-    track_config = LaunchConfiguration("track_config").perform(context).strip() or None
-    noise = float(LaunchConfiguration("lidar_noise_std").perform(context))
+    def arg(name):
+        return LaunchConfiguration(name).perform(context).strip()
 
-    try:
-        track = load_track(track_name, track_config)
-    except TrackError as exc:
-        print(f"\n[simulator.launch.py] {exc}\n", file=sys.stderr)
-        raise
+    def flag(name):
+        return arg(name).lower() in ("true", "1", "yes")
 
-    map_yaml = track.map_path + ".yaml"
-    if not os.path.isfile(map_yaml):
-        # Normally the circuit comes from the bind mount at /hackathon. Without
-        # it - a bare `docker run` with no volume - fall back to the copy baked
-        # into the image rather than failing on a map that is right there.
-        fallback = os.path.join(IMAGE_MAPS, os.path.basename(track.map_path))
-        if os.path.isfile(fallback + ".yaml"):
-            print(f"[simulator.launch.py] {map_yaml} is missing; "
-                  f"using the image's copy at {fallback}")
-            track = replace(track, map_path=fallback)
-            map_yaml = fallback + ".yaml"
-        else:
-            print(f"\n[simulator.launch.py] Map file not found: {map_yaml}\n"
-                  f"Check 'map_path' for track '{track.name}' in maps/tracks.yaml.\n",
-                  file=sys.stderr)
-            raise FileNotFoundError(map_yaml)
+    port = arg("port")
+    host = arg("host")
 
-    config_path = _write_sim_config(track, noise)
-    print(f"[simulator.launch.py] Track '{track.name}' -> {track.map_path}")
-    print(f"[simulator.launch.py] Sim config written to {config_path}")
+    bridge = Node(
+        package="roboracer_referee",
+        executable="sim_bridge",
+        name="autodrive_bridge",
+        emulate_tty=True,
+        output="screen",
+    )
 
-    sim_share = get_package_share_directory("f1tenth_gym_ros")
-    referee_share = get_package_share_directory("roboracer_referee")
+    actions = [bridge]
 
-    rviz_config = os.path.join(referee_share, "rviz", "race.rviz")
-    if not os.path.isfile(rviz_config):
-        rviz_config = os.path.join(sim_share, "config", "rviz", "gym_bridge.rviz")
+    if flag("simulator"):
+        executable = find_simulator()
+        if not executable:
+            return [LogInfo(msg=(
+                "\n[simulator.launch.py] The AutoDRIVE Simulator is not installed.\n"
+                "  Fetch it once, on the host:   ./scripts/fetch_simulator.sh\n"
+                "  Or run it on your own machine and launch with simulator:=false.\n"
+                "  Looked in: " + ", ".join(SIM_SEARCH_PATHS) + "\n"))]
 
-    return [
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                os.path.join(sim_share, "launch", "gym_bridge_launch.py")),
-            launch_arguments={
-                "config": config_path,
-                "num_agents": "1",
-                "open_foxglove": "false",
-            }.items(),
-        ),
-        Node(
+        command = [executable, "-ip", host, "-port", port]
+        if flag("headless"):
+            # -batchmode -nographics creates no graphics device at all. The
+            # physics, the LiDAR and the lap timing all still run, and it is
+            # roughly an order of magnitude cheaper than rendering. The front
+            # camera is the one thing it cannot produce - see docs/02.
+            command += ["-batchmode", "-nographics"]
+        elif not os.environ.get("DISPLAY") and shutil.which("xvfb-run"):
+            # No display, but something wants pixels (the camera). A virtual
+            # framebuffer is the documented way to get them.
+            command = ["xvfb-run", "-a"] + command
+
+        actions.append(TimerAction(
+            period=float(arg("simulator_delay_s")),
+            actions=[ExecuteProcess(cmd=command, output="screen",
+                                    name="autodrive_simulator")],
+        ))
+
+    if flag("rviz"):
+        rviz_config = os.path.join(
+            get_package_share_directory("roboracer_referee"), "rviz", "race.rviz")
+        if not os.path.isfile(rviz_config):
+            rviz_config = os.path.join(
+                get_package_share_directory("autodrive_roboracer"),
+                "rviz", "autodrive_roboracer.rviz")
+        actions.append(Node(
             package="rviz2",
             executable="rviz2",
             name="rviz",
             output="log",
-            # RViz draws on the wall clock; /clock belongs to the race, and
-            # making the display wait for it just freezes the view on a pause.
-            parameters=[{"use_sim_time": False}],
             arguments=["-d", rviz_config],
             condition=IfCondition(LaunchConfiguration("rviz")),
-        ),
-    ]
+        ))
+
+    return actions
 
 
 def generate_launch_description():
     return LaunchDescription([
-        DeclareLaunchArgument("track", default_value="",
-                              description="Track name from maps/tracks.yaml (blank = the default)"),
-        DeclareLaunchArgument("track_config", default_value="",
-                              description="Path to an alternative tracks.yaml"),
+        DeclareLaunchArgument("simulator", default_value="true",
+                              description="Start the AutoDRIVE Simulator process here. "
+                                          "Set false to drive a simulator you started "
+                                          "yourself, on this machine or another."),
+        DeclareLaunchArgument("headless", default_value="false",
+                              description="Run the simulator with -batchmode -nographics: "
+                                          "no window, no GPU, much faster, no camera."),
         DeclareLaunchArgument("rviz", default_value="true",
                               description="Open RViz alongside the simulator"),
-        DeclareLaunchArgument("lidar_noise_std", default_value="0.0",
-                              description="LiDAR noise in metres. Judging uses 0.0; "
-                                          "raise it to test robustness."),
+        DeclareLaunchArgument("host", default_value="127.0.0.1",
+                              description="Address the simulator dials to reach the bridge"),
+        DeclareLaunchArgument("port", default_value="4567",
+                              description="Port the bridge listens on"),
+        DeclareLaunchArgument("simulator_delay_s", default_value="4.0",
+                              description="Seconds to let the bridge start listening before "
+                                          "the simulator tries to connect to it"),
         OpaqueFunction(function=_setup),
     ])

@@ -3,12 +3,12 @@
 # Used for both `docker run ... bash` and `docker exec` style one-shot commands.
 set -eo pipefail
 
-source /opt/ros/jazzy/setup.bash
+source /opt/ros/humble/setup.bash
 
 if [ -f /sim_ws/install/local_setup.bash ]; then
     source /sim_ws/install/local_setup.bash
 else
-    echo "WARNING: /sim_ws is not built. The simulator will not be available." >&2
+    echo "WARNING: /sim_ws is not built. The AutoDRIVE Devkit will not be available." >&2
 fi
 
 # The race workspace lives on the bind mount, so it is only present once the
@@ -18,5 +18,7 @@ if [ -f /hackathon/race_ws/install/local_setup.bash ]; then
 fi
 
 export ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-0}"
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/runtime-root}"
+mkdir -p "${XDG_RUNTIME_DIR}" 2>/dev/null || true
 
 exec "$@"

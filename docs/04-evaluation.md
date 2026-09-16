@@ -2,8 +2,7 @@
 
 The judging environment is in this repository. The script that scores you on
 judging day is the same one you can run right now, against the same referee
-with the same settings. There are no surprises on the day — only a track you
-have not seen.
+with the same settings. There are no surprises on the day.
 
 ---
 
@@ -14,24 +13,31 @@ have not seen.
 ./scripts/evaluate.sh --team your_team_name
 ```
 
-That builds the workspace, starts the simulator, starts your driver, runs the
-full race format and writes a result file to `results/`.
+That builds the workspace, starts the simulator and the devkit bridge, starts
+your driver, runs the full race format and writes a result file to `results/`.
 
 Useful variations:
 
 ```sh
 # Three runs, keep the best — this is what the judges do
-./scripts/evaluate.sh --team your_team --runs 3 --headless
+./scripts/evaluate.sh --team your_team --runs 3
 
 # A short run while you are iterating
 ./scripts/evaluate.sh --team your_team --laps 3
+
+# Watch it: renders the simulator and opens RViz
+./scripts/evaluate.sh --team your_team --laps 3 --graphics
+
+# Against a simulator you started yourself (macOS, Windows, another machine)
+./scripts/evaluate.sh --team your_team --no-simulator
 
 # Score a baseline for comparison
 ./scripts/evaluate.sh --team baseline --driver-pkg roboracer_baselines --driver-exec gap_follower
 ```
 
-`--headless` skips RViz and is much faster. `./scripts/evaluate.sh --help`
-lists every option.
+Runs are **headless by default** — no window, no graphics device — because that
+is what judging uses and it is much faster. `--graphics` is for watching.
+`./scripts/evaluate.sh --help` lists every option.
 
 The script works from your host (it hops into the container for you) or from
 inside the container directly.
@@ -42,95 +48,109 @@ inside the container directly.
 
 | | |
 | --- | --- |
-| Out lap | From the grid slot to the start/finish line. Not timed. |
-| Warm-up lap | One full lap, granted, not scored. |
+| Start | Standing start from the grid, as ICRA runs it. No out lap, no warm-up lap. |
 | Timed laps | 10 consecutive laps. |
 | Collision | +10 s added to the lap it happened on. |
-| Disqualification | More than 10 collisions in a run. |
+| Collision limit | None, as at ICRA. The penalty is its own deterrent. |
 
 Two numbers come out:
 
 - **Best lap** — your fastest single timed lap, including its penalties.
-- **10-lap total** — the sum of all ten timed laps, including penalties.
+- **Adjusted race time** — the sum of all ten timed laps, including penalties.
+  This is the number the ICRA leaderboard ranks on.
 
 The scoring formula that turns those into leaderboard points is in
 [chapter 5](05-rules.md).
+
+Lap one includes getting off the line, so it is normally your slowest. That is
+the same for everyone.
 
 A run can also end early:
 
 | Status | Means |
 | --- | --- |
 | `COMPLETE` | All 10 laps finished. This is the only status that scores. |
-| `DISQUALIFIED` | More than 10 collisions. |
-| `DNF_TIMEOUT` | Ran out of session time (900 simulated seconds) before 10 laps. |
+| `DISQUALIFIED` | A collision limit was configured and exceeded. Not used by default. |
+| `DNF_TIMEOUT` | Ran out of session time (600 simulated seconds) before 10 laps. |
 | `DNF_STUCK` | The car did not move for 15 simulated seconds. |
 | `ABORTED` | Interrupted, or the referee never got as far as racing. |
 
 ---
 
-## 4.3 Everything is measured in simulated time
+## 4.3 The simulator does the timing, not us
 
-**This is the most important thing in this chapter.** Lap times come from the
-simulator's own clock, not the wall clock.
+**This is the most important thing in this chapter, and it is the biggest
+difference from Track 1.**
 
-The physics runs at 100 Hz on a ROS timer. On a machine that cannot keep up,
-that timer fires late and the simulation runs at, say, 0.6× real time. Timed
-against a wall clock, an identical car would appear 67% slower on a tired
-laptop than on a fast desktop.
+Track 1's referee watched the car's position and timed laps itself against a
+finish line whose coordinates were in `maps/`. This one does not. The AutoDRIVE
+Simulator owns the circuit, the start/finish line and the collision detection,
+and publishes what happened over the devkit bridge:
 
-So the bridge publishes a simulated clock on `/clock`, and the referee times
-against that. The consequences:
+| Topic | What the referee does with it |
+| --- | --- |
+| `…/lap_count` | A lap closed |
+| `…/last_lap_time` | How long that lap took |
+| `…/collision_count` | How many contacts, cumulatively |
+| `…/lap_time` | The race clock, for the session and stuck timeouts |
+| `…/odom` | Speed, for the stuck timeout |
 
-- **Your hardware does not affect your score.** An Apple Silicon Mac scores the
-  same as a gaming PC.
-- **Results are reproducible.** The same submission gives the same number twice.
-- **`--headless` does not make you faster** in score terms, only in how long you
-  wait.
+The referee applies the hackathon's rules to those numbers — which laps count,
+what a collision costs, when a run is over — and writes the result. It never
+opens a map.
 
-The result file records `real_time_factor` so you can see how hard your machine
-was working. A value below 0.8 means it was struggling; your times are still
-valid.
+Three consequences:
 
-What it does *not* protect you from: a control loop so slow that your node
-misses scans. That is your code's problem, and it is a real one — keep the
-per-scan work bounded.
+- **A scored run does not depend on the map, so it works before the map
+  exists.** That is not a convenience; it is why the compete circuit can be
+  released as a simulator build.
+- **Lap times are the simulator's own**, measured on its internal clock at a
+  fixed physics timestep. A machine that cannot keep up runs slower against the
+  wall clock rather than producing different lap times. The result file records
+  `real_time_factor` so you can see how hard your machine was working; around
+  1.0 is healthy, because AutoDRIVE advances in real time when it can.
+- **You can check our arithmetic.** The result file carries
+  `simulator_best_lap_time` — the simulator's own best-lap figure, straight off
+  `…/best_lap_time`, untouched. It should equal `fastest_raw_lap_time`, which
+  is the quickest of the per-lap times the referee recorded. If it ever does
+  not, tell us; that is a bug worth reporting (rule 49).
+
+  Note that this is *not* the same as `best_lap_time`. The simulator reports
+  the quickest lap **as driven**; you are scored on the best lap **after
+  penalties**, and those are often different laps. A quick lap that picked up a
+  collision is not your best lap.
+
+What none of this protects you from: a control loop so slow that your node
+misses scans. That is your code's problem, and it is a real one — the LiDAR
+arrives at 40 Hz, so keep the per-scan work bounded.
 
 ---
 
 ## 4.4 How collisions are counted
 
-The bridge publishes the simulator's own collision flag on
-`/ego_racecar/collision`, so the referee uses ground truth rather than guessing
-from "the car seems to have stopped".
+The simulator detects contact with the track boundary and publishes a running
+count on `…/collision_count`. The referee counts what the simulator counted and
+nothing more — the same number the ICRA leaderboard reports.
 
-The flag is raised on every physics step the car is in contact, about a
-hundred times a second, which is too fine-grained to score directly. So a
-collision is counted **at most once per second** of simulated time.
+The counter is cumulative and already debounced, so unlike Track 1 there is no
+"once per second" rule here and nothing to tune. What the simulator calls one
+collision is one collision.
 
-The important part: that clock runs from the last *counted* collision, not from
-the last contact. **Staying on a barrier keeps costing you.** A car that
-scrapes along a wall accrues a fresh collision, and a fresh 10-second penalty,
-every second it stays there.
+Each one adds **10 seconds** to the lap it happened on. Against a lap in the
+low twenties that is half a lap thrown away per contact, and the shipped gap
+follower spends nearly twice as long in penalties as it does driving
+([§3.1](03-baselines.md#31-what-they-actually-do-on-this-circuit)). **Not
+hitting things is worth more than any amount of speed on this track.**
 
-| What happens | Collisions counted |
-| --- | --- |
-| A clean tap and away | 1 (+10 s) |
-| Scraping a wall for 3 seconds | 3 (+30 s) |
-| Bouncing off the same wall a second apart | 1 each |
-| Ending up wedged against a barrier | 1 per second until the run is disqualified |
+**There is no collision limit**, which is how ICRA runs it. The penalty deters
+by itself: a car that keeps hitting things finishes last rather than being
+thrown out, which is a more useful result than a zero. A car that genuinely
+cannot recover ends on the stuck timer or the session timeout instead.
 
-That last row matters. At one per second against a limit of 10, a car that gets
-stuck on a wall and never recovers is disqualified after about 11 seconds of
-contact. It will normally hit that before the 15-second stuck timer fires, so
-a car wedged on a barrier is disqualified rather than recorded as DNF; a car
-that simply stops in open track is still a DNF.
-
-Collisions during the out lap or the warm-up lap count towards the
-disqualification limit but add no time penalty, because there is no scored lap
-to add it to.
-
-The interval is `collision_interval_s` in
-[`config/referee.yaml`](../race_ws/src/roboracer_referee/config/referee.yaml).
+The counters do not necessarily read zero when a run starts — the simulator may
+have been driven already in the same session. The referee takes a baseline at
+the green flag and scores the difference, so a practice lap before a scored run
+cannot cost you anything.
 
 ---
 
@@ -138,31 +158,43 @@ The interval is `collision_interval_s` in
 
 ```jsonc
 {
-  "schema_version": 2,
+  "schema_version": 3,
+  "referee_version": "2.0.0",
+  "simulator": "autodrive",
   "team": "your_team_name",
   "run_id": "20261018T143000Z",
-  "track": "icra26",
+  "track": "icra26_compete",
   "status": "COMPLETE",
   "scored": true,
   "laps_completed": 10,
   "laps_required": 10,
   "collisions": 1,
-  "collision_limit": 10,
-  "best_lap_time": 21.804,        // what you are scored on
-  "best_lap_time_raw": 21.804,    // before penalties
+  "collision_limit": null,        // no limit, as at ICRA
+  "best_lap_time": 21.804,        // best lap AFTER penalties - what you are scored on
+  "best_lap_time_raw": 21.804,    // that same lap, before its penalties
   "best_lap_number": 7,
-  "total_time": 238.912,          // what you are scored on
+  "fastest_raw_lap_time": 21.235, // the quickest lap as driven - a different lap here
+  "fastest_raw_lap_number": 8,
+  "total_time": 238.912,          // adjusted race time - what you are scored on
   "total_time_raw": 228.912,      // before penalties
   "total_penalty_s": 10.0,
+  "race_time_s": 228.9,
+  "simulator_best_lap_time": 21.235,   // the simulator's own figure; matches fastest_raw_lap_time
+  "warnings": [],
   "laps": [
     { "number": 1, "raw_time": 23.441, "collisions": 0, "penalty_s": 0.0, "net_time": 23.441 },
     { "number": 2, "raw_time": 22.108, "collisions": 1, "penalty_s": 10.0, "net_time": 32.108 }
   ],
-  "environment": { "real_time_factor": 0.94, "wall_duration_s": 262.1 }
+  "environment": { "real_time_factor": 0.97, "wall_duration_s": 262.1 }
 }
 ```
 
 `best_lap_time` and `total_time` are `null` unless `scored` is `true`.
+
+`warnings` is normally empty. Anything in it means the referee saw telemetry it
+did not expect — a lap the simulator reported as impossibly short, or two laps
+closing between samples — and it is recorded rather than quietly patched up.
+A warning does not invalidate a run, but do mention it if you report a problem.
 
 ```sh
 # Summarise your recent runs
@@ -185,12 +217,15 @@ It runs in two stages:
 
 | Stage | What it does |
 | --- | --- |
-| **Checks** | Referee rule tests, track validation, and `verify_judging_env.sh`. About a minute. |
-| **Race** | Builds the image and races, headless. 30 to 90 minutes, mostly the build. |
+| **Checks** | Referee rule tests, track metadata validation, and `verify_judging_env.sh`. About a minute. |
+| **Race** | Fetches the simulator, builds the image and races, headless. |
 
 **Checks failing blocks the race.** That is deliberate: the one most likely to
 trip is the judging-environment check, and an entry that modifies it is not
-scored (rule 27), so there is no point racing it.
+scored (rule 30), so there is no point racing it.
+
+The simulator download is cached against its release tag, so only the first run
+on a branch pays for it.
 
 ### Entry or template?
 
@@ -202,9 +237,9 @@ Before racing, the workflow asks whether there is anything to score:
 
 It compares `race_ws/src/team_driver/` against the recorded template. Edit any
 file, or add one, and it reports `submission` and your driver is raced. Leave it
-untouched — as on the template repository — and it reports `template`, and
-the workflow races the baselines instead. That keeps the pipeline exercised,
-and the numbers it prints are the ones to beat.
+untouched — as on the template repository — and it reports `template`, and the
+workflow races the gap follower instead. That keeps the pipeline exercised, and
+the number it prints is the one to beat.
 
 > [!NOTE]
 > **Organisers:** the reference is `scripts/template_manifest.sha256`. If you
@@ -215,36 +250,44 @@ and the numbers it prints are the ones to beat.
 ### Running it by hand
 
 Use **Actions — Judge — Run workflow** to set the number of laps and runs, or
-to force the baselines even when you have an entry:
+to force the baseline even when you have an entry:
 
 | Input | Default | |
 | --- | --- | --- |
 | `laps` | 10 | Scored laps per run. Drop it to 3 for a quick check. |
 | `runs` | 1 | Runs per driver; the best counts. |
-| `force_baselines` | false | Race the baselines even though you have an entry. |
+| `force_baselines` | false | Race the baseline even though you have an entry. |
 
 Result JSONs are attached to the run as an artifact, so you can feed them to
 `leaderboard.py` locally.
 
 ### What it is not
 
-CI runs on a shared two-core runner with no GPU, so the simulator runs well
-below real time. That does **not** change your lap times — they are measured in
-simulated seconds (§4.3) — but it does mean a run takes a while, and a driver
-that only just fits its control loop here may behave differently on the judging
-machine. The real result is a scored run on the machine in §4.8.
+CI runs on a shared two-core runner with no GPU. The simulator is happy enough
+headless — it needs no graphics device at all — but it will run below real time,
+so a run takes a while in wall-clock terms. That does **not** change your lap
+times (§4.3). It does mean a driver that only just fits its control loop here
+may behave differently on the judging machine. The real result is a scored run
+on the machine in §4.8.
 
 ---
 
 ## 4.7 Watching a run
 
-With RViz open you get, live:
+```sh
+./scripts/evaluate.sh --team my_team --laps 3 --graphics
+```
 
-- the **finish line** in yellow, exactly as the referee sees it;
-- a **status line** above it: laps done, collisions, best lap so far;
-- `/driver/markers`, for whatever your own node draws.
+With the simulator rendering you get its own HUD — speed, throttle, steering,
+the LiDAR preview and the live lap and collision counters — and with RViz open
+you get the LiDAR, the vehicle frames, a referee status line and
+`/driver/markers` for whatever your own node draws.
 
-The referee log prints each lap as it closes, with any penalty applied.
+The referee log prints each lap as it closes, with any penalty applied:
+
+```
+[referee]: Lap 1/10: 22.087s -> 52.087s (+30s from 3 collision(s))
+```
 
 ---
 
@@ -258,53 +301,52 @@ Every submission is scored on one machine, so nobody is advantaged by hardware:
 | --- | --- |
 | CPU | Intel Core i9-14900HX, 16 cores / 32 threads |
 | RAM | 32 GB, of which about 16 GB is visible inside WSL by default |
-| GPU | NVIDIA GeForce RTX 5060 Laptop, 8 GB, driver 616.64, compute capability 12.0 |
-| OS | Windows 11 with WSL 2 (Ubuntu 24.04, kernel 6.18) |
-| Docker | Docker Desktop, WSL 2 backend |
+| GPU | NVIDIA GeForce RTX 5060 Laptop, 8 GB |
+| OS | Windows 11 with WSL 2 (Ubuntu 24.04) |
+| Docker | Docker Engine inside WSL 2 |
 
-The GPU is attached to the container when one is available — `install/<os>/run.sh`
-detects it and merges `docker/docker-compose.gpu.yml`, falling back to CPU-only
-if Docker cannot attach it. `--gpu` forces it on, `--no-gpu` off.
+(The AutoDRIVE organisers used an i9-14900K with an RTX 4090 for ICRA. Ours is
+a laptop equivalent; since a scored run is headless and the times are the
+simulator's, the difference does not affect results.)
 
-**The GPU is usable.** The container is ROS 2 Jazzy on Ubuntu 24.04, so Python
-3.12, and CUDA builds of PyTorch, JAX and CuPy all support a compute capability
-12.0 card. Declare what you need in `requirements.txt` (rule 33) and it is
-installed into the image.
+**The GPU is usable for your code.** The container is ROS 2 Humble on Ubuntu
+22.04, so Python 3.10, and CUDA builds of PyTorch and friends install and run.
+Declare what you need in `requirements.txt` (rule 37) and it is installed into
+the image.
 
-The simulator itself deliberately stays on the CPU (`JAX_PLATFORMS=cpu`): it is
-small, and CPU execution keeps a run reproducible. The GPU is there for your
-code — a learned policy, a planner, whatever you build.
+The simulator itself runs `-batchmode -nographics` for a scored run, so it
+creates no graphics device and uses no GPU at all. That is a deliberate choice:
+it is faster, it is reproducible, and it means a headless run on a CI runner
+exercises the same code path as judging day.
 
 Two practical notes. The card has 8 GB, shared with the desktop, so a model
-needing more will not fit. And your node still has to keep up with a ~40 Hz
+needing more will not fit. And your node still has to keep up with a 40 Hz
 control loop; a heavyweight network that misses scans costs more time than it
 gains.
-
-Because lap times are measured in simulated seconds, none of this affects
-fairness — see §4.3.
 
 For each submission the judges:
 
 1. Check out the entry, verify the judging environment is intact
    (`./scripts/verify_judging_env.sh`), and confirm it builds from clean.
-2. Build the image from this repository, which installs whatever the team
+2. Fetch the pinned simulator build with `./scripts/fetch_simulator.sh`.
+3. Build the image from this repository, which installs whatever the team
    declared in `requirements.txt` and `apt-packages.txt`. That step is the last
    layer in the Dockerfile, so it is quick per submission.
-3. Run three scored attempts, headless:
+4. Run three scored attempts, headless:
    ```sh
-   ./scripts/evaluate.sh --team <team> --runs 3 --headless
+   ./scripts/evaluate.sh --team <team> --runs 3
    ```
-4. Take the **best** of the three. Anything that never completes is a DNF.
-5. Feed every team's best run into `leaderboard.py rank`, which produces the
+5. Take the **best** of the three. Anything that never completes is a DNF.
+6. Feed every team's best run into `leaderboard.py rank`, which produces the
    final ranking.
 
-No internet access during a run — anything a team needs must be declared so
-it lands in the image at build time. No manual intervention once a run starts.
+No internet access during a run — anything a team needs must be declared so it
+lands in the image at build time. No manual intervention once a run starts.
 Identical referee settings for every team.
 
-A run that fails to build, fails to start, or never publishes a drive command
-scores zero for the timing component. Test from a clean clone before you
-submit — see [chapter 6](06-submission.md).
+A run that fails to build, fails to start, or never publishes a command scores
+zero for the timing component. Test from a clean clone before you submit — see
+[chapter 6](06-submission.md).
 
 ---
 
@@ -315,19 +357,21 @@ submit — see [chapter 6](06-submission.md).
 ```
 
 It hashes every file a scored run depends on — the referee package, the
-Dockerfile, the compose files, `maps/`, the evaluation scripts — compares
-against a manifest, checks for files added into those directories, and confirms
-the submodules are at their pinned commits.
+vendored AutoDRIVE Devkit, the Dockerfile and its dependency pins, the compose
+files, `maps/tracks.yaml`, the evaluation scripts — compares against a
+manifest, and checks for files added into those directories.
 
 A clean report means your entry will be judged. If it flags something you
 changed by accident:
 
 ```sh
-git checkout -- race_ws/src/roboracer_referee docker maps/tracks.yaml scripts install
-git submodule update --init --recursive
+git checkout -- race_ws/src/roboracer_referee external/autodrive_devkit \
+                docker maps/tracks.yaml scripts install
 ```
 
-`race_ws/src/team_driver/` is deliberately not protected. That is yours.
+`race_ws/src/team_driver/` is deliberately not protected. That is yours. So is
+the rest of `maps/` — a racing line or an occupancy grid you built belongs
+there and is not checked.
 
 ---
 

@@ -1,8 +1,18 @@
-"""Loading and validating track definitions from maps/tracks.yaml.
+"""Loading track metadata from maps/tracks.yaml.
 
-A track says where the car starts, which map to load, and where the
-start/finish line is. Keeping all of that in one file means switching tracks
-never involves editing the simulator's own configuration.
+On Track 2 the circuit lives inside the AutoDRIVE Simulator build, not in this
+repository. The simulator owns the start/finish line, the lap counter and the
+collision detection, so **nothing in this file is used to score a run**. What
+it carries is metadata:
+
+  * the track name that goes into a result file;
+  * where an occupancy grid of the circuit lives, if one has been published,
+    for teams building a racing line or their own localisation;
+  * optional planning geometry (`start_pose`, `finish_line`) used only by
+    `scripts/track_tool.py` when it traces a centreline off that grid.
+
+That separation is deliberate. A scored run must work before the map exists,
+and must keep working if the organisers re-publish it.
 """
 
 from __future__ import annotations
@@ -14,15 +24,17 @@ from typing import Dict, List, Optional, Tuple
 
 import yaml
 
-from .geometry import line_from_pose_and_width, signed_side
+from .geometry import signed_side
 
 Point = Tuple[float, float]
 
-# Searched in order; the first hit wins. The in-image copy is what the judges
-# run against, the repository copy is what teams edit during practice.
+# Searched in order; the first hit wins. The in-image copy is what a container
+# with no bind mount sees, the repository copy is what teams edit.
 DEFAULT_SEARCH_PATHS = (
     "/hackathon/maps/tracks.yaml",
     "/opt/hackathon_maps/tracks.yaml",
+    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))), "maps", "tracks.yaml"),
 )
 
 
@@ -34,16 +46,22 @@ class TrackError(ValueError):
 class Track:
     name: str
     description: str
-    map_path: str
+    map_path: str                                   # without the image extension
     map_image_ext: str
-    start_pose: Tuple[float, float, float]     # x, y, theta (rad)
-    finish_line: Tuple[Point, Point]
+    start_pose: Optional[Tuple[float, float, float]]    # x, y, theta (rad)
+    finish_line: Optional[Tuple[Point, Point]]
     crossing_direction: int
+    simulator_build: str
 
     @property
-    def finish_line_flat(self) -> List[float]:
-        (ax, ay), (bx, by) = self.finish_line
-        return [ax, ay, bx, by]
+    def map_yaml(self) -> str:
+        return self.map_path + ".yaml"
+
+    @property
+    def map_available(self) -> bool:
+        """Whether an occupancy grid for this circuit has actually been published."""
+        return bool(self.map_path) and os.path.isfile(self.map_yaml) \
+            and os.path.isfile(self.map_path + self.map_image_ext)
 
 
 def _as_float_list(value, count: int, field: str) -> List[float]:
@@ -62,8 +80,10 @@ def infer_crossing_direction(start_pose: Tuple[float, float, float],
                              line_a: Point, line_b: Point) -> int:
     """Which way the signed side of the line flips when the car races forwards.
 
-    Derived from the start heading rather than configured by hand, because
-    getting it backwards would silently reject every lap.
+    Planning geometry only - the simulator decides what counts as a lap. It is
+    derived from the start heading rather than configured by hand, because
+    getting it backwards would make `track_tool.py centerline` trace the
+    circuit the wrong way round.
     """
     x, y, theta = start_pose
     ahead = (x + math.cos(theta), y + math.sin(theta))
@@ -80,14 +100,13 @@ def parse_track(name: str, spec: dict) -> Track:
     if not isinstance(spec, dict):
         raise TrackError(f"Track '{name}' must be a mapping, got {type(spec).__name__}")
 
-    for required in ("map_path", "start_pose"):
-        if required not in spec:
-            raise TrackError(f"Track '{name}' is missing required key '{required}'")
+    start_pose = None
+    if spec.get("start_pose") is not None:
+        values = _as_float_list(spec["start_pose"], 3, f"{name}.start_pose")
+        start_pose = (values[0], values[1], values[2])
 
-    start = _as_float_list(spec["start_pose"], 3, f"{name}.start_pose")
-    start_pose = (start[0], start[1], start[2])
-
-    if "finish_line" in spec:
+    finish_line = None
+    if spec.get("finish_line") is not None:
         raw = spec["finish_line"]
         # Accept either [[x1,y1],[x2,y2]] or a flat [x1,y1,x2,y2].
         if (isinstance(raw, (list, tuple)) and len(raw) == 2
@@ -97,44 +116,28 @@ def parse_track(name: str, spec: dict) -> Track:
         else:
             flat = _as_float_list(raw, 4, f"{name}.finish_line")
             a, b = flat[:2], flat[2:]
-        line = ((a[0], a[1]), (b[0], b[1]))
-    else:
-        width = float(spec.get("finish_line_width", 6.0))
-        if width <= 0:
-            raise TrackError(f"Track '{name}': finish_line_width must be > 0")
-        # Place the line ahead of the grid slot so the car has a short run-up
-        # and its first sample is unambiguously behind the line.
-        offset = float(spec.get("finish_line_offset", 2.0))
-        cx = start_pose[0] + offset * math.cos(start_pose[2])
-        cy = start_pose[1] + offset * math.sin(start_pose[2])
-        line = line_from_pose_and_width(cx, cy, start_pose[2], width)
-
-    if math.dist(line[0], line[1]) < 1e-3:
-        raise TrackError(f"Track '{name}': the finish line has zero length")
-
-    # The car must start clear of the line, otherwise the very first sample
-    # could land on either side of it and the out lap becomes a coin flip.
-    offset = abs(signed_side(line[0], line[1], (start_pose[0], start_pose[1])))
-    if offset / math.dist(line[0], line[1]) < 0.10:
-        raise TrackError(
-            f"Track '{name}': the start pose sits on the finish line. Move it at "
-            f"least 0.1 m behind the line so the out lap starts cleanly."
-        )
+        if math.dist((a[0], a[1]), (b[0], b[1])) < 1e-3:
+            raise TrackError(f"Track '{name}': the finish line has zero length")
+        finish_line = ((a[0], a[1]), (b[0], b[1]))
 
     direction = spec.get("crossing_direction")
     if direction is None:
-        direction = infer_crossing_direction(start_pose, line[0], line[1])
+        if start_pose is not None and finish_line is not None:
+            direction = infer_crossing_direction(start_pose, finish_line[0], finish_line[1])
+        else:
+            direction = 1
     elif int(direction) not in (1, -1):
         raise TrackError(f"Track '{name}': crossing_direction must be 1 or -1")
 
     return Track(
         name=name,
         description=str(spec.get("description", "")),
-        map_path=str(spec["map_path"]),
-        map_image_ext=str(spec.get("map_image_ext", ".png")),
+        map_path=str(spec.get("map_path", "")),
+        map_image_ext=str(spec.get("map_image_ext", ".pgm")),
         start_pose=start_pose,
-        finish_line=line,
+        finish_line=finish_line,
         crossing_direction=int(direction),
+        simulator_build=str(spec.get("simulator_build", "")),
     )
 
 

@@ -10,7 +10,12 @@
 #   ./install/macos/run.sh --gpu          force the NVIDIA GPU to be attached
 #   ./install/macos/run.sh --no-gpu       never attach a GPU
 #
-# The simulator window opens in your browser at http://localhost:8080/vnc.html
+# On macOS the simulator does NOT run in the container - the container is Linux
+# and the simulator you fetched is a native Mac build. Start the bridge in here,
+# then run the simulator on your Mac and point it at 127.0.0.1:4567. The port is
+# published for exactly that. See docs/01-setup.md section 1.6.
+#
+# RViz and other ROS windows open in your browser at http://localhost:8080/vnc.html
 #
 set -euo pipefail
 source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)/common.sh"

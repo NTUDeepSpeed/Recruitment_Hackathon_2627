@@ -12,9 +12,9 @@ COMPOSE_FILE="${REPO_ROOT}/docker/docker-compose.yml"
 GPU_COMPOSE_FILE="${REPO_ROOT}/docker/docker-compose.gpu.yml"
 ENV_FILE="${REPO_ROOT}/docker/.env"
 
-IMAGE_NAME="${IMAGE_NAME:-roboracer_track1}"
-CONTAINER_NAME="${CONTAINER_NAME:-roboracer_track1}"
-COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-roboracer_track1}"
+IMAGE_NAME="${IMAGE_NAME:-roboracer_track2}"
+CONTAINER_NAME="${CONTAINER_NAME:-roboracer_track2}"
+COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-roboracer_track2}"
 export IMAGE_NAME CONTAINER_NAME COMPOSE_PROJECT_NAME
 
 # --------------------------------------------------------------------------
@@ -46,7 +46,7 @@ die()   { printf '%serror%s %s\n' "${_C_RED}" "${_C_OFF}" "$*" >&2; exit 1; }
 # True when this script is running inside the hackathon container itself, in
 # which case Docker must not be used - the caller is already where it wants
 # to be. /sim_ws is only ever present inside the image.
-in_container() { [ -d /sim_ws ] && [ -f /opt/ros/jazzy/setup.bash ]; }
+in_container() { [ -d /sim_ws ] && [ -f /opt/ros/humble/setup.bash ]; }
 
 detect_platform() {
     case "$(uname -s)" in
@@ -119,31 +119,38 @@ require_compose() {
 # Repository checks
 # --------------------------------------------------------------------------
 
-# The image is built entirely from vendored sources, so an uninitialised
-# submodule produces a confusing mid-build failure. Catch it up front.
-require_submodules() {
-    local sentinel missing
-    missing=""
-    for sentinel in external/f1tenth_gym/setup.py \
-                    external/f1tenth_gym_ros/package.xml; do
-        [ -f "${REPO_ROOT}/${sentinel}" ] || missing="${missing} $(dirname "${sentinel}")"
+# The AutoDRIVE Devkit is vendored into this repository rather than pulled in
+# as a submodule, so there is nothing to fetch - but a half-copied checkout
+# produces a confusing mid-build failure, so check it up front.
+require_devkit() {
+    local sentinel
+    for sentinel in external/autodrive_devkit/package.xml \
+                    external/autodrive_devkit/autodrive_roboracer/autodrive_bridge.py; do
+        [ -f "${REPO_ROOT}/${sentinel}" ] || die \
+"${sentinel} is missing, so the image cannot be built.
+The AutoDRIVE Devkit is committed to this repository - it is not a submodule -
+so this usually means an incomplete checkout. Try:
+    git -C '${REPO_ROOT}' status
+    git -C '${REPO_ROOT}' checkout -- external/autodrive_devkit"
     done
+    return 0
+}
 
-    [ -n "${missing}" ] || return 0
+# The simulator is a separate ~140 MB download (scripts/fetch_simulator.sh).
+# Without it the container comes up fine and every ROS node works; there is
+# just nothing to race against. Warn rather than refuse - plenty of useful work
+# happens without it, and teams on macOS run it on the host instead.
+simulator_installed() {
+    [ -f "${REPO_ROOT}/simulator/autodrive_simulator/AutoDRIVE Simulator.x86_64" ] \
+        || [ -e "${REPO_ROOT}/simulator/autodrive_simulator/AutoDRIVE Simulator.app" ] \
+        || [ -f "${REPO_ROOT}/simulator/autodrive_simulator/AutoDRIVE Simulator.exe" ]
+}
 
-    warn "Submodules are not checked out:${missing}"
-    command -v git >/dev/null 2>&1 \
-        || die "git is not on PATH, so the submodules cannot be fetched. Install git and re-run."
-    info "Fetching them: git submodule update --init --recursive"
-    git -C "${REPO_ROOT}" submodule update --init --recursive \
-        || die "Could not fetch submodules. Check your network, then run 'git submodule update --init --recursive' by hand."
-
-    for sentinel in external/f1tenth_gym/setup.py \
-                    external/f1tenth_gym_ros/package.xml; do
-        [ -f "${REPO_ROOT}/${sentinel}" ] \
-            || die "${sentinel} is still missing after the fetch. Did you download the repository as a ZIP? Submodules need a real 'git clone'."
-    done
-    ok "Submodules ready."
+warn_if_no_simulator() {
+    simulator_installed && return 0
+    warn "The AutoDRIVE Simulator is not installed in simulator/."
+    warn "Fetch it once with:  ./scripts/fetch_simulator.sh"
+    return 0
 }
 
 image_exists() { docker image inspect "${IMAGE_NAME}" >/dev/null 2>&1; }
@@ -277,9 +284,9 @@ do_build() {
 
     require_docker
     require_compose
-    require_submodules
+    require_devkit
 
-    info "Building ${IMAGE_NAME}. The first build takes 15-30 minutes."
+    info "Building ${IMAGE_NAME}. The first build takes 10-20 minutes."
     if [ ${#extra[@]} -gt 0 ]; then
         "${COMPOSE[@]}" build "${extra[@]}" sim
     else
@@ -305,7 +312,8 @@ do_start() {
     done
 
     require_docker
-    require_submodules
+    require_devkit
+    warn_if_no_simulator
     write_env_file
     require_compose          # after write_env_file, so --env-file is picked up
 
