@@ -138,7 +138,10 @@ ten laps is worth exactly as much as one quick one.
     ./scripts/verify_judging_env.sh
     ```
     It checks file hashes, looks for files added into protected directories, and
-    confirms the submodule pins.
+    confirms the submodule pins. The **Judge** workflow runs the same check on
+    every push and, when it fails, reports it in the run summary with the list
+    of files that differ — a disqualification is a ruling, so it is shown as
+    one rather than left as a failed build.
 
 27. An entry that modifies the judging environment is **not scored**. If you
     genuinely believe something in it is broken, raise it with the organisers

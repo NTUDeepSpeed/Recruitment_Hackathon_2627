@@ -203,8 +203,14 @@ Before racing, the workflow asks whether there is anything to score:
 It compares `race_ws/src/team_driver/` against the recorded template. Edit any
 file, or add one, and it reports `submission` and your driver is raced. Leave it
 untouched — as on the template repository — and it reports `template`, and
-the workflow races the three baselines instead. That keeps the pipeline
-exercised, and the numbers it prints are the ones to beat.
+the workflow races the baselines instead. That keeps the pipeline exercised,
+and the numbers it prints are the ones to beat.
+
+> [!NOTE]
+> **Organisers:** the reference is `scripts/template_manifest.sha256`. If you
+> change anything under `race_ws/src/team_driver/` — even a comment — re-record
+> it with `./scripts/detect_submission.sh --update`, or the template repository
+> starts reporting itself as a submission and CI races the stub driver.
 
 ### Running it by hand
 

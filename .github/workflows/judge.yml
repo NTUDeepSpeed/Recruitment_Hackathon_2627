@@ -68,7 +68,62 @@ jobs:
         run: ./scripts/track_tool.py validate
 
       - name: Judging environment is unmodified
-        run: ./scripts/verify_judging_env.sh
+        id: integrity
+        run: |
+          set -euo pipefail
+          # A tampering failure is a disqualification, and a disqualification
+          # has to say why. Left as a bare non-zero exit it shows up as a red
+          # cross with the reason buried in a collapsed log, which reads like
+          # the pipeline broke rather than like a ruling.
+          if ./scripts/verify_judging_env.sh > integrity.txt 2>&1; then
+            cat integrity.txt
+            {
+              echo "### Judging environment"
+              echo
+              echo "Intact. Nothing in the referee, the circuit, the image"
+              echo "definition or the evaluation scripts has been changed."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          cat integrity.txt
+          {
+            echo "# DISQUALIFIED - judging environment modified"
+            echo
+            echo "> [!CAUTION]"
+            echo "> This entry would **not be scored**. Rule 24 forbids changing the"
+            echo "> judging environment, and rule 27 makes an entry that does so"
+            echo "> ineligible. No race was run."
+            echo
+            echo "## What changed"
+            echo
+            echo '```'
+            # Only the findings. The script's own recovery advice is indented
+            # four spaces, the findings two, which is what separates them here.
+            grep -E ': FAILED$|^  [^ ]' integrity.txt || cat integrity.txt
+            echo '```'
+            echo
+            echo "## How to fix it"
+            echo
+            echo "If this was accidental, restore the official files:"
+            echo
+            echo '```sh'
+            echo "git checkout -- race_ws/src/roboracer_referee docker maps scripts install"
+            echo "git submodule update --init --recursive"
+            echo '```'
+            echo
+            echo "Then check it locally before pushing again:"
+            echo
+            echo '```sh'
+            echo "./scripts/verify_judging_env.sh"
+            echo '```'
+            echo
+            echo "If the change was deliberate, move it into"
+            echo '`race_ws/src/team_driver/`, which is yours to edit. If you believe'
+            echo "something in the judging environment is genuinely broken, raise it"
+            echo "with the organisers rather than patching around it (rule 27)."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
 
       - name: Detect entry or template
         id: detect
