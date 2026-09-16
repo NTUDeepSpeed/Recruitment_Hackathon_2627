@@ -48,7 +48,7 @@ Then follow chapter 1 of that track's guide.
 
 ## The same for both
 
-The full rules are in chapter 5 of your track's guide and they are what counts.
+The full rules are in chapter 6 of your track's guide and they are what counts.
 The short version:
 
 - **Teams of 3 to 5.** One team per person. The roster is fixed at submission.

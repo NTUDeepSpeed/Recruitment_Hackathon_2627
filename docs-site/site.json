@@ -88,10 +88,10 @@
   "chapter_notes": {
     "01": "Docker, the simulator, the first run, and what to do when it breaks",
     "02": "Every topic, the vehicle, and the sensor specifications",
-    "03": "Wall following, follow-the-gap, pure pursuit — and how to beat them",
-    "04": "Scoring yourself, reading results, and how judging day runs",
-    "05": "The rules, the scoring formula, and what gets you disqualified",
-    "06": "What to hand in, how, and what the interview covers",
-    "07": "Nodes and topics from scratch, if ROS 2 is new to you"
+    "03": "Nodes and topics from scratch, if ROS 2 is new to you",
+    "04": "Wall following, follow-the-gap, pure pursuit — and how to beat them",
+    "05": "Scoring yourself, reading results, and how judging day runs",
+    "06": "The rules, the scoring formula, and what gets you disqualified",
+    "07": "What to hand in, how, and what the interview covers"
   }
 }
