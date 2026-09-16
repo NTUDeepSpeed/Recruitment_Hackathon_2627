@@ -1,125 +1,143 @@
-# Notes for Hackathon
-#### We have provided a template for gap finder under `f1tenth_simulator/gap_finder_template.py` as a foundation for you to build your algorithm
+# NTU DeepSpeed Recruitment Hackathon 26/27
 
-#### The track used for the hackathon will be released after the info talk ends
-Once completed, repeat the `Docker Setup` step in the installation guide below.
+**Drive fast. Don't crash.**
 
+Write the software that drives a 1/10-scale racing car around a circuit it has
+never seen, as fast as it can, without hitting anything. Two tracks, two
+simulators, one problem.
 
-# ROS2_Workshop
-  
-# Installation
+> **Documentation: <https://ntudeepspeed.github.io/Recruitment_Hackathon_2627/>**
+>
+> **Submission deadline: 18 October 2026, 23:59 (SGT)**
 
-## Windows
+This branch is the front door. It holds the landing page and the generator that
+builds it — **no hackathon code lives here.** Pick a track below and check out
+its branch.
 
-1. [Download and Install docker](https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe)
-3. **After docker is installed**, install WSL by launching Windows Powershell as **administrator** and running the following command
-   
-    ```powershell
-    wsl --install
-    ```
-    
-4. Enable Ubuntu in Docker Desktop settings
-    - Navigate to settings in Docker Desktop
-    - Under Resources > WSL integration
-    - Enable the Ubuntu option then click "Apply and Restart"
-  
-5. After it's done installing run the following commands to start WSL
+---
 
-   ```powershell
-   wsl --set-default Ubuntu
-   wsl ~
-   ```
-6. Clone this repository
-   ```sh
-   git clone https://github.com/NTU-Autonomous-Racing-Team/Recruitment_Hackathon_2627.git ~/Recruitment_Hackathon_2627/
-   ```
-   > If you can't copy paste, right click powershell then navigate to `Properties > Tick "Use Ctrl+Shift+C/V as copy paste`"
-8. Docker Setup
-    - Setting up docker container
-      
-      ```sh
-      cd ~/Recruitment_Hackathon_2627/install_windows/
-      sudo docker network create f1tenth_net
-      sudo docker build -t f1tenth_gym_ros .
-      ```
+## Pick a track
 
-    - Run this script to start the docker container
-      ```sh
-      sudo ./run_docker_container_win.sh
-      ```
-      
-## MacOS
+| | **Track 1** | **Track 2** |
+| --- | --- | --- |
+| Branch | [`track1`](../../tree/track1) | [`track2`](../../tree/track2) |
+| Guide | [Track 1 docs](https://ntudeepspeed.github.io/Recruitment_Hackathon_2627/track1/) | [Track 2 docs](https://ntudeepspeed.github.io/Recruitment_Hackathon_2627/track2/) |
+| Simulator | `f1tenth_gym` + ROS 2 bridge | AutoDRIVE — a Unity binary you download |
+| Control | `AckermannDriveStamped` — ask for a speed | `Float32` throttle in [−1, 1] — ask for torque |
+| LiDAR | 819 beams, 270°, 25 m | 1080 beams, 270°, 10 m, 40 Hz, plus IMU, encoders and a camera |
+| Circuit | `icra26`, 17 × 18 m, 78 m a lap | ICRA 2026 compete circuit, 6.3 × 18.2 m, 54 m a lap |
+| Lap timing | Our referee, against a finish line | The simulator's own clock |
+| Install | `git clone --recurse-submodules` | Plain clone, then `./scripts/fetch_simulator.sh` |
 
-### **If you have homebrew installed already, you can skip to installing git**
-   - Make sure xcode-select is installed by launching a terminal and running this command
-     ```sh
-     xcode-select --install
-     ```
-     > If it is installed you will see this in your terminal
-     >
-     > `xcode-select: note: Command line tools are already installed. Use "Software Update" in System Settings or the softwareupdate command line interface to install updates`
-     > 
-     > This step will take some time if you don't have xcode installed
-   - Install Homebrew
-     ```sh
-     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-     ```
-   - Install git
-   
-     ```sh
-     brew install git
-     ```
-   - [Install docker](https://docs.docker.com/desktop/install/mac-install/)
-2.  Clone this repository
-   
-     ```sh
-     git clone https://github.com/NTU-Autonomous-Racing-Team/Recruitment_Hackathon_2627.git ~/Recruitment_Hackathon_2627/
-     ```
-3. Launch Docker
-4. Docker Setup
-    - Setting up docker containers
-      ```sh
-      cd ~/Recruitment_Hackathon_2627/install_macos/
-      docker compose -p f1tenth_gym_ros up -d
-      ```
-    
-    - Run this script to start the docker containers
-      ```sh
-      sudo ./run_docker_containers_mac.sh
-      ```
-    > To stop the docker containers run `sudo ./stop_docker_containers_mac.sh`
-      
-## Ubuntu Linux
+Track 2 runs the **compete** phase of the
+[RoboRacer Sim Racing League @ ICRA 2026](https://autodrive-ecosystem.github.io/competitions/roboracer-sim-racing-icra-2026/)
+— the same vehicle, sensors, circuit and devkit the ICRA teams raced. The big
+difference from Track 1 is the control interface: there is no speed controller
+between your node and the motor, so closing that loop is your problem.
 
-1. [Install docker](https://docs.docker.com/engine/install/ubuntu/)
-2. [Add Docker into sudo group ](https://docs.docker.com/engine/install/linux-postinstall/)
-3. Clone this repository
-   
-    ```sh
-    git clone https://github.com/NTU-Autonomous-Racing-Team/Recruitment_Hackathon_2627.git ~/Recruitment_Hackathon_2627/
-    ```
-    
-5. Docker Setup
-    - Setting up docker container      
-      ```sh
-      cd ~/Recruitment_Hackathon_2627/install_linux/
-      sudo docker network create f1tenth_net
-      sudo docker build -t f1tenth_gym_ros .
-      ```
-
-    - Run this script to start the docker container
-      ```sh
-      sudo ./run_docker_container.sh
-      ```
-
-# Running the simulator
-
-In your respective terminals run 
-> Windows users need to make sure they're in WSL
 ```sh
-source /opt/ros/foxy/setup.bash
-cd sim_ws
-source ./install/local_setup.bash
-ros2 launch f1tenth_gym_ros gym_bridge_launch.py
+git clone https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627.git
+cd Recruitment_Hackathon_2627
+
+git checkout track1   # or track2
 ```
-If everything is working, a window should pop up (It might take awhile for the simulation to startup when ran for the first time). For MacOS users click on this link [http://localhost:8080/vnc.html](http://localhost:8080/vnc.html) and click on connect to view the simulation.
+
+Then follow chapter 1 of that track's guide.
+
+---
+
+## The same for both
+
+The full rules are in chapter 5 of your track's guide and they are what counts.
+The short version:
+
+- **Teams of 3 to 5.** One team per person. The roster is fixed at submission.
+- **Deadline: 18 October 2026, 23:59 SGT.** Late entries are not scored.
+- **Score out of 100** — 50 for your fastest single lap, 50 for your 10-lap
+  total, both relative to the fastest team.
+- **+10 s on the lap per collision.** More than 10 collisions is a
+  disqualification.
+- **Ground-truth pose is allowed and recommended.** Replacing it with your own
+  localisation earns bonus marks at the interview.
+- **AI assistants are allowed.** You will be asked to explain your code, so do
+  not submit anything you cannot defend.
+- **Every push races on GitHub Actions** and writes the result to the workflow
+  summary.
+
+Judging runs on one machine — i9-14900HX, 32 GB, RTX 5060 Laptop — and times
+come from the simulator's clock, so your own hardware does not affect your
+score.
+
+---
+
+## The documentation site
+
+`docs-site/` renders `README.md` and `docs/*.md` from **both** track branches
+into one static site and publishes it to the `gh-pages` branch, which GitHub
+Pages serves.
+
+The prose stays plain Markdown on the track branches, so it reads correctly on
+GitHub too. The site is a build artefact and is never committed to a source
+branch.
+
+```
+docs-site/
+├── build.py           The generator
+├── check_links.py     Fails CI on a broken cross-chapter link or anchor
+├── site.json          Landing-page copy — tracks, stats, chapter notes
+├── requirements.txt   markdown + Pygments
+├── templates/         Page shells with {{SLOT}} placeholders
+├── theme/
+│   ├── tokens.css     DeepSpeed design system, vendored verbatim
+│   ├── docs.css       Docs components, built on those tokens
+│   └── app.js         Theme toggle, drawer, copy buttons, scrollspy
+└── static/            Favicon and anything else copied as-is
+```
+
+### Build it locally
+
+```sh
+git worktree add ../t1 track1
+git worktree add ../t2 track2
+
+python3 -m venv .venv && . .venv/bin/activate
+pip install -r docs-site/requirements.txt
+
+python docs-site/build.py --out _site --src track1=../t1 --src track2=../t2
+python docs-site/check_links.py _site
+python -m http.server -d _site 8000
+```
+
+### How it publishes
+
+[`.github/workflows/docs.yml`](.github/workflows/docs.yml) rebuilds and
+publishes on every push to `main`, `track1` or `track2` that touches
+`README.md`, `docs/`, `docs-site/` or the workflow itself. The same file exists
+on all three branches because GitHub runs the copy on the branch you pushed to
+— **keep the three copies in step.**
+
+The job is guarded by `if: github.repository == 'NTUDeepSpeed/…'`, so teams who
+fork this repository to compete never spend their Actions minutes rebuilding
+our documentation. (`judge.yml` is deliberately *not* guarded — racing your
+entry on every push is the point of a fork.)
+
+### Design
+
+The site uses the **DeepSpeed design system**: monochrome foundation, race-red
+`#E2342B` as the only accent, Anton for headlines, Space Grotesk for body,
+JetBrains Mono for telemetry and labels. Dark is the default theme.
+
+`theme/tokens.css` is vendored verbatim from that system — re-export over it to
+update. Everything in `theme/docs.css` reads those custom properties and
+contains no raw brand values, so re-skinning is a one-file swap.
+
+---
+
+## Getting help
+
+- Read the troubleshooting section at the end of chapter 1 for your track
+  first — most problems are there.
+- Bring the exact error text and what you ran to the team channel.
+- Email `ntu-deepspeed@e.ntu.edu.sg` if troubleshooting has not got you there.
+
+Good luck. Go fast.

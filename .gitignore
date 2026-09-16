@@ -1,6 +1,10 @@
 .DS_Store
-.vscode
-ros2_ws/install
-ros2_ws/build
-ros2_ws/log
-f1tenth_simulator/__pycache__
+.vscode/
+.idea/
+
+# Build output — the site is published to gh-pages, never committed here.
+_site/
+.deploy/
+__pycache__/
+*.pyc
+.venv/

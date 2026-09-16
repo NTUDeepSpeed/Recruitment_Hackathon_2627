@@ -1,0 +1,97 @@
+{
+  "org": "NTU DeepSpeed",
+  "title": "Recruitment Hackathon 26/27",
+  "repo": "NTUDeepSpeed/Recruitment_Hackathon_2627",
+  "deadline": "18 Oct 2026",
+  "deadline_full": "18 October 2026, 23:59 SGT",
+  "contact": "ntu-deepspeed@e.ntu.edu.sg",
+  "description": "Write the software that drives a 1/10-scale racing car around a circuit it has never seen, as fast as it can, without hitting anything. Two tracks, two simulators, one problem.",
+
+  "stats": [
+    { "k": "Tracks", "v": "2", "foot": "Pick one · both score out of 100" },
+    { "k": "Deadline", "v": "18 Oct", "foot": "2026 · 23:59 SGT", "hot": true },
+    { "k": "Team size", "v": "3–5", "foot": "Fixed at submission" },
+    { "k": "Collision", "v": "+10<span class=\"u\">s</span>", "foot": "Over 10 is a DQ" }
+  ],
+
+  "tracks": [
+    {
+      "id": "track1",
+      "branch": "track1",
+      "num": "01",
+      "name": "Track 1",
+      "short": "Autonomous Racing",
+      "tag": "f1tenth_gym",
+      "title": "RoboRacer Autonomous Racing",
+      "lede": "Everything in one repository — simulator, judging environment, reference algorithms and every official track. Ask the car for a speed and a steering angle; the sim closes the loop for you.",
+      "cta": "Read the Track 1 guide",
+      "specs": [
+        ["Simulator", "f1tenth_gym + ROS 2 bridge"],
+        ["Control", "AckermannDriveStamped — ask for a speed"],
+        ["LiDAR", "819 beams · 270° · 25 m"],
+        ["Circuit", "icra26 · 17 × 18 m · 78 m lap"],
+        ["Timing", "Our referee, against a finish line"],
+        ["Install", "git clone --recurse-submodules"]
+      ],
+      "quickstart": [
+        "git clone --recurse-submodules \\",
+        "  https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627.git",
+        "cd Recruitment_Hackathon_2627",
+        "git checkout track1",
+        "",
+        "./install/linux/setup.sh   # or macos, or windows from WSL",
+        "./install/linux/run.sh     # builds, then drops you in"
+      ]
+    },
+    {
+      "id": "track2",
+      "branch": "track2",
+      "num": "02",
+      "name": "Track 2",
+      "short": "Sim Racing · ICRA",
+      "tag": "AutoDRIVE",
+      "title": "RoboRacer Sim Racing on AutoDRIVE",
+      "lede": "The compete phase of the RoboRacer Sim Racing League at ICRA 2026 — same vehicle, same sensors, same circuit the ICRA teams raced. You publish raw throttle, so the speed controller is yours to write.",
+      "cta": "Read the Track 2 guide",
+      "specs": [
+        ["Simulator", "AutoDRIVE · Unity binary, 140 MB"],
+        ["Control", "Float32 throttle in [−1, 1] — torque"],
+        ["LiDAR", "1080 beams · 270° · 10 m · 40 Hz"],
+        ["Circuit", "ICRA 2026 compete · 6.3 × 18.2 m · 54 m lap"],
+        ["Timing", "The simulator's own clock"],
+        ["Install", "Plain clone + fetch_simulator.sh"]
+      ],
+      "quickstart": [
+        "git clone \\",
+        "  https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627.git",
+        "cd Recruitment_Hackathon_2627",
+        "git checkout track2",
+        "",
+        "./scripts/fetch_simulator.sh   # 140 MB, once",
+        "./install/linux/setup.sh       # or macos, or windows from WSL",
+        "./install/linux/run.sh         # builds, then drops you in"
+      ]
+    }
+  ],
+
+  "shared": [
+    ["Deadline", "18 October 2026, 23:59 SGT", true, "Late entries are not scored"],
+    ["Team size", "3 to 5 members", false, "One team per person, roster fixed at submission"],
+    ["Score", "50 fastest lap + 50 ten-lap total", false, "Relative to the fastest team, out of 100"],
+    ["Penalties", "+10 s per collision, DQ above 10", true, "Contact is the first problem to solve"],
+    ["Localisation", "Ground-truth pose is allowed", false, "And recommended — replacing it earns bonus marks"],
+    ["AI assistants", "Allowed", false, "You explain your code at the interview"],
+    ["Judging machine", "i9-14900HX · 32 GB · RTX 5060 Laptop", false, "Simulated clock, so your hardware does not matter"],
+    ["Every push", "Races on GitHub Actions", false, "Result lands in the workflow summary"]
+  ],
+
+  "chapter_notes": {
+    "01": "Docker, the simulator, the first run, and what to do when it breaks",
+    "02": "Every topic, the vehicle, and the sensor specifications",
+    "03": "Wall following, follow-the-gap, pure pursuit — and how to beat them",
+    "04": "Scoring yourself, reading results, and how judging day runs",
+    "05": "The rules, the scoring formula, and what gets you disqualified",
+    "06": "What to hand in, how, and what the interview covers",
+    "07": "Nodes and topics from scratch, if ROS 2 is new to you"
+  }
+}

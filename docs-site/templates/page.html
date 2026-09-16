@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="{{LANG}}" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<meta name="description" content="{{DESCRIPTION}}">
+<meta name="color-scheme" content="dark light">
+<meta property="og:title" content="{{TITLE}}">
+<meta property="og:description" content="{{DESCRIPTION}}">
+<meta property="og:type" content="article">
+<script>
+/* Applied before paint so the page never flashes the wrong theme.
+   Dark is the brand default — the identity lives on black. */
+(function () {
+  try {
+    var saved = localStorage.getItem("ds-theme");
+    document.documentElement.setAttribute("data-theme", saved === "light" ? "light" : "dark");
+  } catch (e) { /* storage blocked */ }
+})();
+</script>
+<link rel="icon" href="{{PREFIX}}assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="{{PREFIX}}assets/tokens.css">
+<link rel="stylesheet" href="{{PREFIX}}assets/docs.css">
+</head>
+<body>
+<a class="skip" href="#doc">Skip to content</a>
+{{HEADER}}
+<div class="scrim"></div>
+<div class="shell">
+  {{SIDEBAR}}
+  <main class="main" id="doc">
+    <div class="crumb">{{CRUMB}}</div>
+    <article class="prose">
+      <h1>{{HEADING}}</h1>
+      {{BODY}}
+    </article>
+    {{PAGER}}
+    <div class="src">Source &middot; <a href="{{SOURCE_URL}}">{{SOURCE_PATH}}</a></div>
+  </main>
+  <nav class="toc" aria-label="On this page">{{TOC}}</nav>
+</div>
+{{FOOTER}}
+<script src="{{PREFIX}}assets/app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="{{LANG}}" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<meta name="description" content="{{DESCRIPTION}}">
+<meta name="color-scheme" content="dark light">
+<script>
+(function () {
+  try {
+    var saved = localStorage.getItem("ds-theme");
+    document.documentElement.setAttribute("data-theme", saved === "light" ? "light" : "dark");
+  } catch (e) { /* storage blocked */ }
+})();
+</script>
+<link rel="icon" href="{{PREFIX}}assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="{{PREFIX}}assets/tokens.css">
+<link rel="stylesheet" href="{{PREFIX}}assets/docs.css">
+</head>
+<body>
+{{HEADER}}
+<main class="page">
+  <section class="hero">
+    <div class="hero-grid" aria-hidden="true"></div>
+    <div class="eyebrow">Error 404 &middot; Off the racing line</div>
+    <h1 class="hero-display">Page <span class="red">not found</span></h1>
+    <p class="hero-sub">That URL is not part of the guide. Pick a track and start from the overview.</p>
+    <div class="hero-act">
+      <a class="btn accent" href="{{PREFIX}}track1/index.html">Track 1</a>
+      <a class="btn ghost" href="{{PREFIX}}track2/index.html">Track 2</a>
+      <a class="btn ghost" href="{{PREFIX}}index.html">Home</a>
+    </div>
+  </section>
+</main>
+{{FOOTER}}
+<script src="{{PREFIX}}assets/app.js" defer></script>
+</body>
+</html>
