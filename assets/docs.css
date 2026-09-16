@@ -269,11 +269,9 @@ a.hdr-meta:hover { color: var(--accent); }
 .prose h2 {
   font-size: var(--t-2xl);
   margin: var(--s-16) 0 var(--s-4);
-  padding-top: var(--s-6);
+  padding-top: var(--s-5);
   border-top: 1px solid var(--line);
 }
-/* The sources separate chapters with `---`, which already draws the rule. */
-.prose hr + h2 { margin-top: 0; padding-top: 0; border-top: 0; }
 .prose h3 { font-size: var(--t-xl); margin: var(--s-10) 0 var(--s-3); }
 .prose h4 { margin: var(--s-6) 0 var(--s-2); color: var(--fg); }
 .prose h1, .prose h2, .prose h3, .prose h4 { scroll-margin-top: calc(var(--hdr-h) + var(--s-6)); }
@@ -287,6 +285,16 @@ a.hdr-meta:hover { color: var(--accent); }
 .prose img { max-width: 100%; height: auto; border: 1px solid var(--line); }
 
 .prose a { text-decoration: underline; }
+.prose a[data-ext]::after {
+  content: "";
+  display: inline-block; width: 9px; height: 9px;
+  margin-left: 4px;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+  transform: translateY(-1px) rotate(45deg);
+  opacity: 0.5;
+}
+
 .hl {
   margin-left: var(--s-2); opacity: 0;
   color: var(--fg-subtle); text-decoration: none;
@@ -309,7 +317,7 @@ h1:hover .hl, h2:hover .hl, h3:hover .hl, h4:hover .hl { opacity: 1; }
 .prose blockquote > :last-child { margin-bottom: 0; }
 
 /* Starting-line rule */
-.prose hr { height: 1px; background: var(--line); margin: var(--s-12) 0 var(--s-8); }
+.prose hr { height: 1px; background: var(--line); margin: var(--s-12) 0; }
 
 /* ----- Telemetry tables ----- */
 
@@ -336,14 +344,14 @@ h1:hover .hl, h2:hover .hl, h3:hover .hl, h4:hover .hl { opacity: 1; }
 
 /* ----- Code ----- */
 
-.prose :not(pre) > code {
+.prose code {
   background: var(--bg-inset);
   border: 1px solid var(--line-faint);
   border-radius: var(--r-1);
   padding: 1px 5px;
   word-break: break-word;
 }
-[data-theme="light"] .prose :not(pre) > code { border-color: var(--ink-200); }
+[data-theme="light"] .prose code { background: var(--bg-inset); border-color: var(--ink-200); }
 .prose a code { color: inherit; }
 
 .code { position: relative; margin: var(--s-6) 0; }
@@ -357,7 +365,7 @@ h1:hover .hl, h2:hover .hl, h3:hover .hl, h4:hover .hl { opacity: 1; }
   tab-size: 2;
   color: var(--fg);
 }
-[data-theme="light"] .code pre { background: var(--bg-elev-1); }
+[data-theme="light"] .code pre { background: #FFFFFF; }
 .code pre code { background: none; border: 0; padding: 0; font-size: inherit; }
 .code-lang {
   position: absolute; top: 0; right: 0;
@@ -660,7 +668,7 @@ h1:hover .hl, h2:hover .hl, h3:hover .hl, h4:hover .hl { opacity: 1; }
   font-family: var(--font-mono); font-size: 13px; line-height: 1.7;
   overflow-x: auto; color: var(--fg);
 }
-[data-theme="light"] .quick pre { background: var(--bg-elev-1); }
+[data-theme="light"] .quick pre { background: #FFFFFF; }
 .quick pre .c { color: var(--fg-subtle); }
 .quick pre .r { color: var(--accent); }
 
