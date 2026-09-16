@@ -231,7 +231,7 @@ ros2 topic pub -r 10 my_topic std_msgs/String "data: Hello minimal_subscriber!"
 python3 minimal_pubsub.py
 ```
 
--   Publishing and Subscribing in the same node. [minimal_pubsub](./ros2_ws/src/my_package/my_package/minimal_pubsub.py)
+-   Publishing and Subscribing in the same node. [minimal_pubsub](../ros2_ws/src/my_package/my_package/minimal_pubsub.py)
 
 ```
 ros2 run my_package minimal_pubsub
@@ -315,7 +315,7 @@ touch my_msg.msg
 5. Define your message file.
 
 -   This uses other ROS2 messages e.g. std_msgs, geometry_msgs
--   [my_msg.msg](./ros2_ws/src/my_msgs/msgs/MyMessage.msg)
+-   [my_msg.msg](../ros2_ws/src/my_msgs/msgs/MyMessage.msg)
 
 ---
 
