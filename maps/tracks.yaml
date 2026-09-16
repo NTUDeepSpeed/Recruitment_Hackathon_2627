@@ -40,14 +40,21 @@ tracks:
 
     simulator_build: 2026-icra/compete
 
-    # The occupancy grid is NOT part of the simulator download. It is published
-    # separately by the organisers and dropped in here; until then this path
-    # does not resolve and every tool that needs it says so and carries on.
-    # The referee does not need it, so a scored run works either way.
+    # The occupancy grid is NOT part of the simulator download - it is traced
+    # separately and lives here. The referee never opens it; it is for your
+    # planning, and for scripts/track_tool.py. See maps/README.md.
     map_path: /hackathon/maps/icra26_compete
     map_image_ext: .pgm
 
-    # Filled in when the map is published. Both are planning aids for
-    # track_tool.py; the simulator spawns the car and defines the line.
-    start_pose: null
-    finish_line: null
+    # Both are planning aids for track_tool.py. The simulator spawns the car
+    # and decides what a lap is; these only tell the centreline tracer where to
+    # start and which way round to go.
+    #
+    # Measured from the simulator: the car spawns here facing -y (-90 deg).
+    start_pose: [0.80, 3.16, -1.5708]
+
+    # The lap boundary, measured by watching where .../lap_count increments.
+    # It sits at y = 3.80, just behind the grid slot, and spans the 1.65 m
+    # corridor the car crosses it in - the circuit passes this latitude three
+    # times, so the line must not run across the other two.
+    finish_line: [[-0.06, 3.80], [1.49, 3.80]]

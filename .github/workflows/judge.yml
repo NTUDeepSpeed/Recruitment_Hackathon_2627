@@ -68,8 +68,10 @@ jobs:
         run: python3 race_ws/src/roboracer_referee/test/test_session.py
 
       - name: Track metadata is valid
-        # Passes cleanly while the compete map has not been published - the
-        # circuit lives in the simulator and a scored run never reads a map.
+        # Checks maps/icra26_compete.pgm against the planning geometry: start
+        # pose in open track, finish line spanning the corridor, and a closed
+        # lap existing through it. None of this scores a run - the simulator
+        # does that - but a broken map breaks pure_pursuit.
         run: ./scripts/track_tool.py validate
 
       - name: Judging environment is unmodified
@@ -238,11 +240,11 @@ jobs:
           if [ "${MODE}" = "submission" ]; then
             race "team_driver" "team_driver" "driver"
           else
-            # pure_pursuit is deliberately absent: it needs a path CSV, and the
-            # compete circuit has no published occupancy grid to trace one from
-            # (see maps/README.md), so racing it would only ever report a
-            # driver that refused to start.
+            # wall_follower is deliberately absent: it drives, but it is not
+            # competitive on this circuit (docs/03-baselines.md), so racing it
+            # every push would burn runner time to report the same thing.
             race "baseline_gap_follower" "roboracer_baselines" "gap_follower"
+            race "baseline_pure_pursuit" "roboracer_baselines" "pure_pursuit"
           fi
 
           # The container writes as root through the bind mount.
@@ -285,8 +287,8 @@ jobs:
               echo "# Baseline results"
               echo
               echo "\`race_ws/src/team_driver\` is still the template, so there is no"
-              echo "entry to score. This is the reference reactive algorithm on the"
-              echo "compete circuit, over ${LAPS} scored laps - the number to beat."
+              echo "entry to score. These are the reference algorithms on the compete"
+              echo "circuit, over ${LAPS} scored laps - the numbers to beat."
               echo
               ./scripts/leaderboard.py rank results/ --markdown --title "Baselines"
               echo

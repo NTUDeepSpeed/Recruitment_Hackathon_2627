@@ -19,10 +19,11 @@ occupancy grid - a racing line, a graph search, a particle filter - you need a
 grid, a start pose and a line to trace a lap through, and this checks that what
 you have is usable and then traces it.
 
-The compete circuit does not ship with a grid. Until one is published in maps/
-or you build one yourself, `validate` reports the track as "map not published"
-and exits cleanly rather than failing: there is nothing wrong, the data simply
-is not there yet. See maps/README.md.
+The compete circuit does not ship with a grid - the simulator carries it as
+Unity geometry - so `maps/icra26_compete.pgm` was traced off the simulator
+instead. If a track in tracks.yaml has no grid at all, `validate` skips it and
+exits cleanly rather than failing: a scored run needs no map, so a missing one
+is not a broken environment. See maps/README.md.
 """
 
 from __future__ import annotations
@@ -163,11 +164,16 @@ def _unfilter(filter_type: int, line: bytearray, prev: bytearray, bpp: int) -> N
 class OccupancyMap:
     """A map_server style grid, queried in world coordinates.
 
-    Occupancy follows the same rule the simulator uses: probability is
-    ``(255 - pixel) / 255`` (or ``pixel / 255`` when ``negate``), and a cell is
-    an obstacle when that exceeds ``occupied_thresh``. The ROS "unknown" band
-    counts as free. Validating against anything else would be checking a map
-    the simulator is not using.
+    Occupancy follows map_server's rule: probability is ``(255 - pixel) / 255``
+    (or ``pixel / 255`` when ``negate``), a cell is an obstacle above
+    ``occupied_thresh``, and free below ``free_thresh``.
+
+    **Anything in between - the ROS "unknown" band - is treated as not
+    drivable.** On this circuit that band is not uncertainty, it is the
+    outfield: the grid has 0 for the boundary, 254 for the track surface and
+    205 for everything outside, and 205 lands squarely in the unknown band.
+    Counting it as free lets a lap search leave the circuit and cut across the
+    grass, which produces a shorter "centreline" that no car could drive.
     """
 
     def __init__(self, yaml_path: str):
@@ -189,11 +195,13 @@ class OccupancyMap:
         self.origin = [float(v) for v in meta["origin"]]
         self.negate = bool(int(meta.get("negate", 0)))
         self.occupied_thresh = float(meta.get("occupied_thresh", 0.65))
+        self.free_thresh = float(meta.get("free_thresh", 0.196))
         self._clearance: Optional[List[float]] = None
 
     def _is_obstacle(self, value: int) -> bool:
+        """True for anything the car may not drive on - occupied or unknown."""
         occupancy = value / 255.0 if self.negate else (255 - value) / 255.0
-        return occupancy > self.occupied_thresh
+        return occupancy > self.occupied_thresh or occupancy >= self.free_thresh
 
     # -- basic queries --------------------------------------------------
 
@@ -604,8 +612,8 @@ def cmd_validate(args) -> int:
             # Not a failure. The circuit lives in the simulator; a grid is an
             # optional extra that the organisers publish separately, and a
             # scored run never touches it.
-            print(f"skip  {name:<16} map not published yet "
-                  f"(no {track.map_path}{track.map_image_ext}) - nothing to check")
+            print(f"skip  {name:<16} no grid at {track.map_path}{track.map_image_ext} "
+                  f"- nothing to check (a scored run does not need one)")
             skipped += 1
             continue
         else:

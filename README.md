@@ -68,7 +68,7 @@ interface.
 | **Sensor** | 1080-beam LiDAR, 270° field of view, 10 m range, 40 Hz — plus IMU, encoders and a front camera |
 | **Control** | **Normalised throttle and steering, both in [−1, 1].** Not a speed request — closing that loop is your problem |
 | **Localisation** | Ground-truth pose on `.../ips` and `.../odom` — **allowed and recommended** |
-| **Track** | The ICRA 2026 compete circuit, inside the simulator. About 30 × 10 m, bounded by 33 cm air ducts, at least three car widths wide throughout. **Nobody has driven it, including us.** |
+| **Track** | The ICRA 2026 compete circuit, inside the simulator. A long, narrow loop about 6.3 × 18.2 m with a 54 m lap, bounded by 33 cm air ducts, roughly 2 m wide and under 1 m at its tightest. |
 | **Scored on** | Your single fastest lap, and your adjusted race time over 10 laps |
 | **Penalties** | +10 s on the lap for each collision, and no upper limit — the penalty is the deterrent |
 | **Judged on** | One machine: i9-14900HX, 32 GB, RTX 5060 Laptop. Times come from the simulator's own clock, so your hardware does not affect your score. |
@@ -90,7 +90,7 @@ is not, and four differences will bite you if you skim:
 | Simulator | `f1tenth_gym` + ROS bridge | **AutoDRIVE**, a Unity binary you download |
 | Control | `AckermannDriveStamped` — ask for a speed | **`Float32` throttle in [−1, 1]** — ask for torque |
 | Lap timing | Our referee, against a finish line in `maps/` | **The simulator's**, over the devkit bridge |
-| The map | Shipped as a `.pgm` you can plan against | **Not shipped.** Build one or wait for ours |
+| The map | Shipped with the simulator | **Traced off the simulator** — it is in `maps/`, and a scored run ignores it |
 
 The throttle one is the big one. There is no speed controller between your node
 and the motor any more, so "take this corner at 3 m/s" is a control problem you
@@ -113,7 +113,7 @@ Recruitment_Hackathon_2627/
 ├── external/autodrive_devkit/  The AutoDRIVE Devkit — do not modify
 ├── simulator/                  The AutoDRIVE Simulator, fetched by script
 ├── scripts/                    evaluate.sh, fetch_simulator.sh, leaderboard.py, …
-├── maps/                       Track metadata; the occupancy grid, once there is one
+├── maps/                       Occupancy grid of the circuit, its centreline and metadata
 ├── docker/                     Image definition (ROS 2 Humble) and compose files
 ├── results/                    Where your run results land
 ├── .github/workflows/          Automated judging on every push

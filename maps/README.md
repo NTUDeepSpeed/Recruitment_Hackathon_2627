@@ -9,27 +9,37 @@ What is here is for *your* planning.
 
 | File | What it is |
 | --- | --- |
-| `tracks.yaml` | Track metadata: the name in your result file, and where the map lives once it exists |
-| `icra26_compete.pgm` + `.yaml` | Occupancy grid of the compete circuit — **published separately by the organisers** |
+| `tracks.yaml` | Track metadata: the name in your result file, where the map lives, and the planning geometry |
+| `icra26_compete.pgm` + `.yaml` | Occupancy grid of the compete circuit |
 | `icra26_compete_centerline.csv` | Traced from the grid by `scripts/track_tool.py centerline` |
 
-## The map is not in the simulator download
+## Where the grid came from
 
 The AutoDRIVE Simulator ships the circuit as Unity geometry, not as an
-occupancy grid. If you want to plan against a grid — a racing line, a particle
-filter, a graph search — you need one, and there are two ways to get it:
+occupancy grid, so this one was traced from the simulator itself: ground-truth
+pose plus the 1080-beam LiDAR, ray-carved into a grid over several laps.
 
-1. **Wait for ours.** The organisers publish `icra26_compete.pgm` and its
-   `.yaml` here and announce it in the team channel. Pull and it appears.
-2. **Build your own.** Drive the circuit, record `/autodrive/roboracer_1/lidar`
-   and `/autodrive/roboracer_1/ips`, and run SLAM over the bag. That is real
-   work and it is worth bonus marks at the interview if you can explain it —
-   see [rule 45](../docs/05-rules.md).
+It is checked against the thing it claims to describe. Every sample of a
+recorded driving line falls on a free cell and none on a wall, and
+`pure_pursuit` drives the centreline traced from it — a 19.87 s lap with no
+contact. A map that quietly disagrees with the simulator is worse than no map,
+so if you ever find this one disagreeing, that is a bug worth reporting
+(rule 49).
 
-Until a grid exists here, `./scripts/track_tool.py validate` reports the map as
-not yet published and exits cleanly, and `pure_pursuit` refuses to start with a
-message saying the same. Neither is a broken environment; a scored run does not
-touch this directory.
+Measured from the grid:
+
+| | |
+| --- | --- |
+| Grid | 220 × 476 px at 5 cm, origin (−7.96, −13.23) |
+| Circuit bounding box | about 6.3 × 18.2 m |
+| Lap length | 54.4 m down the traced centreline |
+| Corridor width | about 2 m typical, under 1 m at the tightest point |
+| Spawn | (0.80, 3.16) facing −y |
+| Lap boundary | y = 3.80, just behind the grid slot |
+
+**Building your own is still worth doing.** Ours is good enough to plan
+against; it is not perfect, and a better one — or your own localisation
+against it — is worth bonus marks at the interview (rule 45).
 
 ## Adding your own
 

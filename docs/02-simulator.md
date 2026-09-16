@@ -60,21 +60,28 @@ to compile shaders for and no sound card to open.
 
 ### The circuit
 
-There is one circuit, and **it is inside the simulator**. There is no map file,
-no `.pgm`, no start pose you can read — the simulator owns all of it and
-reports what happened afterwards.
+The circuit lives **inside the simulator**. It owns the start/finish line, the
+lap counter and the collision detection, and reports what happened afterwards;
+a scored run never opens a map.
+
+There is a map in [`maps/`](../maps/) all the same, traced off the simulator so
+you have something to plan against — see §2.9. These numbers are measured from
+it and from recorded laps, not quoted from a brochure:
 
 | | |
 | --- | --- |
 | Track | ICRA 2026 compete circuit, in the compete build |
-| Size | roughly 30 × 10 m |
-| Width | at least three car widths — about 0.90 m — throughout |
+| Bounding box | about 6.3 × 18.2 m — a long, narrow circuit |
+| Lap length | 54.4 m down the centreline |
+| Width | about 2 m typical, under 1 m at the tightest point |
 | Boundary | 33 cm diameter air ducts, the same as the physical RoboRacer tracks |
 | Surface | polished concrete: flat and reflective |
-| Features | straights, chicanes, and possible bifurcations and obstacles |
+| Features | two long straights either side of a switchback complex |
+| Spawn | (0.80, 3.16) facing −y; the lap boundary is at y = 3.80 |
 
-**Nobody has driven it, including us.** That is the point of the compete phase:
-the algorithm has to generalise.
+It is tighter than it sounds. A 2 m corridor for a 0.27 m car is generous; the
+sub-metre pinch points are not, and they are where the baselines lose their
+laps.
 
 Two consequences of the boundary being a *row of separate ducts* rather than a
 wall, both of which will cost you if you ignore them:
@@ -259,10 +266,11 @@ you can see the exit. That is most of the lap time.
 `…/ips` carries the position alone, at the same rate. `…/odom` carries that
 plus velocity, so there is rarely a reason to prefer it.
 
-Writing your own localisation is **not required** and it is genuinely hard —
-harder here than on Track 1, because there is no map to localise against until
-you have built one. If you do build one and can explain it properly, it is
-worth bonus marks at the interview.
+Writing your own localisation is **not required** and it is genuinely hard. If
+you do build one and can explain it properly, it is worth bonus marks at the
+interview. There is a map in `maps/` to localise against (§2.9), so the
+groundwork is there — a particle filter over the LiDAR and that grid is the
+standard approach.
 
 ---
 
@@ -319,32 +327,36 @@ if you prefer it to RViz.
 
 ---
 
-## 2.9 The map that is not here
+## 2.9 The map
 
-There is no occupancy grid of the compete circuit in this repository, because
-the simulator does not ship one. That matters for anything that plans against a
-map — a racing line, a graph search, a particle filter.
+The simulator ships the circuit as Unity geometry, not as an occupancy grid, so
+[`maps/icra26_compete.pgm`](../maps/) was traced off the simulator: ground-truth
+pose plus the LiDAR, ray-carved into a grid over several laps. It is a 220 × 476
+grid at 5 cm.
 
-Two ways to get one:
+```sh
+./scripts/track_tool.py validate      # check the grid and the planning geometry
+./scripts/track_tool.py centerline    # (re)write maps/icra26_compete_centerline.csv
+```
 
-1. **Wait for ours.** The organisers publish `maps/icra26_compete.pgm` when it
-   is ready and announce it in the team channel.
-2. **Build your own.** Drive the circuit, record `…/lidar` and `…/ips` into a
-   bag, and run SLAM over it. This is real work, it is well within reach with
-   `slam_toolbox`, and it is worth bonus marks at the interview.
+`pure_pursuit` follows that centreline out of the box, which is both the demo
+and the proof the map is right — it laps in under 20 seconds without touching
+anything.
+
+**Building a better one is still worth doing**, and it is worth bonus marks at
+the interview (rule 45). Ours is traced from a reactive driver's wandering, so
+it is accurate but not beautiful, and it says nothing about where the fast line
+is. Record your own and do better:
 
 ```sh
 ros2 bag record /autodrive/roboracer_1/lidar /autodrive/roboracer_1/ips \
                 /autodrive/roboracer_1/odom /tf /tf_static -o my_lap
 ```
 
-Once a grid exists, `./scripts/track_tool.py` will trace a centreline through
-it and `pure_pursuit` will follow that. Until then, both say so and stop. See
-[maps/README.md](../maps/README.md).
-
 **None of this affects a scored run.** The referee never opens a map; it reads
 the simulator's own lap and collision telemetry. See
-[chapter 4](04-evaluation.md).
+[chapter 4](04-evaluation.md). That separation is deliberate, and it is why the
+environment worked before this map existed.
 
 ---
 

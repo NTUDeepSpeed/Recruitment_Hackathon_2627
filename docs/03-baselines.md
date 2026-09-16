@@ -52,37 +52,39 @@ cheapest improvement on this list.
 
 ## 3.1 What they actually do on this circuit
 
-Two full 10-lap runs on the compete circuit, with the defaults as shipped:
+Full 10-lap runs on the compete circuit, with the defaults as shipped. Two runs
+of the gap follower, to show how much a single run tells you:
 
-| | Run A | Run B |
-| --- | ---: | ---: |
-| Status | `COMPLETE` | `COMPLETE` |
-| Fastest lap as driven | 21.235 s | **20.924 s** |
-| Best lap as scored | 41.433 s | **50.924 s** |
-| Collisions | 40 | 47 |
-| Race time, before penalties | 221.1 s | 227.6 s |
-| **Adjusted race time** | **621.1 s** | **697.6 s** |
+| | Gap follower A | Gap follower B | **Pure pursuit** |
+| --- | ---: | ---: | ---: |
+| Status | `COMPLETE` | `COMPLETE` | `COMPLETE` |
+| Fastest lap as driven | 21.235 s | 20.924 s | **19.056 s** |
+| Best lap as scored | 41.433 s | 50.924 s | **39.056 s** |
+| Collisions | 40 | 47 | **29** |
+| Race time, before penalties | 221.1 s | 227.6 s | **203.9 s** |
+| **Adjusted race time** | 621.1 s | 697.6 s | **493.9 s** |
 
-Read the last two rows properly, because they are the whole lesson of this
-track:
+Two things to read off that.
 
-**the gap follower spends nearly twice as long in penalties as it does
-driving.** About 225 seconds of racing and 400 to 470 seconds of collisions.
-Halving its lap time would save 110 seconds. Stopping it touching anything
-would save 430.
+**The planner beats the reactive driver on both axes at once.** Pure pursuit is
+quicker per lap *and* hits things less often, because it knows what is coming
+and the gap follower can only see 10 m. That is the whole argument for §3.4,
+and it is why "make the gap follower faster" is the wrong project.
 
-Notice also how different the two runs are: the same code, the same settings,
-40 collisions one time and 47 the next, and a "best lap" nine seconds apart
-because the penalties landed on different laps. The simulator is not
-deterministic. That is why the judges take the best of three (rule 23), and why
-a single run is not evidence that a change helped.
+**Penalties dominate.** Even pure pursuit spends 290 seconds in penalties
+against 204 seconds of driving. Taking a second a lap off its pace would save
+10 seconds; getting it round cleanly would save 290. On its best run one lap
+came home in 19.87 s with no contact at all, so a clean lap is clearly
+available — it just is not repeatable yet.
 
-The wall follower and pure pursuit are not in that table on purpose:
+Notice also how different the two gap-follower runs are: the same code, the
+same settings, 40 collisions one time and 47 the next, and a "best lap" nine
+seconds apart because the penalties landed on different laps. The simulator is
+not deterministic. That is why the judges take the best of three (rule 23), and
+why a single run is not evidence that a change helped.
 
-| | |
-| --- | --- |
-| **Wall follower** (reactive, two LiDAR beams) | Drives, not competitive — §3.3 |
-| **Pure pursuit** (follows a path) | Cannot run: there is no map yet — §3.4 |
+The wall follower is not in that table on purpose: it drives, but it is not
+competitive here, for a reason worth understanding — §3.3.
 
 So the first job is not speed. It is contact.
 
@@ -193,7 +195,8 @@ raise `projection_distance` before you touch the gains.
 
 [`pure_pursuit.py`](../race_ws/src/roboracer_baselines/roboracer_baselines/pure_pursuit.py)
 
-**This is the one to study, and right now it will not start.**
+**This is the one to study.** It is both the fastest baseline and the shape of
+a competitive entry.
 
 It loads a path, finds the point on it a lookahead distance ahead of the car,
 and steers along the arc that reaches it:
@@ -203,24 +206,13 @@ curvature = 2 · y_local / L²
 steering  = atan(wheelbase · curvature)
 ```
 
-That needs a path, and a path needs a map, and **the compete circuit does not
-ship with one** — the simulator carries the track as Unity geometry, not as an
-occupancy grid. So the node refuses to start and tells you so. See
-[maps/README.md](../maps/README.md) and
-[§2.9](02-simulator.md#29-the-map-that-is-not-here).
+By default it follows
+[`maps/icra26_compete_centerline.csv`](../maps/), traced off the map by
+`./scripts/track_tool.py centerline`. The simulator ships no occupancy grid, so
+that map was itself traced from the simulator — see
+[§2.9](02-simulator.md#29-the-map).
 
-That is not a gap in the environment; it is the interesting part of this track.
-Getting pure pursuit running means first getting a map, and there are two
-honest routes:
-
-1. **Wait for the organisers' grid**, then trace a centreline:
-   ```sh
-   ./scripts/track_tool.py centerline
-   ```
-2. **Build your own.** Drive a lap with the gap follower, record the LiDAR and
-   the pose, and run SLAM over the bag. Worth bonus marks at the interview.
-
-Once you have a line, point the node at it:
+Point it at a line of your own once you have one:
 
 ```sh
 ros2 run roboracer_baselines pure_pursuit --ros-args \
@@ -231,8 +223,9 @@ ros2 run roboracer_baselines pure_pursuit --ros-args \
 the path means you know the curvature ahead of the car, so you can work out how
 fast each part of it can be taken and start braking *before* a corner rather
 than in it. That is most of the lap time and it is not written for you. A flat
-`cruise_speed` has to be slow enough for the tightest corner, which makes it far
-too slow everywhere else.
+`cruise_speed` of 3 m/s has to be slow enough for the switchback, which makes
+it far too slow down both straights — and it is also why it still collects
+about three collisions a lap, because one speed cannot be right everywhere.
 
 Worth doing, roughly in order of payoff:
 
@@ -274,10 +267,12 @@ Roughly in order of lap time gained per hour spent:
    you pick different behaviour for a straight and a chicane — and on a circuit
    you can only see 10 m of, memory is worth more than it was on Track 1.
 
-4. **Build a map, then a racing line.** This is the big one and it is two
-   projects: SLAM the circuit from a recorded lap, then solve for the fast way
-   round it. Both are worth bonus marks and both are defensible in an
-   interview.
+4. **Build a better line.** The shipped centreline is the middle of the track
+   and nothing more. The fast line runs wide into a corner, clips the apex and
+   runs wide again, and carries a speed for every point on it. Solving for that
+   from the map is where the lap time is, and it is defensible in an interview.
+   Building a better *map* than ours - or your own, from your own laps - is
+   worth bonus marks too (rule 45).
 
 5. **Combine reactive and planned.** Follow a line when the track is clear,
    fall back to gap following when the LiDAR says the line is blocked. On a
