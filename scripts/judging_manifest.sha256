@@ -1,3 +1,4 @@
+655dc3ae4cf8985c0edc309b133754bd08716f359108a968f1f0960a74e9e1d8  .github/workflows/docs.yml
 a42c947dbce7b8de1925dc14050ccffd9ace5097b9e5607a7ab293511b5cf5db  .github/workflows/judge.yml
 8c1b22d2603dbb27ca341325bbfbdaa2c8c038c12e9950d21957977cc511c925  docker/Dockerfile
 ed936a7c4844a13f47c590f8bdde6c7dce81ce03a1c314cef9639338b87278d9  docker/docker-compose.gpu.yml
