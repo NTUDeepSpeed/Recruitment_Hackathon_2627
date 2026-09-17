@@ -33,7 +33,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="assets/tokens.1d09187847.css">
-<link rel="stylesheet" href="assets/docs.1d80aabea5.css">
+<link rel="stylesheet" href="assets/docs.7e914d8dfb.css">
 </head>
 <body>
 <a class="skip" href="#tracks">Skip to the tracks</a>
@@ -92,6 +92,7 @@
   <div class="eyebrow">Track 1 &middot; f1tenth_gym</div>
   <h3>RoboRacer Autonomous Racing</h3>
   <p class="lede">Everything in one repository — simulator, judging environment and every official track. No driver ships: you pick the algorithm and write it. Ask the car for a speed and a steering angle; the sim closes the loop for you.</p>
+  <div class="tmap-fig paper"><img src="assets/track1-circuit.png" alt="Plan of the icra26 circuit: a squarish 17 by 18 metre corridor that runs round the outside, doubles back through the middle past a hairpin, and is marked out with cones." width="506" height="540" loading="lazy" decoding="async"></div>
   <div class="spec"><div class="row"><span class="k">Simulator</span><span class="v">f1tenth_gym + ROS 2 bridge</span></div><div class="row"><span class="k">Control</span><span class="v">AckermannDriveStamped — ask for a speed</span></div><div class="row"><span class="k">LiDAR</span><span class="v">819 beams · 270° · 25 m</span></div><div class="row"><span class="k">Circuit</span><span class="v">icra26 · 17 × 18 m · 78 m lap</span></div><div class="row"><span class="k">Timing</span><span class="v">Our referee, against a finish line</span></div><div class="row"><span class="k">Install</span><span class="v">git clone --recurse-submodules</span></div></div>
   <div class="tcard-foot"><span>Read the Track 1 guide</span><span class="arw">&rarr;</span></div>
 </a><a class="tcard" href="track2/index.html">
@@ -99,6 +100,7 @@
   <div class="eyebrow">Track 2 &middot; AutoDRIVE</div>
   <h3>RoboRacer Sim Racing on AutoDRIVE</h3>
   <p class="lede">The compete phase of the RoboRacer Sim Racing League at ICRA 2026 — same vehicle, same sensors, same circuit the ICRA teams raced. You publish raw throttle, so the speed controller is yours to write.</p>
+  <div class="tmap-fig"><img src="assets/track2-circuit.png" alt="The ICRA 2026 compete circuit seen from above in AutoDRIVE: a long, narrow loop, 6.3 by 18.2 metres, with a tight hairpin at one end and an inner section running back down the middle." width="755" height="370" loading="lazy" decoding="async"></div>
   <div class="spec"><div class="row"><span class="k">Simulator</span><span class="v">AutoDRIVE · Unity binary, 140 MB</span></div><div class="row"><span class="k">Control</span><span class="v">Float32 throttle in [−1, 1] — torque</span></div><div class="row"><span class="k">LiDAR</span><span class="v">1080 beams · 270° · 10 m · 40 Hz</span></div><div class="row"><span class="k">Circuit</span><span class="v">ICRA 2026 compete · 6.3 × 18.2 m · 54 m lap</span></div><div class="row"><span class="k">Timing</span><span class="v">The simulator's own clock</span></div><div class="row"><span class="k">Install</span><span class="v">Plain clone + fetch_simulator.sh</span></div></div>
   <div class="tcard-foot"><span>Read the Track 2 guide</span><span class="arw">&rarr;</span></div>
 </a></div>

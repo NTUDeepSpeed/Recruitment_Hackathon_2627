@@ -594,6 +594,27 @@ h1:hover .hl, h2:hover .hl, h3:hover .hl, h4:hover .hl { opacity: 1; }
 .tcard h3 { font-size: var(--t-2xl); margin: 0 0 var(--s-3); max-width: 16ch; }
 .tcard .lede { font-size: var(--t-sm); color: var(--fg-muted); margin: 0 0 var(--s-6); max-width: 46ch; }
 
+/* The circuit itself. Both plates are the same shape whatever the map's own
+   proportions are, so the two cards stay in step; `contain` letterboxes the
+   difference against the inset, which is the track colour in either theme.
+   `.paper` is Track 1's occupancy grid — dark ink on white, so the dark theme
+   flips it. Track 2's is a screenshot of the simulator and is dark already. */
+.tmap-fig {
+  aspect-ratio: 16 / 9;
+  margin: 0 0 var(--s-6);
+  background: var(--bg-inset);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  overflow: hidden;
+}
+.tmap-fig img {
+  display: block; width: 100%; height: 100%;
+  object-fit: contain;
+  transition: transform var(--dur-base) var(--ease-mech);
+}
+[data-theme="dark"] .tmap-fig.paper img { filter: invert(1); }
+.tcard:hover .tmap-fig img { transform: scale(1.03); }
+
 .spec { margin: 0 0 var(--s-8); border-top: 1px solid var(--line); }
 .spec .row {
   display: grid; grid-template-columns: 110px 1fr; gap: var(--s-4);
