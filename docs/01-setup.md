@@ -176,15 +176,13 @@ ros2 launch roboracer_referee simulator.launch.py
 ros2 run team_driver driver
 ```
 
-A car should set off round the track. That is the template driver in
-[`race_ws/src/team_driver/team_driver/driver.py`](../race_ws/src/team_driver/team_driver/driver.py) —
-slow, cautious, and yours to replace.
-
-Try a stronger baseline for comparison:
-
-```sh
-ros2 run roboracer_baselines gap_follower
-```
+The car should set off — slowly, in a straight line, and into the first wall.
+**That is correct.** The template in
+[`race_ws/src/team_driver/team_driver/driver.py`](../race_ws/src/team_driver/team_driver/driver.py)
+is wiring, not a driver: it has no steering logic at all. Seeing it move is how
+you know the image, the simulator, the workspace and the topics are all
+working, and everything after that is yours to write — start with
+[chapter 4](04-algorithms.md).
 
 ---
 

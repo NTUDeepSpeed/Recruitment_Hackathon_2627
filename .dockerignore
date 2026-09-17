@@ -14,7 +14,6 @@ scripts
 race_ws/build
 race_ws/install
 race_ws/log
-race_ws/src/roboracer_baselines
 race_ws/src/roboracer_referee
 workshop/ros2_ws/build
 workshop/ros2_ws/install

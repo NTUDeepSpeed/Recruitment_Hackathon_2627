@@ -251,11 +251,13 @@ ten laps is worth exactly as much as one quick one.
     ranking; the interview decides recruitment.
 
 41. Bonus marks, awarded at the interview and separate from the leaderboard:
-    - **Replacing the algorithm.** Reinforcement learning, MPC, imitation
-      learning, or anything else that is not a tuned version of the baselines
-      we gave you. The bar is that you can explain what it does, why you chose
-      it, how you produced it — the training setup included, if it was
-      trained — and what its failure modes are; not that it wins.
+    - **An ambitious algorithm.** Reinforcement learning, MPC, imitation
+      learning, or anything else beyond a solid implementation of a standard
+      reactive or path-following method
+      ([chapter 4](04-algorithms.md)). The bar is that you can explain what it
+      does, why you chose it, how you produced it — the training setup
+      included, if it was trained — and what its failure modes are; not that
+      it wins.
     - **Own localisation.** A particle filter, scan matching or similar,
       replacing `/ego_racecar/odom`, that you can explain thoroughly.
     - **Own racing line generation** computed from the map at runtime rather

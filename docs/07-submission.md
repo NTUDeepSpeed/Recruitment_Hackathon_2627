@@ -189,9 +189,9 @@ Every team is interviewed after the race. Expect roughly 30 minutes.
 **Any member may be asked about any part of the code.** Splitting the work is
 fine; not knowing what your teammates built is not.
 
-**Bonus marks** are available for replacing the algorithm outright (RL, MPC,
-imitation learning — anything beyond tuning the baselines), your own
-localisation, runtime racing-line generation, and clear engineering — see
+**Bonus marks** are available for an ambitious algorithm (RL, MPC, imitation
+learning — anything beyond a standard reactive or path-following method), your
+own localisation, runtime racing-line generation, and clear engineering — see
 [rule 41](06-rules.md#69-interview-and-bonus-marks). These affect the
 recruitment decision, not the leaderboard.
 

@@ -135,8 +135,9 @@ the throttle before you can see the exit. That is most of the lap time.
 Writing your own localisation — a particle filter against `/map`, or scan
 matching — is **not required**, and it is genuinely hard. If you do build one
 and can explain it properly, it is worth bonus marks at the interview. The easy
-way to try: publish your estimate on your own topic and point
-`roboracer_baselines/pure_pursuit` at it with `-p odom_topic:=/my_localisation`.
+way to try: publish your estimate on your own topic and have your driver read
+that instead of `/ego_racecar/odom`, so you can switch between the two with a
+parameter and compare them.
 
 ---
 
@@ -173,9 +174,9 @@ finish line and live status, plus `/driver/markers` for anything your own node
 publishes.
 
 To draw your own debug geometry, publish a `visualization_msgs/MarkerArray` on
-`/driver/markers` — the template driver and every baseline show how. Seeing
-where your algorithm thinks it is aiming is by far the fastest way to work out
-why it just hit a wall.
+`/driver/markers` — the template driver shows how. Seeing where your algorithm
+thinks it is aiming is by far the fastest way to work out why it just hit a
+wall.
 
 To add a topic by hand: **Add → By topic →** pick it → **OK**.
 
@@ -201,16 +202,17 @@ runs wide into a corner, clips the apex and runs wide again; it is usually
 shorter and always faster. Turning the centreline into a racing line is exactly
 the work this hackathon is about.
 
-`pure_pursuit` reads the CSV, so you can point it at your own:
+Keep any line you generate here too and load it from your driver by path:
 
 ```sh
-ros2 run roboracer_baselines pure_pursuit --ros-args \
+ros2 run team_driver driver --ros-args \
     -p raceline_csv:=/hackathon/maps/my_line.csv
 ```
 
-Your file may also carry a speed per point, in the
-`s; x; y; psi; kappa; vx; ax` layout; otherwise the node computes speeds from
-the curvature.
+The conventional format carries a speed per point as well as the geometry, in
+the `s; x; y; psi; kappa; vx; ax` layout — worth adopting, because a line
+without a speed profile leaves most of the lap time on the table
+([§4.2](04-algorithms.md#42-planning-against-the-map)).
 
 Track definitions in [`maps/tracks.yaml`](../maps/tracks.yaml) look like this:
 

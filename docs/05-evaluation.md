@@ -29,8 +29,8 @@ Useful variations:
 # A short run while you are iterating
 ./scripts/evaluate.sh --team your_team --laps 3
 
-# Score a baseline for comparison
-./scripts/evaluate.sh --team baseline --driver-pkg roboracer_baselines --driver-exec gap_follower
+# Score an alternative executable of your own, side by side with `driver`
+./scripts/evaluate.sh --team my_experiment --driver-exec my_other_node
 ```
 
 `--headless` skips RViz and is much faster. `./scripts/evaluate.sh --help`
@@ -211,10 +211,11 @@ Before racing, the workflow asks whether there is anything to score:
 ```
 
 It compares `race_ws/src/team_driver/` against the recorded template. Edit any
-file, or add one, and it reports `submission` and your driver is raced. Leave it
-untouched — as on the template repository — and it reports `template`, and
-the workflow races the baselines instead. That keeps the pipeline exercised,
-and the numbers it prints are the ones to beat.
+file, or add one, and it reports `submission` and your driver is raced. Leave
+it untouched — as on the template repository — and it reports `template`, and
+the workflow skips the race and says so. There is nothing to score: the
+template does not drive, and racing it would fill the summary with a car
+parked against the first wall.
 
 > [!NOTE]
 > **Organisers:** the reference is `scripts/template_manifest.sha256`. If you
@@ -224,14 +225,12 @@ and the numbers it prints are the ones to beat.
 
 ### Running it by hand
 
-Use **Actions — Judge — Run workflow** to set the number of laps and runs, or
-to force the baselines even when you have an entry:
+Use **Actions — Judge — Run workflow** to set the number of laps and runs:
 
 | Input | Default | |
 | --- | --- | --- |
 | `laps` | 10 | Scored laps per run. Drop it to 3 for a quick check. |
 | `runs` | 1 | Runs per driver; the best counts. |
-| `force_baselines` | false | Race the baselines even though you have an entry. |
 
 Result JSONs are attached to the run as an artifact, so you can feed them to
 `leaderboard.py` locally.

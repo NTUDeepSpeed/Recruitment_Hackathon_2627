@@ -7,14 +7,13 @@
 #       driver_params:=/hackathon/race_ws/src/team_driver/config/driver_params.yaml
 #
 # Keeping the numbers out of the code means you can sweep them without
-# rebuilding, which is the fastest way to find lap time early on.
+# rebuilding, which is the fastest way to find lap time early on. Declare a
+# parameter in driver.py and it can be set here.
+#
+# The two below are all the template needs, because the template does not
+# drive (see driver.py). Expect to replace them entirely.
 
 driver:
   ros__parameters:
-    max_speed: 4.0
-    min_speed: 1.5
-    max_steering: 0.34        # conservative; the car itself allows up to 0.4189
-    field_of_view: 3.14159
-    max_range: 8.0
-    bubble_radius: 0.30
-    steering_gain: 0.7
+    crawl_speed: 1.0          # [m/s]; you ask for a speed and the sim holds it
+    max_range: 8.0            # [m] clip the scan here

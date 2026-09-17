@@ -7,7 +7,7 @@
 #
 #   ./scripts/evaluate.sh --team my_team
 #   ./scripts/evaluate.sh --team my_team --runs 3 --headless
-#   ./scripts/evaluate.sh --team baseline --driver-pkg roboracer_baselines --driver-exec gap_follower
+#   ./scripts/evaluate.sh --team my_team --driver-exec my_other_node
 #
 # Options
 #   --team NAME          team name for the result file      (default: unnamed_team)

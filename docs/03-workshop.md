@@ -1,7 +1,7 @@
 # 3. ROS 2 primer
 
 If ROS 2 is new to you, start here. If you sat through the workshop, skip to
-[chapter 4](04-baselines.md).
+[chapter 4](04-algorithms.md).
 
 You need surprisingly little ROS to win this. A node, a subscriber, a
 publisher, and parameters — that is the whole surface area of a competitive
@@ -132,4 +132,4 @@ material, and it is not built during evaluation.
 
 ---
 
-Next: **[4. Baseline algorithms](04-baselines.md)**
+Next: **[4. Algorithms to start from](04-algorithms.md)**

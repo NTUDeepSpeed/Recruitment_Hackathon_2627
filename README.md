@@ -35,17 +35,18 @@ ros2 launch roboracer_referee simulator.launch.py
 ros2 run team_driver driver
 ```
 
-Watch it drive, then go make it faster. When you want a score:
+The car will set off and hit the first wall: the template is wiring, not a
+driver, and writing one is the hackathon. Once yours does something, score
+it:
 
 ```sh
 ./scripts/evaluate.sh --team your_team_name
 ```
 
 Pushing also races your entry on GitHub Actions and writes the result to the
-workflow summary. On an untouched template it races the baselines instead, so
-you can see the times to beat before writing a line of code. That workflow is
-for reference only — it runs on GitHub's hardware and nothing it prints is
-scored. **Your result is the organisers' run on the judging machine.**
+workflow summary. That workflow is for reference only — it runs on GitHub's
+hardware and nothing it prints is scored. **Your result is the organisers' run
+on the judging machine.**
 
 Full walkthrough: **[docs/01-setup.md](docs/01-setup.md)**.
 
@@ -70,13 +71,16 @@ and a speed. That is the whole interface.
 | **Penalties** | +10 s on the lap for each collision; more than 10 collisions is a disqualification |
 | **Judged on** | One machine: i9-14900HX, 32 GB, RTX 5060 Laptop. Times are in simulated seconds, so your own hardware does not affect your score. |
 
-Reactive algorithms like follow-the-gap will get you round. Planning against
-the map and your own position is where the lap time is. And you are not
-required to build on the baselines at all — **replacing the approach outright
-is encouraged**: reinforcement learning, MPC, a learned end-to-end policy,
+**No driver ships with this repository.** `team_driver` is wiring — it talks to
+the simulator and drives in a straight line into the first wall. Writing
+something that laps is the hackathon. Reactive algorithms like follow-the-gap
+will get you round; planning against the map and your own position is where the
+lap time is; and **replacing the approach outright is encouraged**:
+reinforcement learning, MPC, imitation learning, a learned end-to-end policy,
 anything you can defend. The environment is ROS 2 Jazzy on Python 3.12 with a
-GPU available, so a learned policy is a realistic option. See
-[docs/04-baselines.md](docs/04-baselines.md).
+GPU available, so a learned policy is a realistic option.
+[docs/04-algorithms.md](docs/04-algorithms.md) is the menu, with what each
+approach needs and where each breaks.
 
 ---
 
@@ -88,8 +92,7 @@ Recruitment_Hackathon_2627/
 │   ├── linux/  macos/  windows/    setup.sh, run.sh, shell.sh, stop.sh
 │   └── common.sh
 ├── race_ws/src/                The ROS 2 workspace, mounted into the container
-│   ├── team_driver/            ★ YOUR CODE GOES HERE
-│   ├── roboracer_baselines/      Reference algorithms to read, race and beat
+│   ├── team_driver/            ★ YOUR CODE GOES HERE — the template does not drive
 │   └── roboracer_referee/        The judging environment — do not modify
 ├── scripts/                    evaluate.sh, leaderboard.py, track_tool.py, …
 ├── maps/                       The circuit: icra26.pgm, its yaml, tracks.yaml
@@ -113,7 +116,7 @@ The one file you are meant to open first:
 | **[1. Setup](docs/01-setup.md)** | Installing Docker, building the image, first run, troubleshooting |
 | **[2. The simulator](docs/02-simulator.md)** | Topics, message types, changing tracks, RViz, ground-truth odometry |
 | **[3. ROS 2 primer](docs/03-workshop.md)** | Nodes, topics and the workshop slides, if ROS is new to you |
-| **[4. Baseline algorithms](docs/04-baselines.md)** | Wall following, follow-the-gap, pure pursuit — how they work and where they break |
+| **[4. Algorithms](docs/04-algorithms.md)** | The menu: reactive, planned, model-based and learned — what each needs and where each breaks |
 | **[5. Evaluation](docs/05-evaluation.md)** | Scoring yourself, reading result files, how judging day runs |
 | **[6. Rules](docs/06-rules.md)** | The rules, the scoring formula, and what gets you disqualified |
 | **[7. Submission](docs/07-submission.md)** | What to hand in, how, and what the interview covers |
@@ -147,9 +150,8 @@ counts. The short version:
 
 - **Bonus marks** at the interview, for work you can explain properly:
   replacing the ground-truth odometry with your own localisation; generating a
-  racing line from the map at runtime; or **replacing the driving algorithm
-  entirely** — reinforcement learning, MPC, imitation learning, anything
-  beyond tuning what we gave you.
+  racing line from the map at runtime; or an ambitious driving algorithm —
+  reinforcement learning, MPC, imitation learning.
 
 ---
 

@@ -23,7 +23,7 @@ container. The concepts are unchanged; the paths are not.
 | --- | --- |
 | `~/F1Tenth_Workshop/install_linux` | `install/linux/` (also `install/macos`, `install/windows`) |
 | `/f1tenth_workshop/` inside the container | `/hackathon/` |
-| `/f1tenth_workshop/f1tenth_simulator` | `race_ws/src/roboracer_baselines/` |
+| `/f1tenth_workshop/f1tenth_simulator` | `race_ws/src/team_driver/` — and the gap finder and wall follower templates the slides work through are no longer provided; see [docs/04-algorithms.md](../docs/04-algorithms.md) |
 | `ros2_ws` | `race_ws` for your entry; `workshop/ros2_ws` for these teaching packages |
 | Edit `sim.yaml` and rebuild to change map | `ros2 launch roboracer_referee simulator.launch.py track:=Nuerburgring` |
 
