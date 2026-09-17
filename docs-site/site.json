@@ -32,6 +32,13 @@
       "title": "RoboRacer Autonomous Racing",
       "lede": "Everything in one repository — simulator, judging environment and every official track. No driver ships: you pick the algorithm and write it. Ask the car for a speed and a steering angle; the sim closes the loop for you.",
       "cta": "Read the Track 1 guide",
+      "map": {
+        "src": "track1-circuit.png",
+        "w": 506,
+        "h": 540,
+        "alt": "Plan of the icra26 circuit: a squarish 17 by 18 metre corridor that runs round the outside, doubles back through the middle past a hairpin, and is marked out with cones.",
+        "paper": true
+      },
       "specs": [
         ["Simulator", "f1tenth_gym + ROS 2 bridge"],
         ["Control", "AckermannDriveStamped — ask for a speed"],
@@ -60,6 +67,12 @@
       "title": "RoboRacer Sim Racing on AutoDRIVE",
       "lede": "The compete phase of the RoboRacer Sim Racing League at ICRA 2026 — same vehicle, same sensors, same circuit the ICRA teams raced. You publish raw throttle, so the speed controller is yours to write.",
       "cta": "Read the Track 2 guide",
+      "map": {
+        "src": "track2-circuit.png",
+        "w": 755,
+        "h": 370,
+        "alt": "The ICRA 2026 compete circuit seen from above in AutoDRIVE: a long, narrow loop, 6.3 by 18.2 metres, with a tight hairpin at one end and an inner section running back down the middle."
+      },
       "specs": [
         ["Simulator", "AutoDRIVE · Unity binary, 140 MB"],
         ["Control", "Float32 throttle in [−1, 1] — torque"],

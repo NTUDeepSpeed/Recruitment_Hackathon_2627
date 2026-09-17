@@ -586,12 +586,23 @@ def build_landing(cfg: dict, tracks_pages: dict, out: Path, assets: dict) -> Non
             f'<div class="row"><span class="k">{e(k)}</span><span class="v">{v}</span></div>'
             for k, v in track["specs"]
         )
+        # `paper` marks a map drawn as dark ink on white, which the dark theme
+        # has to flip; a screenshot of the simulator is already dark.
+        m = track["map"]
+        cls = "tmap-fig paper" if m.get("paper") else "tmap-fig"
+        circuit = (
+            f'<div class="{cls}">'
+            f'<img src="{assets[m["src"]]}" alt="{e(m["alt"])}"'
+            f' width="{m["w"]}" height="{m["h"]}" loading="lazy" decoding="async">'
+            f"</div>"
+        )
         cards.append(
             f"""<a class="tcard" href="{track['id']}/index.html">
   <span class="tcard-n" aria-hidden="true">{e(track['num'])}</span>
   <div class="eyebrow">{e(track['name'])} &middot; {e(track['tag'])}</div>
   <h3>{e(track['title'])}</h3>
   <p class="lede">{e(track['lede'])}</p>
+  {circuit}
   <div class="spec">{specs}</div>
   <div class="tcard-foot"><span>{e(track['cta'])}</span><span class="arw">&rarr;</span></div>
 </a>"""

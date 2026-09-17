@@ -21,6 +21,13 @@ its branch.
 
 ## Pick a track
 
+<p>
+  <img src="docs-site/static/track1-circuit.png" width="187" height="200"
+       alt="Track 1 — the icra26 circuit: a squarish 17 by 18 metre corridor running round the outside and doubling back through the middle past a hairpin, marked out with cones.">
+  <img src="docs-site/static/track2-circuit.png" width="408" height="200"
+       alt="Track 2 — the ICRA 2026 compete circuit in AutoDRIVE: a long, narrow loop, 6.3 by 18.2 metres, with a tight hairpin at one end and an inner section running back down the middle.">
+</p>
+
 | | **Track 1** | **Track 2** |
 | --- | --- | --- |
 | Branch | [`track1`](../../tree/track1) | [`track2`](../../tree/track2) |
@@ -97,7 +104,7 @@ docs-site/
 │   ├── tokens.css     DeepSpeed design system, vendored verbatim
 │   ├── docs.css       Docs components, built on those tokens
 │   └── app.js         Theme toggle, drawer, copy buttons, scrollspy
-└── static/            Favicon and anything else copied as-is
+└── static/            Favicon, circuit maps, anything else copied as-is
 ```
 
 ### The platform switch
