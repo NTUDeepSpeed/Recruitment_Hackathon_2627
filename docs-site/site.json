@@ -23,7 +23,7 @@
       "short": "Autonomous Racing",
       "tag": "f1tenth_gym",
       "title": "RoboRacer Autonomous Racing",
-      "lede": "Everything in one repository — simulator, judging environment, reference algorithms and every official track. Ask the car for a speed and a steering angle; the sim closes the loop for you.",
+      "lede": "Everything in one repository — simulator, judging environment and every official track. No driver ships: you pick the algorithm and write it. Ask the car for a speed and a steering angle; the sim closes the loop for you.",
       "cta": "Read the Track 1 guide",
       "specs": [
         ["Simulator", "f1tenth_gym + ROS 2 bridge"],
@@ -89,7 +89,7 @@
     "01": "Docker, the simulator, the first run, and what to do when it breaks",
     "02": "Every topic, the vehicle, and the sensor specifications",
     "03": "Nodes and topics from scratch, if ROS 2 is new to you",
-    "04": "Wall following, follow-the-gap, pure pursuit — and how to beat them",
+    "04": "Reactive, planned, model-based and learned — which approach to pick, and why",
     "05": "Scoring yourself, reading results, and how judging day runs",
     "06": "The rules, the scoring formula, and what gets you disqualified",
     "07": "What to hand in, how, and what the interview covers"

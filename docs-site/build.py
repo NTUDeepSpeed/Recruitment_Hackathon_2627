@@ -330,8 +330,8 @@ def annotate_platform_scope(body: str) -> str:
 class Page:
     def __init__(self, slug: str, title: str, body: str, toc: list, source: str,
                  platform_headings: dict | None = None):
-        self.slug = slug          # "index" or "04-baselines"
-        self.title = title        # "4. Baseline algorithms"
+        self.slug = slug          # "index" or "04-algorithms"
+        self.title = title        # "4. Algorithms to start from"
         self.body = body
         self.toc = toc
         self.source = source      # path within the branch, for the "edit" link
@@ -350,7 +350,7 @@ class Page:
 
     @property
     def short(self) -> str:
-        """'4. Baseline algorithms' -> 'Baseline algorithms'."""
+        """'4. Algorithms to start from' -> 'Algorithms to start from'."""
         if self.slug == "index":
             return "Overview"
         return re.sub(r"^\d+\.\s*", "", self.title)

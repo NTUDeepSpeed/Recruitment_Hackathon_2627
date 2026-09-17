@@ -8,3 +8,11 @@ _site/
 __pycache__/
 *.pyc
 .venv/
+
+# Track-branch artefacts that survive a `git checkout main` in a shared
+# working tree. Nothing here belongs on this branch.
+simulator/
+race_ws/build/
+race_ws/install/
+race_ws/log/
+results/*.json
