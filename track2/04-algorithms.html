@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-platform="linux">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4. Algorithms to start from &middot; Track 2 &middot; DeepSpeed Hackathon 26/27</title>
+<meta name="description" content="The compete phase of the RoboRacer Sim Racing League at ICRA 2026 — same vehicle, same sensors, same circuit the ICRA teams raced. You publish raw throttle, so the speed controller is yours to write.">
+<meta name="color-scheme" content="dark light">
+<meta property="og:title" content="4. Algorithms to start from &middot; Track 2 &middot; DeepSpeed Hackathon 26/27">
+<meta property="og:description" content="The compete phase of the RoboRacer Sim Racing League at ICRA 2026 — same vehicle, same sensors, same circuit the ICRA teams raced. You publish raw throttle, so the speed controller is yours to write.">
+<meta property="og:type" content="article">
+<script>
+/* Applied before paint, so the page never flashes the wrong theme or the
+   wrong platform's commands. Dark is the brand default — the identity lives
+   on black — and the platform falls back to the one you appear to be on. */
+(function () {
+  var root = document.documentElement, theme, platform;
+  try {
+    theme = localStorage.getItem("ds-theme");
+    platform = localStorage.getItem("ds-platform");
+  } catch (e) { /* storage blocked */ }
+  root.setAttribute("data-theme", theme === "light" ? "light" : "dark");
+  if (!platform) {
+    var ua = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || "";
+    platform = /mac/i.test(ua) ? "macos" : /win/i.test(ua) ? "windows" : "linux";
+  }
+  root.setAttribute("data-platform", platform);
+})();
+</script>
+<meta name="theme-color" content="#0A0A0B">
+<link rel="icon" type="image/png" href="../assets/favicon.png">
+<link rel="apple-touch-icon" href="../assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../assets/tokens.1d09187847.css">
+<link rel="stylesheet" href="../assets/docs.2c085c6755.css">
+</head>
+<body>
+<a class="skip" href="#doc">Skip to content</a>
+<header class="hdr">
+  <a class="hdr-brand" href="../index.html">
+    <span class="wm">DeepSpeed</span>
+    <span class="sub">Hackathon 26/27</span>
+  </a>
+  <nav class="hdr-nav" aria-label="Tracks"><a class="" href="../track1/index.html">Track 1</a><a class="on" href="../track2/index.html">Track 2</a></nav>
+  <div class="hdr-right">
+    <span class="hdr-meta">Deadline <b>18 Oct 2026</b></span>
+    <a class="hdr-meta" href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">GitHub</a>
+    <div class="pf-switch pf-switch--hdr" role="group" aria-label="Platform"><button type="button" data-set-pf="linux">Linux</button><button type="button" data-set-pf="macos">macOS</button><button type="button" data-set-pf="windows">Windows</button></div>
+    <button class="toggle" type="button" aria-label="Switch theme">
+      <span class="t-light">Light</span><span class="t-dark">Dark</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/></svg>
+    </button>
+    <button class="navbtn" type="button" aria-label="Contents" aria-expanded="false" aria-controls="sidenav">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+</header>
+<div class="scrim"></div>
+<div class="shell">
+  <aside class="nav" id="sidenav">
+  <div class="nav-lbl">Select track</div>
+  <div class="nav-switch"><a href="../track1/index.html"><span class="n">01</span><span>Autonomous Racing</span></a><a href="../track2/index.html" aria-current="true"><span class="n">02</span><span>Sim Racing · ICRA</span></a></div>
+  <div class="nav-lbl">Your platform</div>
+  <div class="pf-switch pf-switch--nav" role="group" aria-label="Platform"><button type="button" data-set-pf="linux">Linux</button><button type="button" data-set-pf="macos">macOS</button><button type="button" data-set-pf="windows">Windows</button></div>
+  <div class="nav-lbl">Track 2 &middot; Contents</div>
+  <ul class="nav-list"><li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-workshop.html"><span class="n">03</span><span>ROS 2 primer</span></a></li><li><a href="04-algorithms.html" aria-current="page"><span class="n">04</span><span>Algorithms to start from</span></a></li><li><a href="05-evaluation.html"><span class="n">05</span><span>Evaluation</span></a></li><li><a href="06-rules.html"><span class="n">06</span><span>Rules</span></a></li><li><a href="07-submission.html"><span class="n">07</span><span>Submission</span></a></li></ul>
+  <div class="nav-lbl">Elsewhere</div>
+  <div class="nav-out">
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/tree/track2">Branch <code>track2</code></a>
+    <a href="mailto:ntu-deepspeed@e.ntu.edu.sg">Ask a question</a>
+  </div>
+</aside>
+  <main class="main" id="doc">
+    <div class="crumb"><span class="red">Track 2</span><span class="sep">/</span><a href="index.html">Overview</a><span class="sep">/</span><span>Chapter 04</span></div>
+    <article class="prose">
+      <h1>4. Algorithms to start from</h1>
+      <p><strong>No driver ships with this repository.</strong> There is no reference implementation
+to read, race or copy: <code>race_ws/src/team_driver</code> is wiring — it connects to the
+simulator, subscribes to the sensors, and crawls forward in a straight line
+until it hits something. Everything that makes the car go round is yours to
+write.</p>
+<p>That is the hackathon. What this chapter gives you instead is the menu: the
+approaches that actually work on a 1/10-scale car, what each one needs, what it
+costs you to build, and where each breaks on <em>this</em> circuit. All of them have
+been made to work on a RoboRacer by somebody. Pick one, get it finishing laps,
+then make it fast.</p>
+<p>Choosing well is part of what is being assessed. <strong>Ambition is not scored</strong> —
+ten clean laps from a well-tuned reactive driver beats a half-trained policy
+that crashes out on lap three, especially at +10 s a collision. Get something
+finishing first, then get clever.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th></th>
+<th>Needs</th>
+<th>Build cost</th>
+<th>Ceiling</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#42-reactive-nothing-but-the-lidar">Wall following</a></td>
+<td>LiDAR</td>
+<td>An afternoon</td>
+<td>Low — will not finish here</td>
+</tr>
+<tr>
+<td><a href="#42-reactive-nothing-but-the-lidar">Follow-the-gap</a></td>
+<td>LiDAR</td>
+<td>A day</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><a href="#43-planning-against-a-map">Pure pursuit / Stanley</a></td>
+<td>Map + pose</td>
+<td>A day</td>
+<td>High</td>
+</tr>
+<tr>
+<td><a href="#43-planning-against-a-map">Racing line + speed profile</a></td>
+<td>Map + pose</td>
+<td>Days</td>
+<td>Highest</td>
+</tr>
+<tr>
+<td><a href="#44-model-based-optimal-control">MPC / MPPI</a></td>
+<td>Model + pose</td>
+<td>Days</td>
+<td>Highest</td>
+</tr>
+<tr>
+<td><a href="#45-learned-policies">RL / imitation</a></td>
+<td>Time, GPU</td>
+<td>Weeks</td>
+<td>Unknown — yours to find out</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h2 id="41-first-the-thing-that-is-not-an-algorithm">4.1 First, the thing that is not an algorithm<a class="hl" href="#41-first-the-thing-that-is-not-an-algorithm" title="Link to this section">#</a></h2>
+<p>Whatever you pick above will decide a <em>target speed</em>. Nothing in this
+repository turns one into a throttle, and AutoDRIVE does not take a speed
+(<a href="02-simulator.html#24-the-control-interface-is-not-a-speed-request">§2.4</a>) — it
+takes normalised torque in [−1, 1]. So "slow to 2 m/s for this corner" is not
+something you can ask for. <strong>You need a speed controller, and it is the first
+thing to build</strong>, because every algorithm below depends on one and none of them
+work well with open-loop throttle.</p>
+<p>The standard shape is feed-forward plus a PI trim: the throttle needed to hold
+a speed is roughly proportional to that speed, so a feed-forward term carries
+most of the load and the integral cleans up what the model gets wrong. You have
+measured speed from <code>…/odom</code> and from the wheel encoders, and the vehicle
+parameters are published in
+<a href="02-simulator.html#210-vehicle-and-sensor-specifications">§2.10</a>, so the
+feed-forward term is something you can derive rather than guess.</p>
+<p>Two things to get right, because both bite:</p>
+<ul>
+<li><strong>Clamp the integral.</strong> One slow corner is otherwise enough to wind it up to
+  the point where it holds the throttle open halfway down the next straight.</li>
+<li><strong>Decide what an overspeed does.</strong> A scaled car with no ABS answers a
+  negative throttle by locking its wheels, and a locked wheel steers nowhere at
+  all. Lifting off is often the better answer to being slightly fast; braking
+  hard is for when you are badly fast.</li>
+</ul>
+<p>A good speed controller is worth real lap time on its own, and it is worth
+bonus marks at the interview (rule 45).</p>
+<hr>
+<h2 id="42-reactive-nothing-but-the-lidar">4.2 Reactive: nothing but the LiDAR<a class="hl" href="#42-reactive-nothing-but-the-lidar" title="Link to this section">#</a></h2>
+<p>Reactive drivers decide from the current scan alone. No map, no memory, no
+localisation — which makes them the fastest thing to get running and the
+easiest to debug, and caps how good they can get.</p>
+<h3 id="wall-following">Wall following<a class="hl" href="#wall-following" title="Link to this section">#</a></h3>
+<p>Hold a constant distance from one wall with a PID controller. Two LiDAR beams —
+one straight out to the side, one angled forwards — give you both the distance
+to the wall and its angle, and steering on a point projected <em>ahead</em> of the car
+rather than on the current error is the difference between tracking the wall
+and oscillating about it.</p>
+<p><strong>Build this first if ROS 2 is new to you.</strong> It is about forty lines of real
+logic, and if it gets the car moving then the bridge, the QoS, your commands
+and the workspace are all correct.</p>
+<p><strong>Do not expect it to be competitive here.</strong> The algorithm assumes a continuous
+surface to follow and this circuit does not have one: the boundary is a row of
+spaced 33 cm air ducts, so a beam aimed at "the wall" regularly passes between
+two of them and reports something metres away. The controller then steers hard
+at a wall that was never there. That is the algorithm, not the tuning — and
+understanding <em>why</em> it fails here is the clearest possible argument for the
+next one.</p>
+<h3 id="follow-the-gap-with-disparity-extension">Follow-the-gap, with disparity extension<a class="hl" href="#follow-the-gap-with-disparity-extension" title="Link to this section">#</a></h3>
+<p>The strongest purely reactive approach, and on a circuit with no shipped
+racing line it is the one that works today. Three ideas stacked up:</p>
+<ol>
+<li><strong>A safety bubble.</strong> Find the closest return and blank out an arc around it,
+   so the car can never aim at a point it would clip on the way to.</li>
+<li><strong>Disparity extension.</strong> Where the scan jumps from near to far there is
+   something the LiDAR can see past but the car cannot fit past. Pull the far
+   side of the jump in by half a car width. <strong>This matters more on Track 2 than
+   on Track 1</strong>: with a duct row for a boundary the scan is full of near/far
+   jumps that look like openings and are not, and without this step the car
+   drives between two ducts.</li>
+<li><strong>Aim at the widest gap, not the deepest beam.</strong> The deepest beam makes the
+   car twitch between two nearly identical directions; the middle of the widest
+   run of near-maximal readings does not.</li>
+</ol>
+<p>Then scale target speed down with steering angle and with how short the gap
+ahead is, and hand that to your speed controller.</p>
+<p><strong>Tuning is the whole game and the sensible direction is often wrong.</strong> The
+corridor here is about 0.90 m wide and the car is 0.27 m, so the margins you
+assume for the car's half-width and the safety bubble interact: too generous
+and disparity extension closes off every gap the car might have driven through,
+leaving it nowhere to aim and crawling into things slowly; too tight and it
+clips ducts constantly. There is a real optimum and the only way to find it is
+to run it.</p>
+<p><strong>Where it breaks:</strong> no memory and no plan. It brakes for a corner only once it
+can see it, and it can see 10 m. On a 54 m circuit that means it is always late
+on the brakes and early off the throttle.</p>
+<h3 id="also-in-this-family">Also in this family<a class="hl" href="#also-in-this-family" title="Link to this section">#</a></h3>
+<p><strong>Potential fields</strong> — sum a repulsion from every return and an attraction
+towards the track ahead, and steer along the result. Elegant, and prone to
+local minima that park the car in a corner. <strong>Bug algorithms</strong> — obstacle
+circumnavigation; fine for getting somewhere, far too slow for racing. Worth
+knowing about; neither is where the lap time is.</p>
+<hr>
+<h2 id="43-planning-against-a-map">4.3 Planning against a map<a class="hl" href="#43-planning-against-a-map" title="Link to this section">#</a></h2>
+<p>Knowing where you are changes the problem: you can see the corner before the
+LiDAR can, which means you can brake before it rather than in it. That is most
+of the lap time.</p>
+<p>You have what this needs. The simulator publishes ground-truth pose on <code>…/odom</code>
+and <code>…/ips</code> and the rules allow you to use both (<a href="02-simulator.html#26-ground-truth-pose--use-it">§2.6</a>,
+rule 35). The simulator ships no occupancy grid, so we traced one from it:
+<code>maps/icra26_compete.pgm</code> with a centreline in
+<code>maps/icra26_compete_centerline.csv</code> (<a href="02-simulator.html#29-the-map">§2.9</a>).
+Building a better map than ours — or your own, from your own recorded laps — is
+worth bonus marks (rule 45).</p>
+<h3 id="path-tracking">Path tracking<a class="hl" href="#path-tracking" title="Link to this section">#</a></h3>
+<p><strong>Pure pursuit</strong> is the standard and the one to start with. Find the point on
+your path a lookahead distance ahead of the car, and steer along the circular
+arc that reaches it; the steering angle follows from the arc's curvature and
+the wheelbase. Two properties make it popular: it is a few lines of geometry,
+and the lookahead distance is a single intuitive knob — too short and it saws
+at the wheel, too long and it cuts every apex. Scaling lookahead with speed is
+the usual refinement.</p>
+<p><strong>Stanley control</strong> steers on cross-track error measured at the front axle plus
+a heading term. Sharper than pure pursuit at tracking the line exactly, less
+forgiving of a line with discontinuities in it.</p>
+<p>Either one will follow the shipped centreline. Neither is fast on its own,
+because a centreline driven at one speed is not a lap.</p>
+<h3 id="the-two-things-that-make-it-fast">The two things that make it fast<a class="hl" href="#the-two-things-that-make-it-fast" title="Link to this section">#</a></h3>
+<ol>
+<li>
+<p><strong>A speed for every point.</strong> Compute the path's curvature, cap cornering
+   speed by the lateral grip you can hold, then propagate braking and
+   acceleration limits forwards and backwards around the loop so the car slows
+   down <em>in time</em>. This is the single biggest win available from a planner, and
+   it is why §4.1 comes first: the result is still a target speed, and the
+   speed controller has to be good enough to hold it.</p>
+</li>
+<li>
+<p><strong>A racing line, not a centreline.</strong> Wide in, apex, wide out — shorter and
+   faster than the middle of the track. Minimum-curvature and minimum-time
+   line optimisation are both well documented and both solvable from the map
+   you have. Generating your own line from a map, rather than shipping one as
+   data, is explicitly worth bonus marks (rule 45); hand-typed waypoints from
+   watching the car are not (rule 36).</p>
+</li>
+</ol>
+<h3 id="when-the-line-is-blocked">When the line is blocked<a class="hl" href="#when-the-line-is-blocked" title="Link to this section">#</a></h3>
+<p>A path follower follows its line and nothing else — put an obstacle on that
+line and it drives into it. On a circuit the organisers describe as possibly
+carrying bifurcations and obstacles, that is not hypothetical. Two answers:</p>
+<ul>
+<li><strong>Plan around it.</strong> A* or Dijkstra over a grid, or a sampling planner
+  (RRT*), re-run locally when the scan says the line is blocked.</li>
+<li><strong>Switch behaviour.</strong> Follow the line when the track is clear, fall back to
+  gap following when it is not. Cruder, robust, and a genuinely good answer.</li>
+</ul>
+<hr>
+<h2 id="44-model-based-optimal-control">4.4 Model-based optimal control<a class="hl" href="#44-model-based-optimal-control" title="Link to this section">#</a></h2>
+<p>Instead of tracking a path, optimise the controls directly against a model of
+the car, every cycle.</p>
+<p><strong>MPC.</strong> Predict the car's motion over a short horizon with a kinematic or
+dynamic bicycle model, solve for the throttle and steering sequence that
+minimises a cost — lap progress, deviation from a line, control effort —
+subject to the actuator and track limits, apply the first control, repeat. It
+handles the speed and steering problem in one place instead of two, which is
+its real attraction here, and the vehicle parameters you need are all published
+in <a href="02-simulator.html#210-vehicle-and-sensor-specifications">§2.10</a>. The costs
+are solve time inside a 40 Hz budget and a model that has to be good enough.</p>
+<p><strong>MPPI</strong> replaces the solver with sampling: roll out several thousand random
+control sequences, weight them by cost, take the weighted average. No
+derivatives and no convexity needed, it parallelises onto the GPU, and it
+copes with a cost function you can only evaluate. Popular on scaled racing
+cars for exactly those reasons.</p>
+<p><strong>LQR</strong> around a reference trajectory is the cheap classical option — fast and
+principled, but linear, so it gives up at the limit of grip.</p>
+<p>Principled, fast, and the tuning is honest work. This is a strong choice if
+somebody on the team has done control theory.</p>
+<hr>
+<h2 id="45-learned-policies">4.5 Learned policies<a class="hl" href="#45-learned-policies" title="Link to this section">#</a></h2>
+<p>Allowed, encouraged, and worth bonus marks if you can explain what you built
+(rule 45). Also the easiest way to spend three weeks and finish with nothing
+that laps, so read §4.6 before committing.</p>
+<p><strong>Reinforcement learning.</strong> The AutoDRIVE bridge is an ordinary ROS 2
+interface, so you can wrap it as a Gymnasium environment and train a policy
+against the simulator directly — scan in, throttle and steering out. Expect the
+hard parts to be reward shaping (progress, not speed; penalise contact
+properly), wall-clock training time — the simulator runs in real time, unlike a
+stepped gym — and keeping inference inside the control loop's budget. Training
+on the <em>practice</em> build and racing on <em>compete</em> is also exactly the
+generalisation problem ICRA set.</p>
+<p><strong>Imitation learning.</strong> Drive well by some other means — teleop
+(<a href="02-simulator.html#27-driving-by-hand">§2.7</a>), or one of the planners above —
+record it, and train a policy to copy it. Cheap to get working, and it inherits
+whatever your teacher does badly. Behaviour cloning is the simple version;
+DAgger, which asks the expert what it would have done in the states the student
+actually visits, is the standard fix for the compounding-error problem that
+kills plain cloning.</p>
+<p><strong>End-to-end from the camera.</strong> Possible, and the camera is published — but
+note that headless runs produce no image
+(<a href="02-simulator.html#22-topics">§2.2</a>), which constrains how you train and how
+you are judged.</p>
+<p><strong>Residual and hybrid approaches.</strong> Learn a correction on top of a classical
+controller rather than replacing it. Much less likely to fail catastrophically,
+much easier to explain, and it still counts as replacing the approach.</p>
+<p><strong>What rule 42 asks of a learned component.</strong> Exactly what it asks of an <code>if</code>
+statement — but what it asks for is the <em>method</em>, not the weights. Nobody will
+ask what a particular weight is for. Be ready to say what the network sees and
+emits, how you trained it (the environment, the reward, the data and how much
+of it), why that method rather than the alternatives, how you checked it works,
+and where it fails. Explain how the box was built and you have explained the
+box.</p>
+<hr>
+<h2 id="46-what-to-build-in-what-order">4.6 What to build, in what order<a class="hl" href="#46-what-to-build-in-what-order" title="Link to this section">#</a></h2>
+<p>Roughly in order of lap time gained per hour spent:</p>
+<ol>
+<li>
+<p><strong>A speed controller</strong> (§4.1). Everything else needs one.</p>
+</li>
+<li>
+<p><strong>Stop hitting things.</strong> A collision is +10 s and eleven of them is a
+   disqualification, against a lap of roughly 20 s. Nothing else on this list
+   comes close. Most contact is corner entry speed rather than steering: decide
+   speed from the distance to what is ahead, not just from the steering angle
+   you are already holding.</p>
+</li>
+<li>
+<p><strong>Something that finishes ten laps.</strong> Any of §4.2 will do. A result you can
+   measure beats an idea you cannot.</p>
+</li>
+<li>
+<p><strong>Use your position</strong> (§4.3). You know exactly where you are and a reactive
+   planner throws that away. Even a coarse "which section of the track am I in"
+   lets you pick different behaviour for a straight and a chicane — and on a
+   circuit you can only see 10 m of, memory is worth more than it was on
+   Track 1.</p>
+</li>
+<li>
+<p><strong>A line and a speed profile</strong> (§4.3). This is where the lap time is, and it
+   is defensible in an interview.</p>
+</li>
+<li>
+<p><strong>Then get ambitious</strong> (§4.4, §4.5) — with something that already finishes
+   in reserve.</p>
+</li>
+</ol>
+<p><strong>Measure everything.</strong> Run <code>./scripts/evaluate.sh</code> after each change:</p>
+<div class="code"><pre><code>./scripts/evaluate.sh<span class="w"> </span>--team<span class="w"> </span>my_team<span class="w"> </span>--laps<span class="w"> </span><span class="m">10</span>
+</code></pre><span class="code-lang">shell</span></div>
+<p>An idea that sounds better and is not shows up in the times immediately. Two
+warnings about reading those times:</p>
+<ul>
+<li><strong>The simulator is not deterministic.</strong> The same code over the same ten laps
+  will not give the same collision count twice. That is why the judges take the
+  best of three (rule 23), and why a single run is not evidence that a change
+  helped.</li>
+<li><strong>Two laps is not enough to measure a collision rate.</strong> Short runs are for
+  iterating; judge a change on a full-length one before you believe it.</li>
+</ul>
+<hr>
+<h2 id="47-where-to-read-more">4.7 Where to read more<a class="hl" href="#47-where-to-read-more" title="Link to this section">#</a></h2>
+<p>Starting points, not a reading list to finish:</p>
+<ul>
+<li><strong>Follow-the-gap and disparity extension</strong> — Sezer &amp; Gokasan, <em>A novel
+  obstacle avoidance algorithm: "Follow the Gap Method"</em> (2012); Otterness,
+  <em>The "disparity extender" algorithm</em> (2019).</li>
+<li><strong>Pure pursuit</strong> — Coulter, <em>Implementation of the Pure Pursuit Path Tracking
+  Algorithm</em>, CMU-RI-TR-92-01.</li>
+<li><strong>Racing lines and speed profiles</strong> — Heilmeier et al., <em>Minimum curvature
+  trajectory planning and control for an autonomous race car</em> (2019).</li>
+<li><strong>MPC and MPPI on scaled cars</strong> — Williams et al., <em>Information-theoretic
+  MPC for model-based reinforcement learning</em> (2017).</li>
+<li><strong>The F1TENTH course materials</strong>, which cover most of §4.2 and §4.3 from
+  first principles and are written for exactly this vehicle.</li>
+</ul>
+<p>And the obvious one: chapter 2 is the specification of the car you are
+controlling. Most of the tuning questions in this chapter are answered by
+<a href="02-simulator.html#210-vehicle-and-sensor-specifications">§2.10</a>.</p>
+<hr>
+<p>Whatever you build, put it behind <code>ros2 run team_driver driver</code> (rule 38) and
+declare its dependencies (rule 37).</p>
+<p>Next: <strong><a href="05-evaluation.html">5. Evaluation</a></strong></p>
+    </article>
+    <nav class="pager"><a class="prev" href="03-workshop.html"><span class="arw">&larr;</span><span><span class="k">Previous</span><span class="t">ROS 2 primer</span></span></a><a class="next" href="05-evaluation.html"><span><span class="k">Next</span><span class="t">Evaluation</span></span><span class="arw">&rarr;</span></a></nav>
+    <div class="src">Source &middot; <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/docs/04-algorithms.md">docs/04-algorithms.md</a></div>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="nav-lbl">On this page</div><ul><li><a href="#41-first-the-thing-that-is-not-an-algorithm">4.1 First, the thing that is not an algorithm</a></li><li><a href="#42-reactive-nothing-but-the-lidar">4.2 Reactive: nothing but the LiDAR</a><ul><li><a href="#wall-following">Wall following</a></li><li><a href="#follow-the-gap-with-disparity-extension">Follow-the-gap, with disparity extension</a></li><li><a href="#also-in-this-family">Also in this family</a></li></ul></li><li><a href="#43-planning-against-a-map">4.3 Planning against a map</a><ul><li><a href="#path-tracking">Path tracking</a></li><li><a href="#the-two-things-that-make-it-fast">The two things that make it fast</a></li><li><a href="#when-the-line-is-blocked">When the line is blocked</a></li></ul></li><li><a href="#44-model-based-optimal-control">4.4 Model-based optimal control</a></li><li><a href="#45-learned-policies">4.5 Learned policies</a></li><li><a href="#46-what-to-build-in-what-order">4.6 What to build, in what order</a></li><li><a href="#47-where-to-read-more">4.7 Where to read more</a></li></ul></nav>
+</div>
+<footer class="ft"><div class="ft-in">
+  <span>NTU DeepSpeed &middot; Recruitment Hackathon 26/27</span>
+  <nav>
+    <a href="../track1/index.html">Track 1</a>
+    <a href="../track2/index.html">Track 2</a>
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">Repository</a>
+    <a href="mailto:ntu-deepspeed@e.ntu.edu.sg">ntu-deepspeed@e.ntu.edu.sg</a>
+  </nav>
+</div></footer>
+<script src="../assets/app.d655062d7e.js" defer></script>
+</body>
+</html>

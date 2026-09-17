@@ -64,7 +64,7 @@
   <div class="nav-lbl">Your platform</div>
   <div class="pf-switch pf-switch--nav" role="group" aria-label="Platform"><button type="button" data-set-pf="linux">Linux</button><button type="button" data-set-pf="macos">macOS</button><button type="button" data-set-pf="windows">Windows</button></div>
   <div class="nav-lbl">Track 2 &middot; Contents</div>
-  <ul class="nav-list"><li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html" aria-current="page"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-workshop.html"><span class="n">03</span><span>ROS 2 primer</span></a></li><li><a href="04-baselines.html"><span class="n">04</span><span>Baseline algorithms</span></a></li><li><a href="05-evaluation.html"><span class="n">05</span><span>Evaluation</span></a></li><li><a href="06-rules.html"><span class="n">06</span><span>Rules</span></a></li><li><a href="07-submission.html"><span class="n">07</span><span>Submission</span></a></li></ul>
+  <ul class="nav-list"><li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html" aria-current="page"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-workshop.html"><span class="n">03</span><span>ROS 2 primer</span></a></li><li><a href="04-algorithms.html"><span class="n">04</span><span>Algorithms to start from</span></a></li><li><a href="05-evaluation.html"><span class="n">05</span><span>Evaluation</span></a></li><li><a href="06-rules.html"><span class="n">06</span><span>Rules</span></a></li><li><a href="07-submission.html"><span class="n">07</span><span>Submission</span></a></li></ul>
   <div class="nav-lbl">Elsewhere</div>
   <div class="nav-out">
     <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/tree/track2">Branch <code>track2</code></a>
@@ -280,12 +280,13 @@ ros2<span class="w"> </span>launch<span class="w"> </span>roboracer_referee<span
 <span class="c1"># Terminal 2 — your car</span>
 ros2<span class="w"> </span>run<span class="w"> </span>team_driver<span class="w"> </span>driver
 </code></pre><span class="code-lang">shell</span></div>
-<p>A car should set off round the track. That is the template driver in
-<a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/race_ws/src/team_driver/team_driver/driver.py" data-ext="1"><code>race_ws/src/team_driver/team_driver/driver.py</code></a> —
-slow, cautious, and yours to replace.</p>
-<p>Try a stronger baseline for comparison:</p>
-<div class="code"><pre><code>ros2<span class="w"> </span>run<span class="w"> </span>roboracer_baselines<span class="w"> </span>gap_follower
-</code></pre><span class="code-lang">shell</span></div>
+<p>The car should set off — slowly, in a straight line, and into the first thing
+in front of it. <strong>That is correct.</strong> The template in
+<a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/race_ws/src/team_driver/team_driver/driver.py" data-ext="1"><code>race_ws/src/team_driver/team_driver/driver.py</code></a>
+is wiring, not a driver: it has no steering logic at all. Seeing it move is how
+you know the image, the bridge, the QoS settings and the workspace are all
+working, and everything after that is yours to write — start with
+<a href="04-algorithms.html">chapter 4</a>.</p>
 <hr>
 <h2 id="18-check-your-environment-is-sane">1.8 Check your environment is sane<a class="hl" href="#18-check-your-environment-is-sane" title="Link to this section">#</a></h2>
 <div class="code"><pre><code>./scripts/verify_judging_env.sh
@@ -338,7 +339,8 @@ simulator is in <strong>Autonomous</strong> mode, not Manual.</p>
 Quality-of-Service mismatch. The bridge publishes <code>RELIABLE</code> with a queue depth
 of 1; a <code>BEST_EFFORT</code> subscriber — which is what people reach for with sensor
 data — will never receive one message from it, silently. Use the profile in
-<a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/race_ws/src/roboracer_baselines/roboracer_baselines/control.py" data-ext="1"><code>control.py</code></a>.</p>
+<code>devkit_qos()</code> in
+<a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/race_ws/src/team_driver/team_driver/driver.py" data-ext="1"><code>driver.py</code></a>.</p>
 <p><strong><code>ros2: command not found</code> inside the container</strong>
 You are in a shell that did not source ROS. Exit and use
 <code>./install/&lt;os&gt;/shell.sh</code>, or run <code>source /opt/ros/humble/setup.bash</code> by hand.</p>

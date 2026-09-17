@@ -64,7 +64,7 @@
   <div class="nav-lbl">Your platform</div>
   <div class="pf-switch pf-switch--nav" role="group" aria-label="Platform"><button type="button" data-set-pf="linux">Linux</button><button type="button" data-set-pf="macos">macOS</button><button type="button" data-set-pf="windows">Windows</button></div>
   <div class="nav-lbl">Track 2 &middot; Contents</div>
-  <ul class="nav-list"><li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-workshop.html" aria-current="page"><span class="n">03</span><span>ROS 2 primer</span></a></li><li><a href="04-baselines.html"><span class="n">04</span><span>Baseline algorithms</span></a></li><li><a href="05-evaluation.html"><span class="n">05</span><span>Evaluation</span></a></li><li><a href="06-rules.html"><span class="n">06</span><span>Rules</span></a></li><li><a href="07-submission.html"><span class="n">07</span><span>Submission</span></a></li></ul>
+  <ul class="nav-list"><li><a href="index.html"><span class="n">00</span><span>Overview</span></a></li><li><a href="01-setup.html"><span class="n">01</span><span>Setup</span></a></li><li><a href="02-simulator.html"><span class="n">02</span><span>The simulator</span></a></li><li><a href="03-workshop.html" aria-current="page"><span class="n">03</span><span>ROS 2 primer</span></a></li><li><a href="04-algorithms.html"><span class="n">04</span><span>Algorithms to start from</span></a></li><li><a href="05-evaluation.html"><span class="n">05</span><span>Evaluation</span></a></li><li><a href="06-rules.html"><span class="n">06</span><span>Rules</span></a></li><li><a href="07-submission.html"><span class="n">07</span><span>Submission</span></a></li></ul>
   <div class="nav-lbl">Elsewhere</div>
   <div class="nav-out">
     <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/tree/track2">Branch <code>track2</code></a>
@@ -76,7 +76,7 @@
     <article class="prose">
       <h1>3. ROS 2 primer</h1>
       <p>If ROS 2 is new to you, start here. If you sat through the workshop, skip to
-<a href="04-baselines.html">chapter 4</a>.</p>
+<a href="04-algorithms.html">chapter 4</a>.</p>
 <p>You need surprisingly little ROS to win this. A node, a subscriber, a
 publisher, and parameters — that is the whole surface area of a competitive
 entry.</p>
@@ -170,7 +170,7 @@ shows a publisher. The AutoDRIVE bridge is <code>RELIABLE</code>, <code>KEEP_LAS
 <code>VOLATILE</code>; a <code>BEST_EFFORT</code> subscriber, which is the natural choice for sensor
 data and what most tutorials show, will never receive one message from it. Use
 the profile above, or <code>devkit_qos()</code> from
-<a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/race_ws/src/roboracer_baselines/roboracer_baselines/control.py" data-ext="1"><code>control.py</code></a>.</p>
+<a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/race_ws/src/team_driver/team_driver/driver.py" data-ext="1"><code>driver.py</code></a>.</p>
 <p><strong>Start order.</strong> The bridge listens on port 4567 and the simulator dials out to
 it. If the simulator starts first it has nothing to connect to, and you get a
 full topic list with no data on any of it. <code>simulator.launch.py</code> handles the
@@ -219,9 +219,9 @@ AutoDRIVE topics; the concepts carry over unchanged, the topic names do not.</p>
   et al., <em>Robotics</em> 12(3), 2023, if you want the design rationale.</li>
 </ul>
 <hr>
-<p>Next: <strong><a href="04-baselines.html">4. Baseline algorithms</a></strong></p>
+<p>Next: <strong><a href="04-algorithms.html">4. Algorithms to start from</a></strong></p>
     </article>
-    <nav class="pager"><a class="prev" href="02-simulator.html"><span class="arw">&larr;</span><span><span class="k">Previous</span><span class="t">The simulator</span></span></a><a class="next" href="04-baselines.html"><span><span class="k">Next</span><span class="t">Baseline algorithms</span></span><span class="arw">&rarr;</span></a></nav>
+    <nav class="pager"><a class="prev" href="02-simulator.html"><span class="arw">&larr;</span><span><span class="k">Previous</span><span class="t">The simulator</span></span></a><a class="next" href="04-algorithms.html"><span><span class="k">Next</span><span class="t">Algorithms to start from</span></span><span class="arw">&rarr;</span></a></nav>
     <div class="src">Source &middot; <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627/blob/track2/docs/03-workshop.md">docs/03-workshop.md</a></div>
   </main>
   <nav class="toc" aria-label="On this page"><div class="nav-lbl">On this page</div><ul><li><a href="#31-the-five-ideas">3.1 The five ideas</a></li><li><a href="#32-the-whole-pattern">3.2 The whole pattern</a></li><li><a href="#33-commands-worth-knowing">3.3 Commands worth knowing</a></li><li><a href="#34-building">3.4 Building</a></li><li><a href="#35-two-things-that-will-waste-an-afternoon">3.5 Two things that will waste an afternoon</a></li><li><a href="#36-workshop-material">3.6 Workshop material</a></li><li><a href="#37-further-reading">3.7 Further reading</a></li></ul></nav>
