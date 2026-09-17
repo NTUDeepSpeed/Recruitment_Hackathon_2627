@@ -8,6 +8,9 @@ simulators, one problem.
 
 > **Documentation: <https://ntudeepspeed.github.io/Recruitment_Hackathon_2627/>**
 >
+> **Register your team: <https://forms.cloud.microsoft/r/70KfZ1by9b>** —
+> registration closes **24 September 2026, 23:59 (SGT)**
+>
 > **Submission deadline: 18 October 2026, 23:59 (SGT)**
 
 This branch is the front door. It holds the landing page and the generator that
@@ -52,6 +55,9 @@ The full rules are in chapter 6 of your track's guide and they are what counts.
 The short version:
 
 - **Teams of 3 to 5.** One team per person. The roster is fixed at submission.
+- **Register by 24 September 2026, 23:59 SGT** —
+  [one form per team](https://forms.cloud.microsoft/r/70KfZ1by9b). You can
+  start reading, and building, before you send it.
 - **Deadline: 18 October 2026, 23:59 SGT.** Late entries are not scored.
 - **Score out of 100** — 50 for your fastest single lap, 50 for your 10-lap
   total, both relative to the fastest team.

@@ -502,6 +502,13 @@ h1:hover .hl, h2:hover .hl, h3:hover .hl, h4:hover .hl { opacity: 1; }
   margin: 0 0 var(--s-10);
 }
 .hero-act { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+/* Sits under the buttons: registration closes before the submission deadline,
+   so the date belongs beside the call to action, not only in the stat row. */
+.hero-note {
+  font-size: var(--t-sm); color: var(--fg-muted);
+  max-width: 62ch; margin: var(--s-4) 0 0;
+}
+.hero-note b { color: var(--accent); font-weight: var(--w-med); }
 
 .stat-grid {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-4);
@@ -543,6 +550,12 @@ h1:hover .hl, h2:hover .hl, h3:hover .hl, h4:hover .hl { opacity: 1; }
 }
 .sec-h { font-size: var(--t-3xl); margin: 0; }
 .sec-lede { font-size: var(--t-md); color: var(--fg-muted); max-width: 52ch; margin: 0; }
+.sec-lede a {
+  color: var(--fg); text-decoration: none;
+  border-bottom: 1px solid var(--line-strong);
+  transition: color var(--dur-fast) var(--ease-mech), border-color var(--dur-fast) var(--ease-mech);
+}
+.sec-lede a:hover { color: var(--accent); border-color: var(--accent); }
 
 /* ----- Track choice ----- */
 

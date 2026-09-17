@@ -7,9 +7,16 @@
   "contact": "ntu-deepspeed@e.ntu.edu.sg",
   "description": "Write the software that drives a 1/10-scale racing car around a circuit it has never seen, as fast as it can, without hitting anything. Two tracks, two simulators, one problem.",
 
+  "register": {
+    "url": "https://forms.cloud.microsoft/r/70KfZ1by9b",
+    "cta": "Register your team",
+    "deadline": "24 Sep 2026",
+    "deadline_full": "24 September 2026, 23:59 SGT"
+  },
+
   "stats": [
-    { "k": "Tracks", "v": "2", "foot": "Pick one · both score out of 100" },
-    { "k": "Deadline", "v": "18 Oct", "foot": "2026 · 23:59 SGT", "hot": true },
+    { "k": "Register by", "v": "24 Sep", "foot": "2026 · 23:59 SGT", "hot": true },
+    { "k": "Submit by", "v": "18 Oct", "foot": "2026 · 23:59 SGT", "hot": true },
     { "k": "Team size", "v": "3–5", "foot": "Fixed at submission" },
     { "k": "Collision", "v": "+10<span class=\"u\">s</span>", "foot": "Over 10 is a DQ" }
   ],
@@ -75,7 +82,8 @@
   ],
 
   "shared": [
-    ["Deadline", "18 October 2026, 23:59 SGT", true, "Late entries are not scored"],
+    ["Registration", "Closes 24 September 2026, 23:59 SGT", true, "<a href=\"https://forms.cloud.microsoft/r/70KfZ1by9b\">Register your team</a> \u2014 one form per team, whichever track you take"],
+    ["Submission", "18 October 2026, 23:59 SGT", true, "Late entries are not scored"],
     ["Team size", "3 to 5 members", false, "One team per person, roster fixed at submission"],
     ["Score", "50 fastest lap + 50 ten-lap total", false, "Relative to the fastest team, out of 100"],
     ["Penalties", "+10 s per collision, DQ above 10", true, "Contact is the first problem to solve"],

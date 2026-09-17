@@ -47,9 +47,11 @@
     <h1 class="hero-display">Drive fast. <span class="red">Don&rsquo;t crash.</span></h1>
     <p class="hero-sub">{{HERO_LEDE}}</p>
     <div class="hero-act">
-      <a class="btn accent" href="#tracks">Choose a track</a>
+      <a class="btn accent" href="{{REGISTER_URL}}">{{REGISTER_CTA}}</a>
+      <a class="btn ghost" href="#tracks">Choose a track</a>
       <a class="btn ghost" href="{{REPO_URL}}">Repository</a>
     </div>
+    <p class="hero-note">Registration closes <b>{{REGISTER_DEADLINE_FULL}}</b>. One form per team &mdash; you can start reading, and building, before you send it.</p>
     <div class="hero-pf">
       <span class="eyebrow">Your platform</span>
       {{HERO_SWITCH}}
@@ -98,7 +100,7 @@
         <div class="sec-num">04 / Go</div>
         <h2 class="sec-h">Start here</h2>
       </div>
-      <p class="sec-lede">Clone once, check out the branch for your track, then follow chapter 1. Submissions close {{DEADLINE_FULL}}.</p>
+      <p class="sec-lede">Clone once, check out the branch for your track, then follow chapter 1. <a href="{{REGISTER_URL}}">Register your team</a> by {{REGISTER_DEADLINE_FULL}}; submissions close {{DEADLINE_FULL}}.</p>
     </div>
     {{QUICK_SWITCH}}
     <div class="quick">{{QUICKSTART}}</div>
