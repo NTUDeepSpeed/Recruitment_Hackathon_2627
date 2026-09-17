@@ -10,8 +10,7 @@ source install/local_setup.bash
 
 | Package | Yours? | What it is |
 | --- | --- | --- |
-| [`team_driver`](src/team_driver/) | **Yes** | Your entry. Start in [`team_driver/driver.py`](src/team_driver/team_driver/driver.py). |
-| [`roboracer_baselines`](src/roboracer_baselines/) | Read-only reference | Wall follower, gap follower, pure pursuit, and the speed controller they share. Read them, race them, beat them. |
+| [`team_driver`](src/team_driver/) | **Yes** | Your entry. Start in [`team_driver/driver.py`](src/team_driver/team_driver/driver.py). It is wiring only — no driving logic ships with this repository. |
 | [`roboracer_referee`](src/roboracer_referee/) | **Do not modify** | The judging environment: lap recording, penalties, result files, and the simulator launch. |
 
 Two things this workspace does **not** contain:
@@ -30,5 +29,5 @@ only after adding a file or changing `setup.py`.
 > through the bind mount, so deleting them from the host needs `sudo` — or just
 > delete them from inside the container.
 
-See [docs/04-baselines.md](../docs/04-baselines.md) and
+See [docs/04-algorithms.md](../docs/04-algorithms.md) and
 [docs/05-evaluation.md](../docs/05-evaluation.md).

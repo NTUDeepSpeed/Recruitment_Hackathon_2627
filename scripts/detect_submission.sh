@@ -4,8 +4,8 @@
 # untouched template, and print "submission" or "template".
 #
 # Automated judging uses this: on the template repository there is nothing to
-# score, so CI reports the baselines instead of publishing a leaderboard where
-# the stub driver is the entire field.
+# score - the template has no driving logic - so CI skips the race rather than
+# publishing a result for a car parked against the first barrier.
 #
 #   ./scripts/detect_submission.sh            # print submission|template
 #   ./scripts/detect_submission.sh --explain  # and say why

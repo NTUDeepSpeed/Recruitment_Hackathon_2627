@@ -37,17 +37,18 @@ ros2 launch roboracer_referee simulator.launch.py
 ros2 run team_driver driver
 ```
 
-Watch it drive, then go make it faster. When you want a score:
+The car will crawl forward and hit the first barrier: the template is wiring,
+not a driver, and writing one is the hackathon. Once yours does something,
+score it:
 
 ```sh
 ./scripts/evaluate.sh --team your_team_name
 ```
 
 Pushing also races your entry on GitHub Actions and writes the result to the
-workflow summary. On an untouched template it races the baseline instead, so
-you can see the time to beat before writing a line of code. That workflow is
-for reference only — it runs on GitHub's hardware and nothing it prints is
-scored. **Your result is the organisers' run on the judging machine.**
+workflow summary. That workflow is for reference only — it runs on GitHub's
+hardware and nothing it prints is scored. **Your result is the organisers' run
+on the judging machine.**
 
 Full walkthrough: **[docs/01-setup.md](docs/01-setup.md)**.
 
@@ -75,12 +76,14 @@ interface.
 | **Penalties** | +10 s on the lap for each collision; more than 10 collisions is a disqualification |
 | **Judged on** | One machine: i9-14900HX, 32 GB, RTX 5060 Laptop. Times come from the simulator's own clock, so your hardware does not affect your score. |
 
-Reactive algorithms like follow-the-gap will get you round. Planning — against
-the map you build yourself, and against your own position — is where the lap
-time is. And you are not required to build on the baselines at all —
-**replacing the approach outright is encouraged**: reinforcement learning, MPC,
-a learned end-to-end policy, anything you can defend. See
-[docs/04-baselines.md](docs/04-baselines.md).
+**No driver ships with this repository.** `team_driver` is wiring — it talks to
+the simulator and crawls in a straight line into the first barrier. Writing
+something that laps is the hackathon. Reactive algorithms like follow-the-gap
+will get you round; planning — against the map, and against your own position —
+is where the lap time is; and **replacing the approach outright is encouraged**:
+reinforcement learning, MPC, imitation learning, a learned end-to-end policy,
+anything you can defend. [docs/04-algorithms.md](docs/04-algorithms.md) is the
+menu, with what each approach needs and where each breaks.
 
 ### What is different from Track 1
 
@@ -96,8 +99,8 @@ is not, and four differences will bite you if you skim:
 
 The throttle one is the big one. There is no speed controller between your node
 and the motor any more, so "take this corner at 3 m/s" is a control problem you
-now own. [`control.py`](race_ws/src/roboracer_baselines/roboracer_baselines/control.py)
-has a worked example to copy.
+now own — and nothing here solves it for you. See
+[§4.1](docs/04-algorithms.md#41-first-the-thing-that-is-not-an-algorithm).
 
 ---
 
@@ -109,8 +112,7 @@ Recruitment_Hackathon_2627/
 │   ├── linux/  macos/  windows/    setup.sh, run.sh, shell.sh, stop.sh
 │   └── common.sh
 ├── race_ws/src/                The ROS 2 workspace, mounted into the container
-│   ├── team_driver/            ★ YOUR CODE GOES HERE
-│   ├── roboracer_baselines/      Reference algorithms to read, race and beat
+│   ├── team_driver/            ★ YOUR CODE GOES HERE — the template does not drive
 │   └── roboracer_referee/        The judging environment — do not modify
 ├── external/autodrive_devkit/  The AutoDRIVE Devkit — do not modify
 ├── simulator/                  The AutoDRIVE Simulator, fetched by script
@@ -135,7 +137,7 @@ The one file you are meant to open first:
 | **[1. Setup](docs/01-setup.md)** | Installing Docker, fetching the simulator, building the image, first run, troubleshooting |
 | **[2. The simulator](docs/02-simulator.md)** | AutoDRIVE, the bridge, every topic, the vehicle and sensor specifications |
 | **[3. ROS 2 primer](docs/03-workshop.md)** | Nodes, topics and the workshop slides, if ROS is new to you |
-| **[4. Baseline algorithms](docs/04-baselines.md)** | Wall following, follow-the-gap, pure pursuit, and the speed controller you now need |
+| **[4. Algorithms](docs/04-algorithms.md)** | The menu: reactive, planned, model-based and learned — what each needs and where each breaks |
 | **[5. Evaluation](docs/05-evaluation.md)** | Scoring yourself, reading result files, how judging day runs |
 | **[6. Rules](docs/06-rules.md)** | The rules, the scoring formula, and what gets you disqualified |
 | **[7. Submission](docs/07-submission.md)** | What to hand in, how, and what the interview covers |
@@ -169,15 +171,15 @@ counts. The short version:
 
   An out lap and one warm-up lap are granted before timing starts. Each
   collision adds 10 s to the lap it happened on — about half a lap here — and
-  more than 10 collisions in a run is a disqualification. Both baselines we
-  ship are disqualified before the flag, so contact is the first problem to
-  solve, not the last.
+  more than 10 collisions in a run is a disqualification. At three collisions a
+  lap you are out before the flag, so contact is the first problem to solve,
+  not the last.
 
 - **Bonus marks** at the interview, for work you can explain properly:
   replacing the ground-truth pose with your own localisation; building a map of
-  the circuit and generating a racing line from it; or **replacing the driving
-  algorithm entirely** — reinforcement learning, MPC, imitation learning,
-  anything beyond tuning what we gave you.
+  the circuit and generating a racing line from it; a speed controller that
+  knows about the corner it is entering; or an ambitious driving algorithm —
+  reinforcement learning, MPC, imitation learning.
 
 ---
 

@@ -43,11 +43,13 @@ against it — is worth bonus marks at the interview (rule 45).
 
 ## Adding your own
 
-Drop any `<name>.pgm` + `<name>.yaml` pair in here and point a tool at it.
-`pure_pursuit` takes a path CSV directly:
+Drop any `<name>.pgm` + `<name>.yaml` pair in here and point a tool at it, and
+keep any racing line you generate here too — a path CSV in the
+`s; x; y; psi; kappa; vx; ax` layout is the conventional format and the one
+`./scripts/track_tool.py` writes. Load it from your driver by path:
 
 ```sh
-ros2 run roboracer_baselines pure_pursuit --ros-args \
+ros2 run team_driver driver --ros-args \
     -p raceline_csv:=/hackathon/maps/my_line.csv
 ```
 

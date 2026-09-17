@@ -311,20 +311,23 @@ collision costs 10 s of race time, consistency here mostly means not crashing.
     ranking; the interview decides recruitment.
 
 45. Bonus marks, awarded at the interview and separate from the leaderboard:
-    - **Replacing the algorithm.** Reinforcement learning, MPC, imitation
-      learning, or anything else that is not a tuned version of the baselines
-      we gave you. The bar is that you can explain what it does, why you chose
-      it, how you produced it — the training setup included, if it was
-      trained — and what its failure modes are; not that it wins.
+    - **An ambitious algorithm.** Reinforcement learning, MPC, imitation
+      learning, or anything else beyond a solid implementation of a standard
+      reactive or path-following method
+      ([chapter 4](04-algorithms.md)). The bar is that you can explain what it
+      does, why you chose it, how you produced it — the training setup
+      included, if it was trained — and what its failure modes are; not that
+      it wins.
     - **Mapping the circuit.** Building an occupancy grid of a track that does
       not ship with one, from your own recorded laps.
     - **Own localisation.** A particle filter, scan matching or similar,
       replacing `…/odom`, that you can explain thoroughly.
     - **Own racing line generation** computed from a map rather than shipped as
       data.
-    - **A real speed controller.** The one we gave you is feed-forward plus PI
-      and knows nothing about the corner it is entering. Anything better is
-      both worth lap time and worth talking about.
+    - **A real speed controller.** AutoDRIVE takes torque, not speed, and
+      nothing in this repository closes that loop for you. A controller that
+      knows about the corner it is entering — rather than reacting once it is
+      in it — is both worth lap time and worth talking about.
     - **Clear engineering.** Readable code, sensible structure, evidence you
       measured rather than guessed.
 

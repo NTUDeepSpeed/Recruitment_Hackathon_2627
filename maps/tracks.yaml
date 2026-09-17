@@ -9,9 +9,9 @@
 #
 # What this file is for:
 #   * the track name that lands in your result JSON;
-#   * pointing scripts/track_tool.py and roboracer_baselines/pure_pursuit at an
-#     occupancy grid of the circuit, once one has been published, so you can
-#     build a racing line or your own localisation against it.
+#   * pointing scripts/track_tool.py - and whatever path follower you write -
+#     at an occupancy grid of the circuit, so you can build a racing line or
+#     your own localisation against it.
 #
 # Fields (all optional except map_path)
 #   map_path           absolute path inside the container, WITHOUT the

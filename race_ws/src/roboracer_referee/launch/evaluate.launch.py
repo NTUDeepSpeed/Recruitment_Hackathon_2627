@@ -8,7 +8,7 @@
 
     # A different entry point or package
     ros2 launch roboracer_referee evaluate.launch.py \
-        team:=my_team driver_pkg:=roboracer_baselines driver_exec:=gap_follower
+        team:=my_team driver_pkg:=team_driver driver_exec:=my_other_node
 
 The whole launch shuts down as soon as the referee exits, so a run always ends
 by itself and never leaves a driver spinning against an empty simulator.

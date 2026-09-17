@@ -80,8 +80,7 @@ it and from recorded laps, not quoted from a brochure:
 | Spawn | (0.80, 3.16) facing −y; the lap boundary is at y = 3.80 |
 
 It is tighter than it sounds. A 2 m corridor for a 0.27 m car is generous; the
-sub-metre pinch points are not, and they are where the baselines lose their
-laps.
+sub-metre pinch points are not, and they are where a lap is lost.
 
 Two consequences of the boundary being a *row of separate ducts* rather than a
 wall, both of which will cost you if you ignore them:
@@ -89,7 +88,8 @@ wall, both of which will cost you if you ignore them:
 1. **The LiDAR sees through the gaps between ducts.** A beam that slips between
    two of them reports the far side of the track, or nothing. A naive "steer at
    the deepest reading" therefore aims the car straight at a duct. Disparity
-   extension exists to fix exactly this — see [chapter 4](04-baselines.md).
+   extension exists to fix exactly this — see
+   [§4.2](04-algorithms.md#42-reactive-nothing-but-the-lidar).
 2. **The gaps are not a route.** Going between two ducts is leaving the course.
    The simulator scores a collision when you touch one, so it enforces itself.
 
@@ -187,11 +187,12 @@ controller anywhere between your node and the wheels, so:
 - a plan that produces a speed profile — a racing line, an MPC solution — needs
   a controller underneath it before the car will follow it.
 
-[`roboracer_baselines/control.py`](../race_ws/src/roboracer_baselines/roboracer_baselines/control.py)
-has a `SpeedController` that does the job: feed-forward proportional to the
-target, PI on the error, clamped integral, and a lift-rather-than-brake rule
-because a scaled car with no ABS answers a negative throttle by locking its
-wheels. Copy it into `team_driver` and improve it — it is deliberately basic.
+**Nothing in this repository writes that controller for you.** The usual shape
+is feed-forward proportional to the target speed, PI on the error, a clamped
+integral, and a lift-rather-than-brake rule — because a scaled car with no ABS
+answers a negative throttle by locking its wheels, and a locked wheel steers
+nowhere. [§4.1](04-algorithms.md#41-first-the-thing-that-is-not-an-algorithm)
+covers what it has to get right and why it is the first thing to build.
 
 Measure your speed from `…/odom` (which carries velocity) or integrate the
 encoders yourself.
@@ -313,9 +314,9 @@ ros2 launch roboracer_referee simulator.launch.py rviz:=true
 The devkit ships an RViz layout showing the LiDAR, the camera, the vehicle
 frames and the referee's status text, plus `/driver/markers` for anything your
 own node publishes. Publish a `visualization_msgs/MarkerArray` there in the
-`roboracer_1` or `world` frame; the template driver and every baseline show
-how. Seeing where your algorithm thinks it is aiming is by far the fastest way
-to work out why it just hit a duct.
+`roboracer_1` or `world` frame; the template driver shows how. Seeing where
+your algorithm thinks it is aiming is by far the fastest way to work out why it
+just hit a duct.
 
 The simulator's own **HUD** is worth a look too, when you are running it with
 graphics: speed, throttle, steering, encoder ticks, IMU, the LiDAR preview and
@@ -395,10 +396,11 @@ Sensor frames, relative to `roboracer_1` at the centre of the rear axle:
 | Encoders | 16 pulses per revolution, ×120 ratio, rear wheels |
 | IPS | Position vector in the `world` frame |
 
-The baselines clamp steering to ±0.45 rad, which is a deliberately conservative
-default, not the car's limit. You can go to ±0.5236 rad and the simulator will
-honour it — but a sharper angle at speed is also how you spin, and the 3.2 rad/s
-rate limit means a step command does not arrive instantly however hard you ask.
+±0.5236 rad is the car's real limit and the simulator will honour all of it —
+but a sharper angle at speed is also how you spin, so clamping yourself to
+something more conservative while you are getting a driver working is a
+reasonable first move. Note also that the 3.2 rad/s rate limit means a step
+command does not arrive instantly however hard you ask.
 
 ---
 

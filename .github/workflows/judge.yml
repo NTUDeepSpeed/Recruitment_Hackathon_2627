@@ -2,8 +2,8 @@
 #
 # Builds the official image, races whatever is in race_ws/src/team_driver, and
 # writes the result to the workflow summary. On the template repository there
-# is no entry to score, so it races the baselines instead - that way the
-# pipeline is exercised, and the numbers double as the target to beat.
+# is no entry to score - the template has no driving logic - so the checks run
+# and the race is skipped.
 #
 # Nothing here decides the real result: judging day is a scored run on the
 # machine in docs/05-evaluation.md. This is the same referee with the same
@@ -24,10 +24,6 @@ on:
       runs:
         description: "Runs per driver, best counted"
         default: "1"
-      force_baselines:
-        description: "Race the baselines even if an entry is present"
-        type: boolean
-        default: false
 
 concurrency:
   group: judge-${{ github.ref }}
@@ -71,7 +67,7 @@ jobs:
         # Checks maps/icra26_compete.pgm against the planning geometry: start
         # pose in open track, finish line spanning the corridor, and a closed
         # lap existing through it. None of this scores a run - the simulator
-        # does that - but a broken map breaks pure_pursuit.
+        # does that - but a broken map breaks anything you plan against it.
         run: ./scripts/track_tool.py validate
 
       - name: Judging environment is unmodified
@@ -141,15 +137,29 @@ jobs:
           status=$?
           set -e
           if [ "${status}" = "2" ]; then
-            echo "::warning::Could not tell an entry from the template; racing the baselines."
-            mode="template"
-          fi
-          if [ "${{ github.event.inputs.force_baselines }}" = "true" ]; then
-            echo "::notice::force_baselines requested."
-            mode="template"
+            # Racing an unidentifiable tree is better than silently skipping a
+            # real entry, so an ambiguous answer counts as a submission.
+            echo "::warning::Could not tell an entry from the template; racing it anyway."
+            mode="submission"
           fi
           echo "mode=${mode}" >> "$GITHUB_OUTPUT"
           echo "Mode: ${mode}"
+
+          if [ "${mode}" != "submission" ]; then
+            {
+              echo "### No entry to race"
+              echo
+              echo "\`race_ws/src/team_driver\` is still the template, and the"
+              echo "template does not drive - it crawls straight ahead into the"
+              echo "first barrier. There is nothing to score, so the race was"
+              echo "skipped."
+              echo
+              echo "Edit \`race_ws/src/team_driver/team_driver/driver.py\` and this"
+              echo "workflow will build the image and race your entry."
+              echo
+              echo "See [docs/04-algorithms.md](docs/04-algorithms.md) for where to start."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
   # ---------------------------------------------------------------------
   # The race.
@@ -157,6 +167,9 @@ jobs:
   judge:
     name: Race
     needs: checks
+    # Nothing ships that can complete a lap, so there is no reference run to
+    # fall back on: without an entry there is simply nothing to race.
+    if: needs.checks.outputs.mode == 'submission'
     runs-on: ubuntu-latest
     timeout-minutes: 240
     steps:
@@ -206,46 +219,31 @@ jobs:
 
       - name: Race
         id: race
-        env:
-          MODE: ${{ needs.checks.outputs.mode }}
         run: |
           set -euo pipefail
           mkdir -p results
 
-          # One shot per driver. The container runs evaluate.sh natively - it
-          # detects that it is already inside and skips the docker hop.
+          # The container runs evaluate.sh natively - it detects that it is
+          # already inside and skips the docker hop.
           #
           # The simulator and the bridge both live in this container and talk
           # over its own loopback, so no port needs publishing.
-          race() {
-            local team="$1" pkg="$2" exec_name="$3"
-            echo "::group::Racing ${team} (${pkg}/${exec_name})"
-            docker run --rm \
-              -v "${PWD}:/hackathon" \
-              --shm-size=2gb \
-              "${IMAGE_NAME}:ci" \
-              /hackathon/scripts/evaluate.sh \
-                --team "${team}" \
-                --driver-pkg "${pkg}" \
-                --driver-exec "${exec_name}" \
-                --laps "${LAPS}" \
-                --runs "${RUNS}" \
-                --headless \
-                --timeout 5400 \
-                --wall-timeout 5400 \
-              || echo "::warning::${team} did not finish cleanly; see the log above."
-            echo "::endgroup::"
-          }
-
-          if [ "${MODE}" = "submission" ]; then
-            race "team_driver" "team_driver" "driver"
-          else
-            # wall_follower is deliberately absent: it drives, but it is not
-            # competitive on this circuit (docs/04-baselines.md), so racing it
-            # every push would burn runner time to report the same thing.
-            race "baseline_gap_follower" "roboracer_baselines" "gap_follower"
-            race "baseline_pure_pursuit" "roboracer_baselines" "pure_pursuit"
-          fi
+          echo "::group::Racing team_driver"
+          docker run --rm \
+            -v "${PWD}:/hackathon" \
+            --shm-size=2gb \
+            "${IMAGE_NAME}:ci" \
+            /hackathon/scripts/evaluate.sh \
+              --team "team_driver" \
+              --driver-pkg "team_driver" \
+              --driver-exec "driver" \
+              --laps "${LAPS}" \
+              --runs "${RUNS}" \
+              --headless \
+              --timeout 5400 \
+              --wall-timeout 5400 \
+            || echo "::warning::team_driver did not finish cleanly; see the log above."
+          echo "::endgroup::"
 
           # The container writes as root through the bind mount.
           sudo chown -R "$(id -u):$(id -g)" results race_ws/build race_ws/install race_ws/log || true
@@ -253,8 +251,6 @@ jobs:
 
       - name: Write the summary
         if: always()
-        env:
-          MODE: ${{ needs.checks.outputs.mode }}
         run: |
           set -euo pipefail
           if ! ls results/*.json >/dev/null 2>&1; then
@@ -269,36 +265,18 @@ jobs:
             exit 0
           fi
 
-          if [ "${MODE}" = "submission" ]; then
-            {
-              echo "# Judging results"
-              echo
-              echo "Your entry, raced on the AutoDRIVE compete circuit over ${LAPS} scored laps."
-              echo
-              ./scripts/leaderboard.py summarise results/ --markdown --title "Runs"
-              echo
-              echo "> [!NOTE]"
-              echo "> Scores here are relative to this run only. The leaderboard is"
-              echo "> computed across all teams on judging day - see"
-              echo "> [docs/05-evaluation.md](docs/05-evaluation.md)."
-            } >> "$GITHUB_STEP_SUMMARY"
-          else
-            {
-              echo "# Baseline results"
-              echo
-              echo "\`race_ws/src/team_driver\` is still the template, so there is no"
-              echo "entry to score. These are the reference algorithms on the compete"
-              echo "circuit, over ${LAPS} scored laps - the numbers to beat."
-              echo
-              ./scripts/leaderboard.py rank results/ --markdown --title "Baselines"
-              echo
-              ./scripts/leaderboard.py summarise results/ --markdown --title "Run detail"
-              echo
-              echo "> [!TIP]"
-              echo "> Edit \`race_ws/src/team_driver/team_driver/driver.py\` and this"
-              echo "> workflow will score your entry instead."
-            } >> "$GITHUB_STEP_SUMMARY"
-          fi
+          {
+            echo "# Judging results"
+            echo
+            echo "Your entry, raced on the AutoDRIVE compete circuit over ${LAPS} scored laps."
+            echo
+            ./scripts/leaderboard.py summarise results/ --markdown --title "Runs"
+            echo
+            echo "> [!NOTE]"
+            echo "> Scores here are relative to this run only. The leaderboard is"
+            echo "> computed across all teams on judging day - see"
+            echo "> [docs/05-evaluation.md](docs/05-evaluation.md)."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload results
         if: always()

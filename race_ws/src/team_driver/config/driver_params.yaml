@@ -7,22 +7,19 @@
 #       driver_params:=/hackathon/race_ws/src/team_driver/config/driver_params.yaml
 #
 # Keeping the numbers out of the code means you can sweep them without
-# rebuilding, which is the fastest way to find lap time early on.
+# rebuilding, which is the fastest way to find lap time early on. Declare a
+# parameter in driver.py and it can be set here.
+#
+# The two below are all the template needs, because the template does not
+# drive (see driver.py). Expect to replace them entirely.
 
 driver:
   ros__parameters:
     # AutoDRIVE takes a normalised throttle in [-1, 1], not a target speed.
-    # These are open loop: the car goes as fast as 0.2 throttle takes it, which
-    # is different on the straight and up against the limit in a corner.
-    # Closing the loop on measured speed is the first thing to do here -
-    # see roboracer_baselines/control.py.
-    cruise_throttle: 0.20
-    min_throttle: 0.08
+    # This one is open loop: the car goes as fast as 0.12 throttle takes it,
+    # which is different on the straight and up against the limit in a corner.
+    # Turning a target speed into a throttle is a control problem you own -
+    # see docs/04-algorithms.md §4.1.
+    crawl_throttle: 0.12
 
-    # Steering is also normalised: 1.0 is full lock, which is 0.5236 rad.
-    max_steering: 0.90
-
-    field_of_view: 2.00       # [rad] total, centred ahead
-    max_range: 4.0            # [m]; the LiDAR itself reaches 10 m
-    bubble_radius: 0.50       # [m] around the closest return
-    steering_gain: 1.2
+    max_range: 10.0           # [m] clip the scan here; the LiDAR reaches 10 m

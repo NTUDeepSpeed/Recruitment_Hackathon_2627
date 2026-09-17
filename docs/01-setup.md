@@ -251,15 +251,13 @@ ros2 launch roboracer_referee simulator.launch.py
 ros2 run team_driver driver
 ```
 
-A car should set off round the track. That is the template driver in
-[`race_ws/src/team_driver/team_driver/driver.py`](../race_ws/src/team_driver/team_driver/driver.py) —
-slow, cautious, and yours to replace.
-
-Try a stronger baseline for comparison:
-
-```sh
-ros2 run roboracer_baselines gap_follower
-```
+The car should set off — slowly, in a straight line, and into the first thing
+in front of it. **That is correct.** The template in
+[`race_ws/src/team_driver/team_driver/driver.py`](../race_ws/src/team_driver/team_driver/driver.py)
+is wiring, not a driver: it has no steering logic at all. Seeing it move is how
+you know the image, the bridge, the QoS settings and the workspace are all
+working, and everything after that is yours to write — start with
+[chapter 4](04-algorithms.md).
 
 ---
 
@@ -330,7 +328,8 @@ simulator is in **Autonomous** mode, not Manual.
 Quality-of-Service mismatch. The bridge publishes `RELIABLE` with a queue depth
 of 1; a `BEST_EFFORT` subscriber — which is what people reach for with sensor
 data — will never receive one message from it, silently. Use the profile in
-[`control.py`](../race_ws/src/roboracer_baselines/roboracer_baselines/control.py).
+`devkit_qos()` in
+[`driver.py`](../race_ws/src/team_driver/team_driver/driver.py).
 
 **`ros2: command not found` inside the container**
 You are in a shell that did not source ROS. Exit and use

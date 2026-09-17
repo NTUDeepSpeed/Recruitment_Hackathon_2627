@@ -34,8 +34,8 @@ Useful variations:
 # Against a simulator you started yourself (macOS, Windows, another machine)
 ./scripts/evaluate.sh --team your_team --no-simulator
 
-# Score a baseline for comparison
-./scripts/evaluate.sh --team baseline --driver-pkg roboracer_baselines --driver-exec gap_follower
+# Score an alternative executable of your own, side by side with `driver`
+./scripts/evaluate.sh --team my_experiment --driver-exec my_other_node
 ```
 
 Runs are **headless by default** — no window, no graphics device — because that
@@ -142,22 +142,22 @@ The counter is cumulative and already debounced, so unlike Track 1 there is no
 collision is one collision.
 
 Each one adds **10 seconds** to the lap it happened on. Against a lap in the
-low twenties that is half a lap thrown away per contact, and the shipped gap
-follower spends nearly twice as long in penalties as it does driving
-([§4.1](04-baselines.md#41-what-they-actually-do-on-this-circuit)). **Not
-hitting things is worth more than any amount of speed on this track.**
+low twenties that is half a lap thrown away per contact, and a driver that
+touches the boundary a few times a lap will spend longer in penalties than it
+does driving. **Not hitting things is worth more than any amount of speed on
+this track.**
 
 **More than 10 collisions in a run is a disqualification**, and the referee
 ends the run the moment the eleventh lands rather than letting the car limp to
 the flag. A car that has hit the boundary eleven times is not racing any more,
 and the remaining laps tell nobody anything.
 
-That threshold is not far away. The shipped gap follower averages about four
-collisions a lap and is disqualified inside three laps; pure pursuit averages
-three and goes out on lap four
-([§4.1](04-baselines.md#41-what-they-actually-do-on-this-circuit)). **Both
-baselines are disqualified well before the flag**, which is the plainest
-possible statement of what this track is about.
+That threshold is not far away. Three collisions a lap — which is an ordinary
+result for a first attempt at a reactive driver here, given the pinch points in
+[§2.1](02-simulator.md#21-how-the-pieces-fit-together) — puts you out on lap
+four. **Expect your first working driver to be disqualified well before the
+flag**, and read that as the plainest possible statement of what this track is
+about rather than as a reason to worry.
 
 The counters do not necessarily read zero when a run starts — the simulator may
 have been driven already in the same session. The referee takes a baseline at
@@ -255,10 +255,11 @@ Before racing, the workflow asks whether there is anything to score:
 ```
 
 It compares `race_ws/src/team_driver/` against the recorded template. Edit any
-file, or add one, and it reports `submission` and your driver is raced. Leave it
-untouched — as on the template repository — and it reports `template`, and the
-workflow races the gap follower instead. That keeps the pipeline exercised, and
-the number it prints is the one to beat.
+file, or add one, and it reports `submission` and your driver is raced. Leave
+it untouched — as on the template repository — and it reports `template`, and
+the workflow skips the race and says so. There is nothing to score: the
+template does not drive, and racing it would fill the summary with a car
+parked against the first barrier.
 
 > [!NOTE]
 > **Organisers:** the reference is `scripts/template_manifest.sha256`. If you
@@ -268,14 +269,12 @@ the number it prints is the one to beat.
 
 ### Running it by hand
 
-Use **Actions — Judge — Run workflow** to set the number of laps and runs, or
-to force the baseline even when you have an entry:
+Use **Actions — Judge — Run workflow** to set the number of laps and runs:
 
 | Input | Default | |
 | --- | --- | --- |
 | `laps` | 10 | Scored laps per run. Drop it to 3 for a quick check. |
 | `runs` | 1 | Runs per driver; the best counts. |
-| `force_baselines` | false | Race the baseline even though you have an entry. |
 
 Result JSONs are attached to the run as an artifact, so you can feed them to
 `leaderboard.py` locally.

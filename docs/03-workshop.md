@@ -1,7 +1,7 @@
 # 3. ROS 2 primer
 
 If ROS 2 is new to you, start here. If you sat through the workshop, skip to
-[chapter 4](04-baselines.md).
+[chapter 4](04-algorithms.md).
 
 You need surprisingly little ROS to win this. A node, a subscriber, a
 publisher, and parameters — that is the whole surface area of a competitive
@@ -125,7 +125,7 @@ shows a publisher. The AutoDRIVE bridge is `RELIABLE`, `KEEP_LAST(1)`,
 `VOLATILE`; a `BEST_EFFORT` subscriber, which is the natural choice for sensor
 data and what most tutorials show, will never receive one message from it. Use
 the profile above, or `devkit_qos()` from
-[`control.py`](../race_ws/src/roboracer_baselines/roboracer_baselines/control.py).
+[`driver.py`](../race_ws/src/team_driver/team_driver/driver.py).
 
 **Start order.** The bridge listens on port 4567 and the simulator dials out to
 it. If the simulator starts first it has nothing to connect to, and you get a
@@ -166,4 +166,4 @@ AutoDRIVE topics; the concepts carry over unchanged, the topic names do not.
 
 ---
 
-Next: **[4. Baseline algorithms](04-baselines.md)**
+Next: **[4. Algorithms to start from](04-algorithms.md)**
