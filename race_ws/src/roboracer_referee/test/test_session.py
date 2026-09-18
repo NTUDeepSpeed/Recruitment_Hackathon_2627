@@ -215,11 +215,23 @@ def test_session_timeout_is_dnf():
     assert s.result()["laps_completed"] < 10
 
 
-def test_car_that_never_moves_stays_pending():
-    s = make_session()
-    for i in range(100):
+def test_car_that_never_moves_dnfs_on_the_stuck_rule():
+    """Rule 14 counts a car that never moved at all, not just one that stopped.
+
+    The referee only feeds samples once the driver is publishing, so "still on
+    the grid" is a car that is not moving. Left in PENDING it would sit there
+    until the wall-clock watchdog ended the run half an hour later.
+    """
+    s = make_session(stuck_timeout_s=15.0)
+    for i in range(100):                      # 10 s: still inside the grace period
         s.update(i * 0.1, -45.0, 0.0, 0.0)
     assert s.status is Status.PENDING
+
+    t = 10.0
+    while t < 40.0 and not s.finished:
+        s.update(t, -45.0, 0.0, 0.0)
+        t += 0.1
+    assert s.status is Status.DNF_STUCK
     assert s.result()["scored"] is False
 
 

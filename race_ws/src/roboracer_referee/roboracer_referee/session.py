@@ -11,7 +11,7 @@ for why that distinction decides whether a result is reproducible.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 from enum import Enum
 from typing import List, Optional, Tuple
 
@@ -202,8 +202,14 @@ class RaceSession:
 
         if self.status is Status.RUNNING:
             events.extend(self._check_crossing(time_s, point, side))
-            self._check_stuck(time_s, speed_mps)
-            self._check_timeout(time_s)
+
+        # Rules 13 and 14 apply from the green flag, not from the first metre.
+        # The referee only feeds samples once the driver is publishing, so a car
+        # that has still not moved is a car that is not moving - it must DNF on
+        # the stuck rule like any other, rather than sit in PENDING until the
+        # wall-clock watchdog aborts the run half an hour later.
+        self._check_stuck(time_s, speed_mps)
+        self._check_timeout(time_s)
 
         self._prev_point, self._prev_side, self._prev_time = point, side, time_s
         return events

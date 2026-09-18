@@ -131,10 +131,13 @@ ten laps is worth exactly as much as one quick one.
 
 25. **Do not modify the judging environment.** That means:
     - `race_ws/src/roboracer_referee/`
-    - `docker/` — Dockerfile, compose files, entrypoint
+    - `docker/` and `.dockerignore` — everything that defines the image
     - `maps/` — the circuit, its metadata and `tracks.yaml`
     - `scripts/` and `install/`
+    - `.github/workflows/`
     - `external/` — the pinned simulator submodules
+
+    Adding a file to one of those directories counts as modifying it.
 
     Editing the map to move a wall is the clearest possible case of this, and
     it is checked.
@@ -148,6 +151,13 @@ ten laps is worth exactly as much as one quick one.
     every push and, when it fails, reports it in the run summary with the list
     of files that differ — a disqualification is a ruling, so it is shown as
     one rather than left as a failed build.
+
+    The manifest it compares against is committed in your own branch, so it
+    tells you what *you* changed. It is not what decides the ruling: the
+    workflow also diffs the protected paths against the official branch, and
+    the judges repeat that from an official checkout
+    (`./scripts/verify_judging_env.sh --against <your-branch>`). Re-signing the
+    manifest changes nothing except how much explaining there is to do.
 
 27. An entry that modifies the judging environment is **not scored**. If you
     genuinely believe something in it is broken, raise it with the organisers
@@ -176,7 +186,7 @@ ten laps is worth exactly as much as one quick one.
 31. **Ground-truth odometry is explicitly permitted.** Building your own
     localisation is not required and is genuinely difficult. If you do build
     one, and can explain it thoroughly at the interview, it earns **bonus marks**
-    — see rule 40.
+    — see rule 41.
 
 32. **Offline precomputation is allowed.** Optimising a racing line before the
     run is real racing practice. But it must be produced by code you submit, and

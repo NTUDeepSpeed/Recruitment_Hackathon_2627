@@ -35,7 +35,7 @@ from rosgraph_msgs.msg import Clock
 from std_msgs.msg import Bool
 from visualization_msgs.msg import Marker
 
-from .session import RaceSession, Rules, Status
+from .session import RaceSession, Rules
 from .tracks import TrackError, load_track
 
 REFEREE_VERSION = "1.0.0"

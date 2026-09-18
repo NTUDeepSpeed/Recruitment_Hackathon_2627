@@ -13,17 +13,23 @@ the container stops.
 ## 1.1 Get the repository
 
 ```sh
-git clone --recurse-submodules https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627.git ~/Recruitment_Hackathon_2627
+git clone --branch track1 --recurse-submodules \
+    https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627.git ~/Recruitment_Hackathon_2627
 cd ~/Recruitment_Hackathon_2627
-git checkout track1
 ```
 
-`--recurse-submodules` matters. The simulator sources live in `external/` as
-git submodules; without them the image cannot be built. If you forgot:
+`--branch track1` matters as much as `--recurse-submodules`. The submodules are
+declared on `track1`, not on the default branch, so cloning first and switching
+afterwards fetches nothing — `git checkout` does not initialise submodules that
+appeared in the branch you switched to. If you did it that way, or `external/`
+is empty for any other reason:
 
 ```sh
 git submodule update --init --recursive
 ```
+
+The setup script checks this before it builds and runs that command for you, so
+an empty `external/` is a delay rather than a dead end.
 
 **Do not download the repository as a ZIP.** GitHub's ZIP export leaves the
 submodule folders empty and there is no way to fill them in afterwards.

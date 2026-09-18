@@ -160,7 +160,7 @@ RUN set -euxo pipefail; \
 # ---------------------------------------------------------------------------
 # 7. Team-declared dependencies
 #
-# Extra packages are allowed as long as they are declared (rule 32). These two
+# Extra packages are allowed as long as they are declared (rule 33). These two
 # files are the declaration, and this step is what makes them real.
 #
 # Deliberately LAST: editing either file rebuilds one small layer rather than
