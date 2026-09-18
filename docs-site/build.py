@@ -579,6 +579,52 @@ def build_track(cfg: dict, track: dict, src: Path, out: Path, tpl: str, assets: 
     return pages
 
 
+def deck(cfg: dict, assets: dict) -> str:
+    """
+    The info-talk slides: a viewer that loads on demand, and the file itself.
+
+    The PDF weighs more than the rest of the landing page put together, so
+    nothing fetches it until a reader asks for it. `app.js` swaps the plate
+    below for an inline viewer on a wide screen; with JavaScript off, or on a
+    phone — where an embedded PDF is unreadable in every browser worth naming
+    — the same link opens the file in a tab of its own instead.
+    """
+    talk = cfg["talk"]
+    src = assets[talk["file"]]
+
+    facts = "".join(
+        f'<div class="row"><span class="k">{e(k)}</span><span class="v">{v}</span></div>'
+        for k, v in talk["facts"]
+    )
+    agenda = "".join(
+        f'<li><span class="n">{e(num)}</span>'
+        f'<span class="t">{e(title)}</span><span class="d">{e(note)}</span></li>'
+        for num, title, note in talk["agenda"]
+    )
+
+    return f"""<div class="deck">
+  <div class="deck-main">
+    <div class="deck-view" data-pdf="{src}" data-pdf-title="{e(talk['title'])}">
+      <a class="deck-plate" href="{src}" target="_blank" rel="noopener">
+        <span class="deck-plate__n" aria-hidden="true">{e(talk['slides'])}</span>
+        <span class="eyebrow">NTU DeepSpeed &middot; {e(talk['date'])}</span>
+        <span class="deck-plate__t">{e(talk['title'])}</span>
+        <span class="deck-plate__c">View the slides <span class="arw" aria-hidden="true">&rarr;</span></span>
+        <span class="deck-plate__f">PDF &middot; {e(talk['size'])} &middot; {e(talk['slides'])} slides</span>
+      </a>
+    </div>
+    <div class="deck-act">
+      <a class="btn accent" href="{src}" target="_blank" rel="noopener">Open in a new tab</a>
+      <a class="btn ghost" href="{src}" download>Download the PDF</a>
+    </div>
+  </div>
+  <aside class="deck-side">
+    <div class="spec">{facts}</div>
+    <ol class="deck-ag">{agenda}</ol>
+  </aside>
+</div>"""
+
+
 def build_landing(cfg: dict, tracks_pages: dict, out: Path, assets: dict) -> None:
     cards = []
     for track in cfg["tracks"]:
@@ -682,6 +728,8 @@ def build_landing(cfg: dict, tracks_pages: dict, out: Path, assets: dict) -> Non
             register_deadline_full=e(cfg["register"]["deadline_full"]),
             stats=stats,
             tracks="".join(cards),
+            talk_lede=e(cfg["talk"]["lede"]),
+            talk=deck(cfg, assets),
             shared=shared,
             chapters="".join(chapters),
             quick_switch=platform_switch("pf-switch--quick"),

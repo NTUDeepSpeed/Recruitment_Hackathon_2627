@@ -14,6 +14,27 @@
     "deadline_full": "24 September 2026, 23:59 SGT"
   },
 
+  "talk": {
+    "file": "deepspeed-info-talk-17-sep-2026.pdf",
+    "title": "Recruitment & Hackathon Info Talk",
+    "date": "17 September 2026",
+    "slides": "31",
+    "size": "1.9 MB",
+    "lede": "Every slide from the info talk on 17 September 2026 \u2014 who DeepSpeed are, what we race, the rules, the scoring, and what happens between your submission and an offer. Read them here, or take the file with you.",
+    "facts": [
+      ["Talk", "17 September 2026"],
+      ["Slides", "31"],
+      ["File", "PDF &middot; 1.9 MB"],
+      ["Deck", "Presented by NTU DeepSpeed"]
+    ],
+    "agenda": [
+      ["01", "About us", "RoboRacer and DeepSpeed, and where we have raced"],
+      ["02", "The tech", "The race stack, and what you learn by writing one"],
+      ["03", "The hackathon", "Rules, scoring, the two tracks, and how recruitment runs"],
+      ["04", "Q&A", "Everything the slides did not answer"]
+    ]
+  },
+
   "stats": [
     { "k": "Register by", "v": "24 Sep", "foot": "2026 · 23:59 SGT", "hot": true },
     { "k": "Submit by", "v": "18 Oct", "foot": "2026 · 23:59 SGT", "hot": true },

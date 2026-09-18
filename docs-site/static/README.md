@@ -32,3 +32,13 @@ two deliberate changes:
 
 Replacing either one is a matter of dropping in a new file and correcting the
 `w`/`h` in that track's `map` block in `site.json`.
+
+`deepspeed-info-talk-17-sep-2026.pdf` is the deck from the recruitment and
+hackathon info talk given on 17 September 2026, 31 slides, exactly as
+presented. The landing page links to it twice — once to open and once to
+download — and `app.js` loads it into an inline viewer on a wide screen. It is
+the heaviest thing the site serves, so nothing fetches it until a reader asks.
+
+Replacing it with a later talk means dropping the new file in, renaming it to
+its own date, and correcting the `talk` block in `site.json`: the file name,
+the date, the slide count and the size are all quoted on the page.
