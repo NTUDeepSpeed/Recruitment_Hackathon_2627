@@ -124,7 +124,7 @@ require_compose() {
 require_submodules() {
     local sentinel missing
     missing=""
-    for sentinel in external/f1tenth_gym/setup.py \
+    for sentinel in external/f1tenth_gym_ros/setup.py \
                     external/f1tenth_gym_ros/package.xml; do
         [ -f "${REPO_ROOT}/${sentinel}" ] || missing="${missing} $(dirname "${sentinel}")"
     done
@@ -138,7 +138,7 @@ require_submodules() {
     git -C "${REPO_ROOT}" submodule update --init --recursive \
         || die "Could not fetch submodules. Check your network, then run 'git submodule update --init --recursive' by hand."
 
-    for sentinel in external/f1tenth_gym/setup.py \
+    for sentinel in external/f1tenth_gym_ros/setup.py \
                     external/f1tenth_gym_ros/package.xml; do
         [ -f "${REPO_ROOT}/${sentinel}" ] \
             || die "${sentinel} is still missing after the fetch. Did you download the repository as a ZIP? Submodules need a real 'git clone'."
