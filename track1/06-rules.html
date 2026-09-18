@@ -252,11 +252,13 @@ ten laps is worth exactly as much as one quick one.</p>
 <p><strong>Do not modify the judging environment.</strong> That means:</p>
 <ul>
 <li><code>race_ws/src/roboracer_referee/</code></li>
-<li><code>docker/</code> — Dockerfile, compose files, entrypoint</li>
+<li><code>docker/</code> and <code>.dockerignore</code> — everything that defines the image</li>
 <li><code>maps/</code> — the circuit, its metadata and <code>tracks.yaml</code></li>
 <li><code>scripts/</code> and <code>install/</code></li>
+<li><code>.github/workflows/</code></li>
 <li><code>external/</code> — the pinned simulator submodules</li>
 </ul>
+<p>Adding a file to one of those directories counts as modifying it.</p>
 <p>Editing the map to move a wall is the clearest possible case of this, and
 it is checked.</p>
 </li>
@@ -269,6 +271,12 @@ it is checked.</p>
     every push and, when it fails, reports it in the run summary with the list
     of files that differ — a disqualification is a ruling, so it is shown as
     one rather than left as a failed build.</p>
+<p>The manifest it compares against is committed in your own branch, so it
+tells you what <em>you</em> changed. It is not what decides the ruling: the
+workflow also diffs the protected paths against the official branch, and
+the judges repeat that from an official checkout
+(<code>./scripts/verify_judging_env.sh --against &lt;your-branch&gt;</code>). Re-signing the
+manifest changes nothing except how much explaining there is to do.</p>
 </li>
 <li>
 <p>An entry that modifies the judging environment is <strong>not scored</strong>. If you
@@ -321,7 +329,7 @@ it is checked.</p>
 <p><strong>Ground-truth odometry is explicitly permitted.</strong> Building your own
     localisation is not required and is genuinely difficult. If you do build
     one, and can explain it thoroughly at the interview, it earns <strong>bonus marks</strong>
-    — see rule 40.</p>
+    — see rule 41.</p>
 </li>
 <li>
 <p><strong>Offline precomputation is allowed.</strong> Optimising a racing line before the

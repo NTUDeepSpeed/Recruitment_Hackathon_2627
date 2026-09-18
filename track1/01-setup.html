@@ -83,14 +83,19 @@ the image once, and from then on you work inside it.</p>
 the container stops.</p>
 <hr>
 <h2 id="11-get-the-repository">1.1 Get the repository<a class="hl" href="#11-get-the-repository" title="Link to this section">#</a></h2>
-<div class="code"><pre><code>git<span class="w"> </span>clone<span class="w"> </span>--recurse-submodules<span class="w"> </span>https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627.git<span class="w"> </span>~/Recruitment_Hackathon_2627
+<div class="code"><pre><code>git<span class="w"> </span>clone<span class="w"> </span>--branch<span class="w"> </span>track1<span class="w"> </span>--recurse-submodules<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627.git<span class="w"> </span>~/Recruitment_Hackathon_2627
 <span class="nb">cd</span><span class="w"> </span>~/Recruitment_Hackathon_2627
-git<span class="w"> </span>checkout<span class="w"> </span>track1
 </code></pre><span class="code-lang">shell</span></div>
-<p><code>--recurse-submodules</code> matters. The simulator sources live in <code>external/</code> as
-git submodules; without them the image cannot be built. If you forgot:</p>
+<p><code>--branch track1</code> matters as much as <code>--recurse-submodules</code>. The submodules are
+declared on <code>track1</code>, not on the default branch, so cloning first and switching
+afterwards fetches nothing — <code>git checkout</code> does not initialise submodules that
+appeared in the branch you switched to. If you did it that way, or <code>external/</code>
+is empty for any other reason:</p>
 <div class="code"><pre><code>git<span class="w"> </span>submodule<span class="w"> </span>update<span class="w"> </span>--init<span class="w"> </span>--recursive
 </code></pre><span class="code-lang">shell</span></div>
+<p>The setup script checks this before it builds and runs that command for you, so
+an empty <code>external/</code> is a delay rather than a dead end.</p>
 <p><strong>Do not download the repository as a ZIP.</strong> GitHub's ZIP export leaves the
 submodule folders empty and there is no way to fill them in afterwards.</p>
 <hr>
