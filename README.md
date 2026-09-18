@@ -37,7 +37,7 @@ its branch.
 | LiDAR | 819 beams, 270°, 25 m | 1080 beams, 270°, 10 m, 40 Hz, plus IMU, encoders and a camera |
 | Circuit | `icra26`, 17 × 18 m, 78 m a lap | ICRA 2026 compete circuit, 6.3 × 18.2 m, 54 m a lap |
 | Lap timing | Our referee, against a finish line | The simulator's own clock |
-| Install | `git clone --recurse-submodules` | Plain clone, then `./scripts/fetch_simulator.sh` |
+| Install | `git clone --branch track1 --recurse-submodules` | Plain clone, then `./scripts/fetch_simulator.sh` |
 
 Track 2 runs the **compete** phase of the
 [RoboRacer Sim Racing League @ ICRA 2026](https://autodrive-ecosystem.github.io/competitions/roboracer-sim-racing-icra-2026/)
