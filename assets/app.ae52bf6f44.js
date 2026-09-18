@@ -82,6 +82,28 @@
     block.appendChild(btn);
   });
 
+  /* ---- Slide viewer --------------------------------------------------
+     The info talk is a two-megabyte PDF, so it is fetched only once a reader
+     asks for it: the plate is a plain link to the file, and this swaps it for
+     an inline viewer in place. On a narrow screen the link is left alone —
+     phone browsers render an embedded PDF as a blank box or a download
+     prompt, and a tab of its own reads better there. */
+  var deck = document.querySelector(".deck-view[data-pdf]");
+  var plate = deck && deck.querySelector(".deck-plate");
+  if (plate) {
+    plate.addEventListener("click", function (ev) {
+      if (ev.button !== 0 || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+      if (window.matchMedia("(max-width: 900px)").matches) return;
+      ev.preventDefault();
+      var frame = document.createElement("iframe");
+      frame.src = deck.getAttribute("data-pdf") + "#view=FitH";
+      frame.title = deck.getAttribute("data-pdf-title") || "Slides";
+      frame.setAttribute("allowfullscreen", "");
+      deck.replaceChild(frame, plate);
+      frame.focus();
+    });
+  }
+
   /* ---- Scrollspy for "On this page" --------------------------------- */
   var links = Array.prototype.slice.call(document.querySelectorAll(".toc a[href^='#']"));
   if (links.length && "IntersectionObserver" in window) {

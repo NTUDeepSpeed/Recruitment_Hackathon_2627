@@ -639,6 +639,103 @@ h1:hover .hl, h2:hover .hl, h3:hover .hl, h4:hover .hl { opacity: 1; }
 .tcard:hover .tcard-foot { color: var(--accent); }
 .tcard:hover .tcard-foot .arw { color: var(--accent); transform: translateX(5px); }
 
+/* ----- Info-talk slides -----
+   The plate on the left is a link to the PDF that `app.js` upgrades into an
+   inline viewer; it is sized 16/9 so the swap does not move the page. Nothing
+   below the plate depends on the script: the two buttons open and save the
+   same file on their own. */
+
+.deck { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: var(--s-6); align-items: start; }
+.deck-main { display: grid; gap: var(--s-5); }
+
+.deck-view {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: var(--bg-inset);
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
+  overflow: hidden;
+}
+.deck-view iframe { display: block; width: 100%; height: 100%; border: 0; background: var(--bg-elev-1); }
+
+.deck-plate {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; justify-content: flex-end; gap: var(--s-2);
+  padding: var(--s-8);
+  text-decoration: none; color: var(--fg);
+  background: linear-gradient(160deg, var(--bg-elev-1), var(--bg-inset));
+  transition: background var(--dur-base) var(--ease-mech);
+}
+.deck-plate::before {
+  content: ""; position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(80% 80% at 70% 20%, #000, transparent 100%);
+  -webkit-mask-image: radial-gradient(80% 80% at 70% 20%, #000, transparent 100%);
+  pointer-events: none;
+}
+[data-theme="light"] .deck-plate::before {
+  background-image:
+    linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+}
+.deck-plate > * { position: relative; }
+.deck-plate:hover { color: var(--fg); background: var(--bg-elev-1); }
+.deck-plate .eyebrow { letter-spacing: var(--ls-track); }
+.deck-plate__n {
+  position: absolute; top: var(--s-5); right: var(--s-6);
+  font-family: var(--font-headline);
+  font-size: 96px; line-height: 0.8;
+  color: var(--fg); opacity: 0.07;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.deck-plate__t {
+  font-family: var(--font-headline);
+  font-size: var(--t-2xl); line-height: 1;
+  text-transform: uppercase; letter-spacing: var(--ls-snug);
+  max-width: 18ch;
+}
+.deck-plate__c {
+  margin-top: var(--s-3);
+  display: inline-flex; align-items: center; gap: var(--s-2);
+  font-family: var(--font-headline); font-size: var(--t-lg);
+  text-transform: uppercase; letter-spacing: 0.02em;
+}
+.deck-plate__c .arw { color: var(--fg-subtle); font-family: var(--font-mono); font-size: var(--t-md); transition: transform var(--dur-base) var(--ease-mech), color var(--dur-base) var(--ease-mech); }
+.deck-plate:hover .deck-plate__c { color: var(--accent); }
+.deck-plate:hover .deck-plate__c .arw { color: var(--accent); transform: translateX(5px); }
+.deck-plate__f {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-subtle);
+}
+
+.deck-side { display: grid; gap: var(--s-6); align-content: start; }
+.deck-side .spec { margin: 0; }
+
+.deck-ag { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.deck-ag li {
+  display: grid; grid-template-columns: 28px 1fr; gap: var(--s-1) var(--s-3);
+  padding: var(--s-3) 0;
+  border-bottom: 1px solid var(--line-faint);
+}
+.deck-ag .n {
+  grid-row: 1 / span 2;
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.16em; color: var(--fg-subtle);
+  font-variant-numeric: tabular-nums;
+  padding-top: 3px;
+}
+.deck-ag .t {
+  font-family: var(--font-headline); font-size: var(--t-md);
+  text-transform: uppercase; letter-spacing: 0.02em; line-height: 1;
+}
+.deck-ag .d { font-size: var(--t-xs); color: var(--fg-muted); line-height: 1.5; }
+
+.deck-act { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+
 /* ----- Shared-rules rows ----- */
 
 .rows { border-top: 1px solid var(--line); }
@@ -732,7 +829,7 @@ h1:hover .hl, h2:hover .hl, h3:hover .hl, h4:hover .hl { opacity: 1; }
 
 @media (max-width: 900px) {
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
-  .tracks, .quick { grid-template-columns: 1fr; }
+  .tracks, .quick, .deck { grid-template-columns: 1fr; }
   .sec-head { grid-template-columns: 1fr; gap: var(--s-5); align-items: start; }
   .row-item { grid-template-columns: 1fr; gap: var(--s-2); }
 }
