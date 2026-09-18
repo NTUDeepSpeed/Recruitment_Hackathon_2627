@@ -51,6 +51,10 @@ jobs:
       mode: ${{ steps.detect.outputs.mode }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history: the integrity check below needs a merge base against
+          # the official branch, which a depth-1 checkout cannot provide.
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -62,6 +66,9 @@ jobs:
 
       - name: Referee rule tests
         run: python3 race_ws/src/roboracer_referee/test/test_session.py
+
+      - name: Scoring tests
+        run: python3 scripts/test_leaderboard.py
 
       - name: Track metadata is valid
         # Checks maps/icra26_compete.pgm against the planning geometry: start
@@ -126,6 +133,59 @@ jobs:
             echo '`race_ws/src/team_driver/`, which is yours to edit. If you believe'
             echo "something in the judging environment is genuinely broken, raise it"
             echo "with the organisers rather than patching around it (rule 30)."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
+      # The step above compares against a manifest committed inside the entry.
+      # That is useful to the team, but it cannot be the ruling: whoever submits
+      # can re-run `verify_judging_env.sh --update`, or replace that script
+      # outright, and both files travel with the submission. This step trusts
+      # nothing in the checkout - it diffs the protected paths against the
+      # official branch. Skipped on the official repository itself, where there
+      # is nothing to compare against, and on pull requests, so that a report of
+      # a genuine bug does not get a disqualification banner.
+      - name: Judging environment matches the official branch
+        if: github.event_name == 'push' && github.repository != 'NTUDeepSpeed/Recruitment_Hackathon_2627'
+        run: |
+          set -uo pipefail
+          official=https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627.git
+          branch=track2
+
+          git remote add official "${official}" 2>/dev/null \
+            || git remote set-url official "${official}"
+          if ! git fetch --quiet --no-tags official "${branch}"; then
+            echo "::warning::Could not reach the official repository; this check was skipped."
+            exit 0
+          fi
+
+          # Compare against the fork point, not the tip. An entry that is simply
+          # behind the official branch has not modified anything.
+          base="$(git merge-base HEAD "official/${branch}" 2>/dev/null || true)"
+          if [ -z "${base}" ]; then
+            echo "::warning::No shared history with official/${branch}; comparing against its tip."
+            base="official/${branch}"
+          fi
+
+          drift="$(git diff --name-status "${base}" HEAD -- race_ws/src/roboracer_referee external/autodrive_devkit docker .dockerignore maps/tracks.yaml scripts install .github/workflows)"
+          if [ -z "${drift}" ]; then
+            echo "Judging environment matches official/${branch} (base ${base:0:12})."
+            exit 0
+          fi
+
+          echo "${drift}"
+          {
+            echo "# DISQUALIFIED - judging environment modified"
+            echo
+            echo "> [!CAUTION]"
+            echo "> These files differ from the official \`${branch}\` branch. Re-signing"
+            echo "> \`judging_manifest.sha256\` does not change this: the comparison is"
+            echo "> against the official repository, not against anything in the entry."
+            echo
+            echo '```'
+            echo "${drift}"
+            echo '```'
+            echo
+            echo "Restore them, or move your work into \`race_ws/src/team_driver/\`."
           } >> "$GITHUB_STEP_SUMMARY"
           exit 1
 

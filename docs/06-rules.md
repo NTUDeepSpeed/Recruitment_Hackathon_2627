@@ -149,9 +149,12 @@ collision costs 10 s of race time, consistency here mostly means not crashing.
 
 28. **Do not modify the judging environment.** That means:
     - `race_ws/src/roboracer_referee/`
-    - `docker/` — Dockerfile, dependency pins, compose files, entrypoint
+    - `docker/` and `.dockerignore` — everything that defines the image
     - `maps/tracks.yaml`
     - `scripts/` and `install/`
+    - `.github/workflows/`
+
+    Adding a file to one of those directories counts as modifying it.
 
     The rest of `maps/` is yours: a racing line or an occupancy grid you built
     belongs there and is not checked.

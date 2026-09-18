@@ -42,7 +42,7 @@ from rclpy.qos import (QoSDurabilityPolicy, QoSHistoryPolicy, QoSProfile,
 from std_msgs.msg import Bool, Float32, Int32
 from visualization_msgs.msg import Marker
 
-from .session import RaceSession, Rules, Status
+from .session import RaceSession, Rules
 from .tracks import TrackError, load_track
 
 REFEREE_VERSION = "2.0.0"

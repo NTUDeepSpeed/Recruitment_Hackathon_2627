@@ -72,8 +72,8 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-for pair in "LAPS:${LAPS}" "WARMUP:${WARMUP}" "RUNS:${RUNS}" "RUN_TIMEOUT:${RUN_TIMEOUT}" \
-            "WALL_TIMEOUT:${WALL_TIMEOUT}"; do
+for pair in "laps:${LAPS}" "warmup:${WARMUP}" "runs:${RUNS}" "timeout:${RUN_TIMEOUT}" \
+            "wall-timeout:${WALL_TIMEOUT}"; do
     name="${pair%%:*}"; value="${pair#*:}"
     case "${value}" in
         ''|*[!0-9]*) die "--${name} must be a whole number, got '${value}'" ;;

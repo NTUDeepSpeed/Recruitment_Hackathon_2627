@@ -61,23 +61,66 @@ def load_results(paths: List[str]) -> List[dict]:
     return results
 
 
-def best_run_per_team(results: List[dict]) -> Dict[str, dict]:
-    """Keep each team's best scored run; fall back to any run so DQs still show."""
-    best: Dict[str, dict] = {}
-    for result in results:
-        team = str(result.get("team", "unknown"))
-        current = best.get(team)
-        if current is None:
-            best[team] = result
-            continue
+def _min_positive(values) -> Optional[float]:
+    """Smallest usable time, ignoring zero, negative and missing ones.
 
-        if result.get("scored") and not current.get("scored"):
-            best[team] = result
-        elif result.get("scored") and current.get("scored"):
-            # Ranking is driven by the 10-lap total, so that is what "best" means.
-            if _total(result) < _total(current):
-                best[team] = result
-    return best
+    A single corrupt result file should cost that one entry its score, not
+    flatten the normalisers and take the whole leaderboard to zero with it.
+    """
+    usable = [v for v in values if v is not None and 0.0 < v < float("inf")]
+    return min(usable) if usable else None
+
+
+def _field_bests(results: List[dict]):
+    """Normalisers taken across every scored run, not just the ones already picked.
+
+    Choosing a team's best run needs a score, and a score needs normalisers, so
+    taking them from the chosen runs would make the choice depend on itself.
+    Across all runs they are fixed before any choosing starts.
+    """
+    scored = [r for r in results if r.get("scored")]
+    if not scored:
+        return None, None
+    return (_min_positive(_best_lap(r) for r in scored),
+            _min_positive(_total(r) for r in scored))
+
+
+def _score(result: dict, fastest_lap: float, fastest_total: float) -> float:
+    """Rule 19: both halves, 50 points each, relative to the best of the field."""
+    lap, total = _best_lap(result), _total(result)
+    if fastest_lap is None or fastest_total is None:
+        return 0.0
+    if not (lap > 0.0 and total > 0.0):
+        return 0.0
+    return LAP_WEIGHT * fastest_lap / lap + ENDURANCE_WEIGHT * fastest_total / total
+
+
+def best_run_per_team(results: List[dict]) -> Dict[str, dict]:
+    """Keep each team's best scored run; fall back to any run so DQs still show.
+
+    "Best" is the run that scores highest under rule 19 - both halves of it.
+    Judging races each entry three times (rule 23), and a team can easily set
+    its quickest lap in one run and its best 10-lap total in another; picking
+    on the 10-lap total alone would throw away the lap half of their score and
+    can cost a place on the leaderboard.
+    """
+    fastest_lap, fastest_total = _field_bests(results)
+
+    by_team: Dict[str, List[dict]] = {}
+    for result in results:
+        by_team.setdefault(str(result.get("team", "unknown")), []).append(result)
+
+    def preference(result: dict):
+        score = (_score(result, fastest_lap, fastest_total)
+                 if result.get("scored") else 0.0)
+        # Scored beats unscored, then the score, then the 10-lap total as the
+        # tie-break, then run_id so the answer never depends on file order.
+        return (1 if result.get("scored") else 0,
+                score,
+                -_total(result),
+                str(result.get("run_id", "")))
+
+    return {team: max(runs, key=preference) for team, runs in by_team.items()}
 
 
 def _total(result: dict) -> float:
@@ -105,11 +148,15 @@ def rank(results: List[dict]) -> dict:
 
     rows = []
     if scored:
-        fastest_lap = min(_best_lap(r) for r in scored.values())
-        fastest_total = min(_total(r) for r in scored.values())
+        fastest_lap = _min_positive(_best_lap(r) for r in scored.values())
+        fastest_total = _min_positive(_total(r) for r in scored.values())
         for team, result in scored.items():
-            lap_score = LAP_WEIGHT * fastest_lap / _best_lap(result)
-            endurance_score = ENDURANCE_WEIGHT * fastest_total / _total(result)
+            lap = _best_lap(result)
+            total = _total(result)
+            lap_score = (LAP_WEIGHT * fastest_lap / lap
+                         if fastest_lap is not None and lap > 0.0 else 0.0)
+            endurance_score = (ENDURANCE_WEIGHT * fastest_total / total
+                               if fastest_total is not None and total > 0.0 else 0.0)
             rows.append({
                 "team": team,
                 "status": result["status"],
@@ -124,7 +171,9 @@ def rank(results: List[dict]) -> dict:
                 "track": result.get("track", ""),
                 "source": os.path.basename(result.get("_path", "")),
             })
-        rows.sort(key=lambda row: row["total_score"], reverse=True)
+        # Ties break on the 10-lap total, then on the team name, so the order
+        # is the same however the result files happened to be listed.
+        rows.sort(key=lambda row: (-row["total_score"], row["total_time"], row["team"]))
 
     for team, result in sorted(unscored.items()):
         rows.append({
@@ -167,7 +216,7 @@ def render_markdown(table: dict, title: str = "Leaderboard") -> str:
     """GitHub-flavoured Markdown, for a workflow job summary."""
     out = [f"## {title}", ""]
     for warning in table["warnings"]:
-        out += [f"> [!WARNING]", f"> {warning}", ""]
+        out += ["> [!WARNING]", f"> {warning}", ""]
 
     if not table["rows"]:
         out += ["No runs were scored.", ""]

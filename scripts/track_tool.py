@@ -407,7 +407,7 @@ def find_lap(grid: OccupancyMap, track, half_width: float = 0.35,
     """
     from roboracer_referee.geometry import signed_side          # noqa: PLC0415
 
-    w, h = grid.width, grid.height
+    w = grid.width
     if link_cones:
         joined = grid.link_cones(link_cones)
         if joined:
