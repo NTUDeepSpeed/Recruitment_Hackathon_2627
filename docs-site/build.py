@@ -583,13 +583,16 @@ def deck(cfg: dict, assets: dict) -> str:
     """
     The info-talk slides: a viewer that loads on demand, and the file itself.
 
-    The PDF weighs more than the rest of the landing page put together, so
-    nothing fetches it until a reader asks for it. `app.js` swaps the plate
-    below for an inline viewer on a wide screen; with JavaScript off, or on a
-    phone — where an embedded PDF is unreadable in every browser worth naming
-    — the same link opens the file in a tab of its own instead.
+    The plate is the deck's own title slide, rendered out of the PDF, so the
+    talk names itself and nothing here repeats what the picture already says.
+    The PDF behind it weighs more than the rest of the landing page put
+    together, so nothing fetches it until a reader asks: `app.js` swaps the
+    plate for an inline viewer on a wide screen, and with JavaScript off, or
+    on a phone — where an embedded PDF is unreadable in every browser worth
+    naming — the same link opens the file in a tab of its own instead.
     """
     talk = cfg["talk"]
+    cover = talk["cover"]
     src = assets[talk["file"]]
 
     facts = "".join(
@@ -606,11 +609,12 @@ def deck(cfg: dict, assets: dict) -> str:
   <div class="deck-main">
     <div class="deck-view" data-pdf="{src}" data-pdf-title="{e(talk['title'])}">
       <a class="deck-plate" href="{src}" target="_blank" rel="noopener">
-        <span class="deck-plate__n" aria-hidden="true">{e(talk['slides'])}</span>
-        <span class="eyebrow">NTU DeepSpeed &middot; {e(talk['date'])}</span>
-        <span class="deck-plate__t">{e(talk['title'])}</span>
-        <span class="deck-plate__c">View the slides <span class="arw" aria-hidden="true">&rarr;</span></span>
-        <span class="deck-plate__f">PDF &middot; {e(talk['size'])} &middot; {e(talk['slides'])} slides</span>
+        <img class="deck-cover" src="{assets[cover['src']]}" alt="{e(cover['alt'])}"
+             width="{cover['w']}" height="{cover['h']}" loading="lazy" decoding="async">
+        <span class="deck-bar">
+          <span class="deck-bar__c">View the slides <span class="arw" aria-hidden="true">&rarr;</span></span>
+          <span class="deck-bar__f">PDF &middot; {e(talk['size'])} &middot; {e(talk['slides'])} slides</span>
+        </span>
       </a>
     </div>
     <div class="deck-act">

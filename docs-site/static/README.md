@@ -39,6 +39,14 @@ presented. The landing page links to it twice — once to open and once to
 download — and `app.js` loads it into an inline viewer on a wide screen. It is
 the heaviest thing the site serves, so nothing fetches it until a reader asks.
 
-Replacing it with a later talk means dropping the new file in, renaming it to
-its own date, and correcting the `talk` block in `site.json`: the file name,
-the date, the slide count and the size are all quoted on the page.
+`info-talk-cover.jpg` is the plate for it: page 2 of that PDF — the title
+slide, not the attendance QR code on page 1 — rendered at 144 dpi to
+1440x810 and saved as a progressive JPEG at quality 82. It is a photograph of
+crumpled paper under flat orange type, so JPEG holds it in a seventh of what
+PNG costs, and the grain survives. Nothing is cropped or recoloured: the plate
+is 16/9, exactly as the slide is.
+
+Replacing either with a later talk means dropping the new file in, renaming it
+to its own date, re-rendering the cover from the new page 2, and correcting the
+`talk` block in `site.json`: the file names, the date, the slide count, the
+size and the cover's dimensions and alt text are all quoted on the page.
