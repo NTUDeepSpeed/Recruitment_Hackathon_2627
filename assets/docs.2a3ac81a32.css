@@ -640,10 +640,10 @@ h1:hover .hl, h2:hover .hl, h3:hover .hl, h4:hover .hl { opacity: 1; }
 .tcard:hover .tcard-foot .arw { color: var(--accent); transform: translateX(5px); }
 
 /* ----- Info-talk slides -----
-   The plate on the left is a link to the PDF that `app.js` upgrades into an
-   inline viewer; it is sized 16/9 so the swap does not move the page. Nothing
-   below the plate depends on the script: the two buttons open and save the
-   same file on their own. */
+   The plate on the left is the deck's own title slide, linking to the PDF,
+   which `app.js` upgrades into an inline viewer; both are 16/9, so the swap
+   does not move the page. Nothing below the plate depends on the script: the
+   two buttons open and save the same file on their own. */
 
 .deck { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: var(--s-6); align-items: start; }
 .deck-main { display: grid; gap: var(--s-5); }
@@ -660,56 +660,35 @@ h1:hover .hl, h2:hover .hl, h3:hover .hl, h4:hover .hl { opacity: 1; }
 
 .deck-plate {
   position: absolute; inset: 0;
-  display: flex; flex-direction: column; justify-content: flex-end; gap: var(--s-2);
-  padding: var(--s-8);
+  display: block; overflow: hidden;
   text-decoration: none; color: var(--fg);
-  background: linear-gradient(160deg, var(--bg-elev-1), var(--bg-inset));
-  transition: background var(--dur-base) var(--ease-mech);
 }
-.deck-plate::before {
-  content: ""; position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-  background-size: 32px 32px;
-  mask-image: radial-gradient(80% 80% at 70% 20%, #000, transparent 100%);
-  -webkit-mask-image: radial-gradient(80% 80% at 70% 20%, #000, transparent 100%);
-  pointer-events: none;
+.deck-cover { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform var(--dur-base) var(--ease-mech); }
+.deck-plate:hover .deck-cover { transform: scale(1.03); }
+
+/* The cover is the title slide, and it is dark in either theme, so the bar
+   brings its own scrim and its own light type rather than trusting the
+   picture behind it. */
+.deck-bar {
+  position: absolute; inset: auto 0 0 0;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-2) var(--s-4);
+  padding: var(--s-12) var(--s-6) var(--s-5);
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 45%, rgba(0,0,0,0));
+  color: var(--ink-0w);
 }
-[data-theme="light"] .deck-plate::before {
-  background-image:
-    linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
-}
-.deck-plate > * { position: relative; }
-.deck-plate:hover { color: var(--fg); background: var(--bg-elev-1); }
-.deck-plate .eyebrow { letter-spacing: var(--ls-track); }
-.deck-plate__n {
-  position: absolute; top: var(--s-5); right: var(--s-6);
-  font-family: var(--font-headline);
-  font-size: 96px; line-height: 0.8;
-  color: var(--fg); opacity: 0.07;
-  font-variant-numeric: tabular-nums;
-  pointer-events: none;
-}
-.deck-plate__t {
-  font-family: var(--font-headline);
-  font-size: var(--t-2xl); line-height: 1;
-  text-transform: uppercase; letter-spacing: var(--ls-snug);
-  max-width: 18ch;
-}
-.deck-plate__c {
-  margin-top: var(--s-3);
+.deck-bar__c {
   display: inline-flex; align-items: center; gap: var(--s-2);
   font-family: var(--font-headline); font-size: var(--t-lg);
   text-transform: uppercase; letter-spacing: 0.02em;
+  transition: color var(--dur-base) var(--ease-mech);
 }
-.deck-plate__c .arw { color: var(--fg-subtle); font-family: var(--font-mono); font-size: var(--t-md); transition: transform var(--dur-base) var(--ease-mech), color var(--dur-base) var(--ease-mech); }
-.deck-plate:hover .deck-plate__c { color: var(--accent); }
-.deck-plate:hover .deck-plate__c .arw { color: var(--accent); transform: translateX(5px); }
-.deck-plate__f {
+.deck-bar__c .arw { color: var(--ink-300); font-family: var(--font-mono); font-size: var(--t-md); transition: transform var(--dur-base) var(--ease-mech), color var(--dur-base) var(--ease-mech); }
+.deck-plate:hover .deck-bar__c { color: var(--accent); }
+.deck-plate:hover .deck-bar__c .arw { color: var(--accent); transform: translateX(5px); }
+.deck-bar__f {
+  margin-left: auto;
   font-family: var(--font-mono); font-size: 10px;
-  letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-subtle);
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-300);
 }
 
 .deck-side { display: grid; gap: var(--s-6); align-content: start; }
