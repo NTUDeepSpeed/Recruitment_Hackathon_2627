@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="{{LANG}}" data-theme="dark" data-platform="linux">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<meta name="description" content="{{DESCRIPTION}}">
+<meta name="color-scheme" content="dark light">
+<meta property="og:title" content="{{TITLE}}">
+<meta property="og:description" content="{{DESCRIPTION}}">
+<meta property="og:type" content="website">
+<script>
+/* Applied before paint, so the page never flashes the wrong theme. Dark is the
+   brand default — the identity lives on black. `js` lets the results tabs hide
+   the track you are not looking at from the first frame; without it, both
+   leaderboards simply stack. */
+(function () {
+  var root = document.documentElement, theme;
+  try { theme = localStorage.getItem("ds-theme"); } catch (e) { /* storage blocked */ }
+  root.setAttribute("data-theme", theme === "light" ? "light" : "dark");
+  root.classList.add("js");
+})();
+</script>
+<meta name="theme-color" content="#0A0A0B">
+<link rel="icon" type="image/png" href="{{PREFIX}}assets/favicon.png">
+<link rel="apple-touch-icon" href="{{PREFIX}}assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="{{PREFIX}}{{TOKENS_CSS}}">
+<link rel="stylesheet" href="{{PREFIX}}{{DOCS_CSS}}">
+</head>
+<body>
+<a class="skip" href="#results">Skip to the results</a>
+{{HEADER}}
+
+<main>
+
+  <div class="page">
+    <section class="hero hero--home">
+      <div class="hero-grid" aria-hidden="true"></div>
+      <div class="home-hero">
+        <div class="home-hero__text">
+          <div class="eyebrow">NTU DeepSpeed &middot; Recruitment Hackathon 26/27</div>
+          <h1 class="hero-display">Drive fast. <span class="red">Don&rsquo;t crash.</span></h1>
+          <p class="hero-sub">{{HERO_LEDE}}</p>
+          <div class="hero-act">
+            <a class="btn accent" href="#results">See the leaderboard</a>
+            <a class="btn ghost" href="{{PREFIX}}archive/index.html">Browse the archive</a>
+          </div>
+        </div>
+        <div class="winners" aria-label="Winners">{{WINNERS}}</div>
+      </div>
+    </section>
+  </div>
+
+  <div class="finish" aria-hidden="true"></div>
+
+  <div class="page">
+
+    <section class="sec" id="about">
+      <div class="brief">
+        <div class="brief-main">
+          <h2 class="sec-h">The brief</h2>
+          <p class="brief-lead">Write the software that drives a 1/10-scale racing car around a circuit it has never seen, as fast as it can, without hitting anything.</p>
+          <p class="brief-body">Two tracks, two simulators, one problem. Teams of three to five picked a track, wrote a driver and pushed it, and every push raced on GitHub Actions. Judging ran on one machine and took its times from the simulator&rsquo;s own clock, so nobody&rsquo;s laptop decided the result.</p>
+        </div>
+        <div class="brief-score">
+          <h3 class="brief-score__h">How it was scored</h3>
+          <div class="eq" role="img" aria-label="Score equals 50 times the fastest lap of any team divided by your fastest lap, plus 50 times the fastest 10-lap total of any team divided by your 10-lap total.">
+            <div class="eq-line">
+              <span class="eq-lhs">Score</span>
+              <span class="eq-op">=</span>
+              <span class="eq-term"><span class="eq-pts">50</span><span class="eq-op">&times;</span><span class="frac"><span>fastest lap of any team</span><span>your fastest lap</span></span></span>
+            </div>
+            <div class="eq-line">
+              <span class="eq-lhs"></span>
+              <span class="eq-op">+</span>
+              <span class="eq-term"><span class="eq-pts">50</span><span class="eq-op">&times;</span><span class="frac"><span>fastest 10-lap total of any team</span><span>your 10-lap total</span></span></span>
+            </div>
+          </div>
+          <div class="spec">
+            <div class="row"><span class="k">Collision</span><span class="v">+10 s on the lap, each. More than 10 is a disqualification.</span></div>
+            <div class="row"><span class="k">Teams</span><span class="v">3 to 5 people, one team per person</span></div>
+            <div class="row"><span class="k">Judging</span><span class="v">One machine, timed by the simulator&rsquo;s clock</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec" id="results">
+      <div class="sec-head">
+        <h2 class="sec-h">Results</h2>
+        <p class="sec-lede">{{RESULTS_LEDE}}</p>
+      </div>
+      {{RESULTS}}
+      <p class="board-note">Highest score ranks first. Adjusted total is the best 10-lap total after collision penalties. <abbr title="Did not finish">DNF</abbr> means the team did not finish.</p>
+    </section>
+
+    <section class="sec" id="archive">
+      <div class="outro">
+        <div>
+          <h2 class="sec-h">Missed it, or want to see how it ran?</h2>
+          <p class="sec-lede">{{ARCHIVE_LEDE}}</p>
+        </div>
+        <nav class="golinks" aria-label="Keep reading">{{GOLINKS}}</nav>
+      </div>
+    </section>
+
+  </div>
+</main>
+{{FOOTER}}
+<script src="{{PREFIX}}{{APP_JS}}" defer></script>
+</body>
+</html>

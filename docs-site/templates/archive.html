@@ -41,17 +41,22 @@
 
 <main class="page">
 
+  <aside class="arch-note" aria-label="About this page">
+    <span class="arch-note__k">Archive</span>
+    <p>This is the competition page as it stood while the hackathon ran. Registration and submissions are closed &mdash; the final results are on the <a href="{{PREFIX}}index.html#results">home page</a>.</p>
+  </aside>
+
   <section class="hero">
     <div class="hero-grid" aria-hidden="true"></div>
     <div class="eyebrow">NTU DeepSpeed &middot; Recruitment Hackathon 26/27</div>
     <h1 class="hero-display">Drive fast. <span class="red">Don&rsquo;t crash.</span></h1>
     <p class="hero-sub">{{HERO_LEDE}}</p>
     <div class="hero-act">
-      <a class="btn accent" href="{{REGISTER_URL}}">{{REGISTER_CTA}}</a>
+      <button class="btn accent" type="button" disabled>Registration closed</button>
       <a class="btn ghost" href="#tracks">Choose a track</a>
       <a class="btn ghost" href="{{REPO_URL}}">Repository</a>
     </div>
-    <p class="hero-note">Registration closes <b>{{REGISTER_DEADLINE_FULL}}</b>. One form per team &mdash; you can start reading, and building, before you send it.</p>
+    <p class="hero-note">Registration closed <b>{{REGISTER_DEADLINE_FULL}}</b>. Submissions closed {{DEADLINE_FULL}}.</p>
     <div class="hero-pf">
       <span class="eyebrow">Your platform</span>
       {{HERO_SWITCH}}
@@ -111,7 +116,7 @@
         <div class="sec-num">05 / Go</div>
         <h2 class="sec-h">Start here</h2>
       </div>
-      <p class="sec-lede">Clone once, check out the branch for your track, then follow chapter 1. <a href="{{REGISTER_URL}}">Register your team</a> by {{REGISTER_DEADLINE_FULL}}; submissions close {{DEADLINE_FULL}}.</p>
+      <p class="sec-lede">Clone once, check out the branch for your track, then follow chapter 1. Registration closed {{REGISTER_DEADLINE_FULL}}; submissions closed {{DEADLINE_FULL}}.</p>
     </div>
     {{QUICK_SWITCH}}
     <div class="quick">{{QUICKSTART}}</div>

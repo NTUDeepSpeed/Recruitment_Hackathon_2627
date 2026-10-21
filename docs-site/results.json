@@ -1,0 +1,35 @@
+{
+  "note": "Final leaderboards, transcribed from the official score sheets. Rows are in rank order; a team with no row below the line did not finish. Each row is [team, adjusted total (s), best lap (s), lap pts, total pts, score].",
+  "tracks": {
+    "track1": {
+      "teams": [
+        ["CalcuLOL", 80.4370, 8.0354, 50.0000, 50.0000, 100.0000],
+        ["Caeser Salad", 86.9832, 8.6833, 46.2693, 46.2371, 92.5064],
+        ["Thunder McKing", 116.4601, 11.6250, 34.5609, 34.5341, 69.0950],
+        ["AftergIOw", 120.1987, 12.0168, 33.4340, 33.4600, 66.8940],
+        ["The fifth gear", 127.0324, 12.6677, 31.7161, 31.6600, 63.3761],
+        ["AUTOMAN", 127.0252, 12.7021, 31.6302, 31.6618, 63.2920],
+        ["Assigned Team 2", 137.1000, 13.7100, 29.3049, 29.3352, 58.6400],
+        ["niubi", 165.0497, 16.4772, 24.3834, 24.3675, 48.7509],
+        ["Assigned Team 1", 168.7614, 16.8679, 23.8186, 23.8316, 47.6502],
+        ["ClaudeGP", 180.9318, 17.8573, 22.4989, 22.2285, 44.7275],
+        ["deepspeedo", 187.2502, 18.7234, 21.4582, 21.4785, 42.9367],
+        ["Deepsped", 194.6844, 19.4319, 20.6758, 20.6583, 41.3341],
+        ["Wind2win", 196.7447, 19.6717, 20.4238, 20.4420, 40.8657]
+      ],
+      "dnf": ["Octonauts", "Assigned Team 3"]
+    },
+    "track2": {
+      "teams": [
+        ["TAISP extreme ros2 team #1", 92.1309, 9.0660, 50.0000, 50.0000, 100.0000],
+        ["Chitti 3.0", 112.7680, 11.2209, 40.3978, 40.8498, 81.2476],
+        ["OG7", 116.3688, 11.3930, 39.7876, 39.5857, 79.3733],
+        ["SpecialNeeds", 124.1189, 10.9318, 41.4662, 37.1140, 78.5802],
+        ["JfK", 125.9920, 12.5785, 36.0377, 36.5622, 72.5999],
+        ["WanWanahNiyiwei", 190.6815, 11.6721, 38.8362, 24.1583, 62.9945],
+        ["Simplicity", 171.1503, 16.4946, 27.4817, 26.9152, 54.3969]
+      ],
+      "dnf": ["Yappers", "Speed and Depth", "Big Black Charizard", "bruh", "Assigned Team 4"]
+    }
+  }
+}

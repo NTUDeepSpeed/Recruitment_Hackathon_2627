@@ -6,12 +6,12 @@ Write the software that drives a 1/10-scale racing car around a circuit it has
 never seen, as fast as it can, without hitting anything. Two tracks, two
 simulators, one problem.
 
-> **Documentation: <https://ntudeepspeed.github.io/Recruitment_Hackathon_2627/>**
+> **Results and documentation: <https://ntudeepspeed.github.io/Recruitment_Hackathon_2627/>**
 >
-> **Register your team: <https://forms.cloud.microsoft/r/70KfZ1by9b>** —
-> registration closes **24 September 2026, 23:59 (SGT)**
->
-> **Submission deadline: 18 October 2026, 23:59 (SGT)**
+> Registration closed **24 September 2026, 23:59 (SGT)** and submissions closed
+> **18 October 2026, 23:59 (SGT)**. The final leaderboards for both tracks are
+> on the site's home page; the competition page as it ran is kept in the
+> [archive](https://ntudeepspeed.github.io/Recruitment_Hackathon_2627/archive/).
 
 This branch is the front door. It holds the landing page and the generator that
 builds it — **no hackathon code lives here.** Pick a track below and check out
@@ -62,10 +62,9 @@ The full rules are in chapter 6 of your track's guide and they are what counts.
 The short version:
 
 - **Teams of 3 to 5.** One team per person. The roster is fixed at submission.
-- **Register by 24 September 2026, 23:59 SGT** —
-  [one form per team](https://forms.cloud.microsoft/r/70KfZ1by9b). You can
-  start reading, and building, before you send it.
-- **Deadline: 18 October 2026, 23:59 SGT.** Late entries are not scored.
+- **Registration closed 24 September 2026, 23:59 SGT** — one form per team.
+- **Submissions closed 18 October 2026, 23:59 SGT.** Late entries were not
+  scored.
 - **Score out of 100** — 50 for your fastest single lap, 50 for your 10-lap
   total, both relative to the fastest team.
 - **+10 s on the lap per collision.** More than 10 collisions is a
@@ -97,15 +96,29 @@ branch.
 docs-site/
 ├── build.py           The generator
 ├── check_links.py     Fails CI on a broken cross-chapter link or anchor
-├── site.json          Landing-page copy — tracks, stats, chapter notes
+├── site.json          Page copy — tracks, stats, chapter notes
+├── results.json       The two final leaderboards, one row per team in rank order
 ├── requirements.txt   markdown + Pygments
 ├── templates/         Page shells with {{SLOT}} placeholders
 ├── theme/
 │   ├── tokens.css     DeepSpeed design system, vendored verbatim
 │   ├── docs.css       Docs components, built on those tokens
-│   └── app.js         Theme toggle, drawer, copy buttons, scrollspy
+│   └── app.js         Theme toggle, drawer, copy buttons, results tabs, scrollspy
 └── static/            Favicon, circuit maps, anything else copied as-is
 ```
+
+### The pages
+
+| Page | Built from | What it is |
+| --- | --- | --- |
+| `index.html` | `templates/home.html`, `results.json` | The home page: a short brief and both leaderboards |
+| `archive/index.html` | `templates/archive.html`, `site.json` | The competition page as it ran — tracks, rules, slides, quick start. Registration is closed, so its button is disabled and the form is not linked |
+| `track1/`, `track2/` | `README.md` + `docs/*.md` on each track branch | The guides |
+
+The winners, the team counts and the width of every score bar on the home page
+are derived from `results.json`, so correcting a score sheet is a one-file
+change. Each row is `[team, adjusted total, best lap, lap pts, total pts,
+score]`; teams that did not finish go in `dnf`.
 
 ### The platform switch
 

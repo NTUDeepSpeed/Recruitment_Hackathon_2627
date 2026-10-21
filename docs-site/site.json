@@ -8,8 +8,6 @@
   "description": "Write the software that drives a 1/10-scale racing car around a circuit it has never seen, as fast as it can, without hitting anything. Two tracks, two simulators, one problem.",
 
   "register": {
-    "url": "https://forms.cloud.microsoft/r/70KfZ1by9b",
-    "cta": "Register your team",
     "deadline": "24 Sep 2026",
     "deadline_full": "24 September 2026, 23:59 SGT"
   },
@@ -42,8 +40,8 @@
   },
 
   "stats": [
-    { "k": "Register by", "v": "24 Sep", "foot": "2026 · 23:59 SGT", "hot": true },
-    { "k": "Submit by", "v": "18 Oct", "foot": "2026 · 23:59 SGT", "hot": true },
+    { "k": "Registration closed", "v": "24 Sep", "foot": "2026 · 23:59 SGT" },
+    { "k": "Submissions closed", "v": "18 Oct", "foot": "2026 · 23:59 SGT" },
     { "k": "Team size", "v": "3–5", "foot": "Fixed at submission" },
     { "k": "Collision", "v": "+10<span class=\"u\">s</span>", "foot": "Over 10 is a DQ" }
   ],
@@ -58,6 +56,7 @@
       "tag": "f1tenth_gym",
       "title": "RoboRacer Autonomous Racing",
       "lede": "Everything in one repository — simulator, judging environment and every official track. No driver ships: you pick the algorithm and write it. Ask the car for a speed and a steering angle; the sim closes the loop for you.",
+      "brief": "f1tenth_gym with a ROS 2 bridge. Ask the car for a speed and a steering angle, and the simulator holds the speed for you.",
       "cta": "Read the Track 1 guide",
       "map": {
         "src": "track1-circuit.png",
@@ -93,6 +92,7 @@
       "tag": "AutoDRIVE",
       "title": "RoboRacer Sim Racing on AutoDRIVE",
       "lede": "The compete phase of the RoboRacer Sim Racing League at ICRA 2026 — same vehicle, same sensors, same circuit the ICRA teams raced. You publish raw throttle, so the speed controller is yours to write.",
+      "brief": "AutoDRIVE, the Unity simulator the ICRA 2026 teams raced. The car takes raw throttle, so the speed controller is yours to write.",
       "cta": "Read the Track 2 guide",
       "map": {
         "src": "track2-circuit.png",
@@ -122,8 +122,8 @@
   ],
 
   "shared": [
-    ["Registration", "Closes 24 September 2026, 23:59 SGT", true, "<a href=\"https://forms.cloud.microsoft/r/70KfZ1by9b\">Register your team</a> \u2014 one form per team, whichever track you take"],
-    ["Submission", "18 October 2026, 23:59 SGT", true, "Late entries are not scored"],
+    ["Registration", "Closed 24 September 2026, 23:59 SGT", false, "One form per team, whichever track you took"],
+    ["Submission", "Closed 18 October 2026, 23:59 SGT", false, "Late entries were not scored"],
     ["Team size", "3 to 5 members", false, "One team per person, roster fixed at submission"],
     ["Score", "50 fastest lap + 50 ten-lap total", false, "Relative to the fastest team, out of 100"],
     ["Penalties", "+10 s per collision, DQ above 10", true, "Contact is the first problem to solve"],

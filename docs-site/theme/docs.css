@@ -955,7 +955,313 @@ html[data-platform="windows"] .pf-switch [data-set-pf="windows"] {
   .hero-pf__note { display: none; }
 }
 
-/* Above that the glyph is redundant — the word is there. */
-.toggle svg { display: none; }
+/* Above that the glyph is redundant — the word is there. It is scoped to those
+   widths because, unscoped, it sits after the phone rule above and wins. */
+@media (min-width: 861px) { .toggle svg { display: none; } }
 
 @media print { .pf-switch, .pf-tabs, .hero-pf { display: none !important; } }
+
+/* ===== Archive ======================================================== */
+
+/* The archive is the old landing page, kept. This says so once, at the top. */
+.arch-note {
+  display: flex; align-items: baseline; gap: var(--s-4);
+  margin-top: var(--s-6);
+  padding: var(--s-3) var(--s-4);
+  background: var(--bg-elev-1);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--warn);
+  font-size: var(--t-sm); color: var(--fg-muted);
+}
+.arch-note p { margin: 0; max-width: none; }
+.arch-note a { color: var(--fg); }
+.arch-note a:hover { color: var(--accent); }
+.arch-note__k {
+  flex: none;
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: var(--ls-track); text-transform: uppercase;
+  color: var(--warn);
+}
+
+/* A control that no longer does anything. Dashed and dim, and no hover — it
+   must not invite a click it will not answer. */
+.btn:disabled, .btn[aria-disabled="true"] {
+  background: transparent; color: var(--fg-subtle);
+  border: 2px dashed var(--line);
+  cursor: not-allowed;
+}
+.btn:disabled:hover, .btn:disabled:active { background: transparent; color: var(--fg-subtle); transform: none; }
+
+/* ===== Home: results ================================================== */
+
+/* The header on a page with no sidebar keeps its nav on a phone, minus the two
+   guide links, which the page repeats lower down. */
+@media (max-width: 860px) {
+  .hdr--flat .hdr-nav { display: flex; gap: var(--s-4); margin-left: var(--s-2); }
+  .hdr--flat .hdr-nav a { font-size: 10px; letter-spacing: 0.12em; }
+  .hdr--flat .hdr-nav__guide { display: none; }
+}
+
+.hero--home { border-bottom: 0; padding-bottom: var(--s-20); }
+.home-hero {
+  display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: var(--s-12); align-items: end;
+}
+.home-hero__text { min-width: 0; }
+.home-hero .hero-display { font-size: clamp(48px, 7.4vw, 104px); margin-bottom: var(--s-6); }
+.home-hero .hero-sub { margin-bottom: var(--s-8); }
+
+/* The two winners. Each is a plate that jumps to its own leaderboard. */
+.winners { display: grid; gap: var(--s-4); min-width: 0; }
+.win {
+  position: relative; overflow: hidden;
+  display: grid; gap: var(--s-1);
+  padding: var(--s-6) var(--s-6) var(--s-5);
+  background: var(--bg-elev-1);
+  border: 1px solid var(--line);
+  clip-path: var(--clip-notch);
+  text-decoration: none; color: var(--fg);
+  transition: border-color var(--dur-base) var(--ease-mech);
+}
+.win:hover { color: var(--fg); border-color: var(--accent); }
+.win-n {
+  position: absolute; top: calc(var(--s-4) * -1); right: var(--s-5);
+  font-family: var(--font-headline);
+  font-size: 150px; line-height: 1;
+  color: var(--accent); opacity: 0.18;
+  pointer-events: none;
+}
+.win-k {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--fg-muted);
+}
+.win-team {
+  position: relative;
+  font-family: var(--font-headline); font-size: var(--t-3xl);
+  line-height: 1.05; text-transform: uppercase; overflow-wrap: anywhere;
+  transition: color var(--dur-base) var(--ease-mech);
+}
+.win:hover .win-team { color: var(--accent); }
+.win-m {
+  position: relative;
+  display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-5);
+  margin-top: var(--s-3);
+  font-family: var(--font-mono); font-size: 11px; color: var(--fg-muted);
+}
+.win-m b { color: var(--fg); font-weight: var(--w-med); font-size: var(--t-sm); }
+
+/* The finish line, under the hero. */
+.finish {
+  height: 24px;
+  background: repeating-conic-gradient(var(--fg) 0 25%, var(--bg) 0 50%) 0 0 / 24px 24px;
+}
+
+/* ----- The brief ----- */
+
+.brief { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--s-16); align-items: start; }
+.brief-main, .brief-score { min-width: 0; }
+.brief-lead {
+  margin: var(--s-5) 0 var(--s-5); max-width: 34ch;
+  font-size: var(--t-2xl); line-height: 1.25; font-weight: var(--w-med);
+  letter-spacing: var(--ls-snug);
+}
+.brief-body { color: var(--fg-muted); max-width: 52ch; margin: 0; }
+.brief-score__h { font-size: var(--t-xl); margin: 0 0 var(--s-4); }
+
+.eq {
+  display: grid; gap: var(--s-5);
+  margin: 0 0 var(--s-6); padding: var(--s-6);
+  background: var(--bg-inset);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+}
+[data-theme="light"] .eq { background: var(--bg-elev-1); }
+.eq-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3); }
+.eq-lhs { flex: 0 0 3.6em; font-family: var(--font-headline); font-size: var(--t-xl); text-transform: uppercase; }
+.eq-op { flex: none; font-family: var(--font-mono); font-size: var(--t-lg); color: var(--fg-muted); }
+.eq-term { display: inline-flex; align-items: center; gap: var(--s-3); }
+.eq-pts { font-family: var(--font-headline); font-size: var(--t-4xl); line-height: 1; }
+.frac { display: inline-grid; text-align: center; font-size: var(--t-sm); line-height: 1.3; }
+.frac > span:first-child { padding-bottom: var(--s-1); border-bottom: 2px solid var(--fg); }
+.frac > span:last-child { padding-top: var(--s-1); color: var(--fg-muted); }
+
+.brief-score .spec { margin: 0; }
+
+/* ----- Leaderboards ----- */
+
+/* Without JavaScript both leaderboards simply stack. With it, the tabs appear
+   and only one panel shows. `js` is set in the head, before first paint. */
+.tabs { display: none; }
+.js .tabs {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3);
+  margin-bottom: var(--s-10);
+}
+.js .tabpanel { display: none; }
+.js .tabpanel.is-on { display: block; }
+html:not(.js) .tabpanel + .tabpanel { margin-top: var(--s-16); }
+
+.tab {
+  appearance: none; -webkit-appearance: none;
+  display: grid; gap: var(--s-1); text-align: left;
+  padding: var(--s-5) var(--s-6);
+  background: transparent; color: var(--fg-muted);
+  border: 1px solid var(--line); border-top: 3px solid var(--line);
+  border-radius: var(--r-1);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-mech), background var(--dur-fast) var(--ease-mech), border-color var(--dur-fast) var(--ease-mech);
+}
+.tab:hover { color: var(--fg); border-color: var(--line-strong); }
+.tab[aria-selected="true"] {
+  color: var(--fg); background: var(--bg-elev-1);
+  border-color: var(--line-strong); border-top-color: var(--accent);
+}
+.tab-t { font-family: var(--font-headline); font-size: var(--t-2xl); line-height: 1; text-transform: uppercase; }
+.tab-m {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-subtle);
+}
+
+.track-head {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+  gap: var(--s-10); align-items: start;
+  margin-bottom: var(--s-8);
+}
+.track-head__text { min-width: 0; }
+.track-head h3 { font-size: var(--t-2xl); margin: 0 0 var(--s-3); }
+.track-head p { color: var(--fg-muted); font-size: var(--t-sm); max-width: 52ch; margin: 0; }
+.track-head .spec { margin: var(--s-5) 0 var(--s-5); }
+.track-head .tmap-fig { margin: 0; }
+
+.more {
+  display: inline-flex; align-items: center; gap: var(--s-2);
+  font-family: var(--font-headline); font-size: var(--t-md);
+  letter-spacing: 0.02em; text-transform: uppercase;
+  color: var(--fg); text-decoration: none;
+}
+.more:hover { color: var(--accent); }
+.more .arw { font-family: var(--font-mono); color: var(--fg-subtle); transition: transform var(--dur-base) var(--ease-mech), color var(--dur-base) var(--ease-mech); }
+.more:hover .arw { color: var(--accent); transform: translateX(4px); }
+
+/* The leaderboard. A real table, so a screen reader announces each cell under
+   its column; the top three are set larger, and the bar is the score. */
+.board { overflow-x: auto; border: 1px solid var(--line); }
+.board table { width: 100%; border-collapse: collapse; font-size: var(--t-sm); }
+.board thead th {
+  padding: var(--s-3) var(--s-4);
+  background: var(--bg-elev-1);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono); font-size: 10px; font-weight: var(--w-med);
+  letter-spacing: 0.18em; text-transform: uppercase; text-align: left;
+  color: var(--fg-muted); white-space: nowrap;
+}
+.board .u { color: var(--fg-subtle); }
+.board .num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.board tbody th, .board tbody td {
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--line-faint);
+  font-weight: var(--w-reg); text-align: left; vertical-align: middle;
+}
+.board tbody .num { text-align: right; }
+.board tbody tr:last-child > * { border-bottom: 0; }
+.board tbody tr:hover > * { background: var(--bg-elev-1); }
+
+.board tbody .pos {
+  width: 72px;
+  font-family: var(--font-headline); font-size: var(--t-xl); line-height: 1;
+  color: var(--fg-subtle);
+}
+.board tbody .team { font-weight: var(--w-med); }
+
+.board .r--1 > *, .board .r--2 > *, .board .r--3 > * { padding-block: var(--s-4); }
+.board .r--1 .pos, .board .r--2 .pos, .board .r--3 .pos { font-size: var(--t-3xl); color: var(--fg); }
+.board .r--1 .team, .board .r--2 .team, .board .r--3 .team {
+  font-family: var(--font-headline); font-size: var(--t-xl); font-weight: var(--w-reg);
+  letter-spacing: 0.01em; text-transform: uppercase;
+}
+.board .r--1 { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.board .r--1 > :first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.board .r--1 .pos { color: var(--accent); }
+
+.board .score { width: 30%; min-width: 210px; }
+.score-in { display: flex; align-items: center; gap: var(--s-4); }
+.score-n { flex: none; min-width: 5ch; text-align: right; font-family: var(--font-mono); font-weight: var(--w-bold); }
+.bar { position: relative; flex: 1; height: 6px; background: var(--line); }
+.bar::after {
+  content: ""; position: absolute; inset: 0 auto 0 0;
+  width: var(--w); background: var(--fg-subtle);
+  transform-origin: left;
+  animation: bar-in var(--dur-slow) var(--ease-mech) both;
+  animation-delay: calc(var(--i) * 30ms);
+}
+.r--2 .bar::after, .r--3 .bar::after { background: var(--fg); }
+.r--1 .bar::after { background: var(--accent); }
+@keyframes bar-in { from { transform: scaleX(0); } }
+
+.board .r--dnf .team { color: var(--fg-subtle); font-style: italic; }
+.board .r--dnf .pos { color: var(--fg-subtle); }
+.chip {
+  display: inline-block; padding: 3px 9px;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em;
+  color: var(--accent);
+  border: 1px solid var(--accent); border-radius: var(--r-pill);
+}
+.chip abbr { text-decoration: none; }
+
+.board-note { margin: var(--s-4) 0 0; max-width: none; font-size: var(--t-sm); color: var(--fg-muted); }
+
+/* ----- Where next ----- */
+
+.outro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--s-16); align-items: start; }
+.outro .sec-h { max-width: 14ch; margin-bottom: var(--s-5); }
+.golinks { border-top: 1px solid var(--line); }
+.golink {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px var(--s-4); align-items: baseline;
+  padding: var(--s-5) 0;
+  border-bottom: 1px solid var(--line-faint);
+  color: var(--fg); text-decoration: none;
+  transition: padding var(--dur-fast) var(--ease-mech);
+}
+.golink:hover { color: var(--fg); padding-left: var(--s-2); }
+.golink-t { font-family: var(--font-headline); font-size: var(--t-xl); line-height: 1; text-transform: uppercase; transition: color var(--dur-fast) var(--ease-mech); }
+.golink-d { grid-column: 1; font-size: var(--t-sm); color: var(--fg-muted); }
+.golink .arw { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-family: var(--font-mono); color: var(--fg-subtle); transition: color var(--dur-fast) var(--ease-mech); }
+.golink:hover .golink-t, .golink:hover .arw { color: var(--accent); }
+
+@media (max-width: 1000px) {
+  .home-hero { grid-template-columns: minmax(0, 1fr); gap: var(--s-10); }
+  .winners { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .brief, .outro { grid-template-columns: minmax(0, 1fr); gap: var(--s-10); }
+}
+
+/* Lap and total points add up to the score beside them, so a narrow screen
+   keeps the score and the two times, and a table that fits. */
+@media (max-width: 1040px) {
+  .board .pts { display: none; }
+  .board .score { min-width: 160px; }
+}
+
+@media (max-width: 760px) {
+  .winners { grid-template-columns: minmax(0, 1fr); }
+  .win-n { font-size: 120px; }
+  .track-head { grid-template-columns: minmax(0, 1fr); gap: var(--s-6); }
+  .tab { padding: var(--s-4); }
+  .tab-t { font-size: var(--t-xl); }
+  .tab-m { letter-spacing: 0.08em; }
+
+  .board thead th, .board tbody th, .board tbody td { padding: var(--s-3) 6px; }
+  .board .num { font-size: 12px; }
+  .score-n { font-size: 13px; }
+  .board .u { display: none; }
+  .board tbody .team { overflow-wrap: anywhere; }
+  .board .r--1 > *, .board .r--2 > *, .board .r--3 > * { padding-block: var(--s-3); }
+  .board tbody .pos { width: 32px; padding-inline: 4px; text-align: center; }
+  .board .r--1 .pos, .board .r--2 .pos, .board .r--3 .pos { font-size: var(--t-2xl); }
+  .board .r--1 .team, .board .r--2 .team, .board .r--3 .team { font-size: var(--t-lg); }
+  .board .score { width: auto; min-width: 0; }
+  .score-in .bar { display: none; }
+  .score-n { min-width: 0; }
+  .board thead th { font-size: 9px; letter-spacing: 0.04em; line-height: 1.3; white-space: normal; }
+  .eq { padding: var(--s-4); }
+  .eq-lhs { flex-basis: auto; }
+  .eq-lhs:empty { display: none; }
+}

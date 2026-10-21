@@ -425,32 +425,47 @@ def e(text: str) -> str:
     return html.escape(str(text), quote=True)
 
 
-def header(cfg: dict, *, active: str, prefix: str) -> str:
+def header(cfg: dict, *, active: str, prefix: str, docs: bool = False) -> str:
+    """
+    `docs` is a chapter page: it has a sidebar to open on a phone, and commands
+    that follow the platform switch. Every other page has neither, so it gets
+    neither control, and keeps its nav on a narrow screen instead.
+    """
     repo_url = f"https://github.com/{cfg['repo']}"
-    links = []
-    for track in cfg["tracks"]:
-        on = " on" if active == track["id"] else ""
-        links.append(
-            f'<a class="{on.strip()}" href="{prefix}{track["id"]}/index.html">{e(track["name"])}</a>'
-        )
-    nav = "".join(links)
-    return f"""<header class="hdr">
+
+    def link(slug: str, href: str, label: str, extra: str = "") -> str:
+        cls = " ".join(c for c in (extra, "on" if active == slug else "") if c)
+        return f'<a class="{cls}" href="{prefix}{href}">{e(label)}</a>'
+
+    links = [link("home", "index.html#results", "Results")]
+    links += [
+        link(t["id"], f'{t["id"]}/index.html', t["name"], "hdr-nav__guide")
+        for t in cfg["tracks"]
+    ]
+    links.append(link("archive", "archive/index.html", "Archive"))
+
+    controls = platform_switch("pf-switch--hdr") if docs else ""
+    drawer = (
+        '<button class="navbtn" type="button" aria-label="Contents" aria-expanded="false" aria-controls="sidenav">'
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>'
+        "</button>"
+        if docs
+        else ""
+    )
+    return f"""<header class="hdr{"" if docs else " hdr--flat"}">
   <a class="hdr-brand" href="{prefix}index.html">
     <span class="wm">DeepSpeed</span>
     <span class="sub">Hackathon 26/27</span>
   </a>
-  <nav class="hdr-nav" aria-label="Tracks">{nav}</nav>
+  <nav class="hdr-nav" aria-label="Site">{"".join(links)}</nav>
   <div class="hdr-right">
-    <span class="hdr-meta">Deadline <b>{e(cfg['deadline'])}</b></span>
     <a class="hdr-meta" href="{repo_url}">GitHub</a>
-    {platform_switch("pf-switch--hdr")}
+    {controls}
     <button class="toggle" type="button" aria-label="Switch theme">
       <span class="t-light">Light</span><span class="t-dark">Dark</span>
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/></svg>
     </button>
-    <button class="navbtn" type="button" aria-label="Contents" aria-expanded="false" aria-controls="sidenav">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-    </button>
+    {drawer}
   </div>
 </header>"""
 
@@ -460,6 +475,8 @@ def footer(cfg: dict, *, prefix: str) -> str:
     return f"""<footer class="ft"><div class="ft-in">
   <span>NTU DeepSpeed &middot; Recruitment Hackathon 26/27</span>
   <nav>
+    <a href="{prefix}index.html#results">Results</a>
+    <a href="{prefix}archive/index.html">Archive</a>
     <a href="{prefix}track1/index.html">Track 1</a>
     <a href="{prefix}track2/index.html">Track 2</a>
     <a href="{repo_url}">Repository</a>
@@ -563,7 +580,7 @@ def build_track(cfg: dict, track: dict, src: Path, out: Path, tpl: str, assets: 
             tokens_css=assets["tokens.css"],
             docs_css=assets["docs.css"],
             app_js=assets["app.js"],
-            header=header(cfg, active=track["id"], prefix="../"),
+            header=header(cfg, active=track["id"], prefix="../", docs=True),
             sidebar=sidebar(cfg, track, pages, page),
             crumb=crumb,
             heading=e(page.title),
@@ -579,7 +596,7 @@ def build_track(cfg: dict, track: dict, src: Path, out: Path, tpl: str, assets: 
     return pages
 
 
-def deck(cfg: dict, assets: dict) -> str:
+def deck(cfg: dict, assets: dict, prefix: str) -> str:
     """
     The info-talk slides: a viewer that loads on demand, and the file itself.
 
@@ -593,7 +610,7 @@ def deck(cfg: dict, assets: dict) -> str:
     """
     talk = cfg["talk"]
     cover = talk["cover"]
-    src = assets[talk["file"]]
+    src = prefix + assets[talk["file"]]
 
     facts = "".join(
         f'<div class="row"><span class="k">{e(k)}</span><span class="v">{v}</span></div>'
@@ -609,7 +626,7 @@ def deck(cfg: dict, assets: dict) -> str:
   <div class="deck-main">
     <div class="deck-view" data-pdf="{src}" data-pdf-title="{e(talk['title'])}">
       <a class="deck-plate" href="{src}" target="_blank" rel="noopener">
-        <img class="deck-cover" src="{assets[cover['src']]}" alt="{e(cover['alt'])}"
+        <img class="deck-cover" src="{prefix}{assets[cover['src']]}" alt="{e(cover['alt'])}"
              width="{cover['w']}" height="{cover['h']}" loading="lazy" decoding="async">
         <span class="deck-bar">
           <span class="deck-bar__c">View the slides <span class="arw" aria-hidden="true">&rarr;</span></span>
@@ -629,7 +646,13 @@ def deck(cfg: dict, assets: dict) -> str:
 </div>"""
 
 
-def build_landing(cfg: dict, tracks_pages: dict, out: Path, assets: dict) -> None:
+def build_archive(cfg: dict, tracks_pages: dict, out: Path, assets: dict) -> None:
+    """
+    The competition page as it stood while the hackathon ran, one level down
+    from the root now that the home page shows the results. Registration is
+    closed, so the form is not linked from anywhere on it.
+    """
+    prefix = "../"
     cards = []
     for track in cfg["tracks"]:
         specs = "".join(
@@ -642,12 +665,12 @@ def build_landing(cfg: dict, tracks_pages: dict, out: Path, assets: dict) -> Non
         cls = "tmap-fig paper" if m.get("paper") else "tmap-fig"
         circuit = (
             f'<div class="{cls}">'
-            f'<img src="{assets[m["src"]]}" alt="{e(m["alt"])}"'
+            f'<img src="{prefix}{assets[m["src"]]}" alt="{e(m["alt"])}"'
             f' width="{m["w"]}" height="{m["h"]}" loading="lazy" decoding="async">'
             f"</div>"
         )
         cards.append(
-            f"""<a class="tcard" href="{track['id']}/index.html">
+            f"""<a class="tcard" href="{prefix}{track['id']}/index.html">
   <span class="tcard-n" aria-hidden="true">{e(track['num'])}</span>
   <div class="eyebrow">{e(track['name'])} &middot; {e(track['tag'])}</div>
   <h3>{e(track['title'])}</h3>
@@ -688,7 +711,7 @@ def build_landing(cfg: dict, tracks_pages: dict, out: Path, assets: dict) -> Non
             if not match:
                 continue
             title = title or match.short
-            links.append(f'<a href="{track["id"]}/{match.href}">{e(track["name"])}</a>')
+            links.append(f'<a href="{prefix}{track["id"]}/{match.href}">{e(track["name"])}</a>')
         blurb = cfg["chapter_notes"].get(number, "")
         chapters.append(
             f'<div class="row-item"><span class="k">Chapter {e(number)}</span>'
@@ -711,35 +734,202 @@ def build_landing(cfg: dict, tracks_pages: dict, out: Path, assets: dict) -> Non
         )
     quick_html = swap_platform_paths("".join(quickstart))
 
-    tpl = load_template("index.html")
-    out.mkdir(parents=True, exist_ok=True)
-    (out / "index.html").write_text(
+    tpl = load_template("archive.html")
+    dest = out / "archive"
+    dest.mkdir(parents=True, exist_ok=True)
+    (dest / "index.html").write_text(
         fill(
             tpl,
             lang="en",
-            title=f"{cfg['org']} &middot; {cfg['title']}",
-            description=e(cfg["description"]),
-            prefix="",
+            title=f"Archive &middot; {cfg['org']} &middot; {cfg['title']}",
+            description=e(f"The competition page for the {cfg['title']}, kept as it ran. {cfg['description']}"),
+            prefix=prefix,
             tokens_css=assets["tokens.css"],
             docs_css=assets["docs.css"],
             app_js=assets["app.js"],
-            header=header(cfg, active="", prefix=""),
+            header=header(cfg, active="archive", prefix=prefix),
             hero_lede=e(cfg["description"]),
             hero_switch=platform_switch("pf-switch--hero"),
             deadline_full=e(cfg["deadline_full"]),
-            register_url=e(cfg["register"]["url"]),
-            register_cta=e(cfg["register"]["cta"]),
             register_deadline_full=e(cfg["register"]["deadline_full"]),
             stats=stats,
             tracks="".join(cards),
             talk_lede=e(cfg["talk"]["lede"]),
-            talk=deck(cfg, assets),
+            talk=deck(cfg, assets, prefix),
             shared=shared,
             chapters="".join(chapters),
             quick_switch=platform_switch("pf-switch--quick"),
             quickstart=quick_html,
             repo_url=f"https://github.com/{cfg['repo']}",
             contact=e(cfg["contact"]),
+            footer=footer(cfg, prefix=prefix),
+        ),
+        encoding="utf-8",
+    )
+
+
+# --------------------------------------------------------------------------
+# Home: the results
+#
+# The two leaderboards live in results.json, one row per team in rank order,
+# transcribed from the official score sheets. Everything the page shows from
+# them — the winners, the counts, the width of each score bar — is derived, so
+# correcting a sheet is a one-file change.
+# --------------------------------------------------------------------------
+def seconds(value: float) -> str:
+    return f"{value:.4f}"
+
+
+def points(value: float) -> str:
+    return f"{value:.2f}"
+
+
+def board(data: dict) -> str:
+    """One track's leaderboard: finishers in rank order, then the DNFs."""
+    head = (
+        '<tr><th scope="col" class="pos">Pos</th><th scope="col">Team</th>'
+        '<th scope="col" class="num">Best lap <span class="u">s</span></th>'
+        '<th scope="col" class="num">Adjusted total <span class="u">s</span></th>'
+        '<th scope="col" class="num pts">Lap pts <span class="u">/50</span></th>'
+        '<th scope="col" class="num pts">Total pts <span class="u">/50</span></th>'
+        '<th scope="col" class="score">Score <span class="u">/100</span></th></tr>'
+    )
+    rows = []
+    for index, (team, total, lap, lap_pts, total_pts, score) in enumerate(data["teams"]):
+        place = index + 1
+        cls = f"r r--{place}" if place <= 3 else "r"
+        rows.append(
+            f'<tr class="{cls}" style="--i:{index};--w:{score:.4f}%">'
+            f'<td class="pos">{place}</td>'
+            f'<th scope="row" class="team">{e(team)}</th>'
+            f'<td class="num">{seconds(lap)}</td>'
+            f'<td class="num">{seconds(total)}</td>'
+            f'<td class="num pts">{points(lap_pts)}</td>'
+            f'<td class="num pts">{points(total_pts)}</td>'
+            f'<td class="score"><div class="score-in"><span class="score-n">{points(score)}</span>'
+            f'<span class="bar" aria-hidden="true"></span></div></td></tr>'
+        )
+    for team in data["dnf"]:
+        # Same five cells as a finisher, so the columns hidden on a phone are
+        # hidden from every row alike.
+        rows.append(
+            '<tr class="r r--dnf"><td class="pos">&ndash;</td>'
+            f'<th scope="row" class="team">{e(team)}</th>'
+            '<td class="num"></td><td class="num"></td>'
+            '<td class="num pts"></td><td class="num pts"></td>'
+            '<td class="score"><span class="chip"><abbr title="Did not finish">DNF</abbr></span></td></tr>'
+        )
+    return (
+        '<div class="board"><table>'
+        f"<thead>{head}</thead><tbody>{''.join(rows)}</tbody></table></div>"
+    )
+
+
+def results_section(cfg: dict, results: dict, assets: dict, prefix: str) -> str:
+    """Track switcher plus one panel per track. Without JS every panel shows."""
+    tabs, panels = [], []
+    for n, track in enumerate(cfg["tracks"], start=1):
+        data = results["tracks"][track["id"]]
+        entered = len(data["teams"]) + len(data["dnf"])
+        on = n == 1
+
+        tabs.append(
+            f'<button class="tab" type="button" role="tab" id="tab-{n}" aria-controls="track-{n}" '
+            f'aria-selected="{"true" if on else "false"}" tabindex="{0 if on else -1}">'
+            f'<span class="tab-t">{e(track["name"])}</span>'
+            f'<span class="tab-m">{e(track["tag"])} &middot; {entered} teams</span></button>'
+        )
+
+        specs = dict(track["specs"])
+        facts = "".join(
+            f'<div class="row"><span class="k">{e(k)}</span><span class="v">{specs[k]}</span></div>'
+            for k in ("Circuit", "Control", "Timing")
+        )
+        m = track["map"]
+        cls = "tmap-fig paper" if m.get("paper") else "tmap-fig"
+        panels.append(
+            f"""<section class="tabpanel{" is-on" if on else ""}" id="track-{n}" role="tabpanel" aria-labelledby="tab-{n}">
+  <div class="track-head">
+    <div class="track-head__text">
+      <h3>{e(track['title'])}</h3>
+      <p>{e(track['brief'])}</p>
+      <div class="spec">{facts}</div>
+      <a class="more" href="{prefix}{track['id']}/index.html">{e(track['cta'])} <span class="arw" aria-hidden="true">&rarr;</span></a>
+    </div>
+    <div class="{cls}"><img src="{prefix}{assets[m['src']]}" alt="{e(m['alt'])}" width="{m['w']}" height="{m['h']}" loading="lazy" decoding="async"></div>
+  </div>
+  {board(data)}
+</section>"""
+        )
+
+    return (
+        f'<div class="tabs" role="tablist" aria-label="Track">{"".join(tabs)}</div>'
+        f'{"".join(panels)}'
+    )
+
+
+def winners(cfg: dict, results: dict) -> str:
+    plates = []
+    for n, track in enumerate(cfg["tracks"], start=1):
+        team, total, lap, *_ = results["tracks"][track["id"]]["teams"][0]
+        plates.append(
+            f'<a class="win" href="#track-{n}">'
+            f'<span class="win-n" aria-hidden="true">1</span>'
+            f'<span class="win-k">{e(track["name"])} winner</span>'
+            f'<span class="win-team">{e(team)}</span>'
+            f'<span class="win-m"><span><b>{seconds(lap)}</b> s best lap</span>'
+            f'<span><b>{seconds(total)}</b> s adjusted total</span></span></a>'
+        )
+    return "".join(plates)
+
+
+def build_home(cfg: dict, results: dict, out: Path, assets: dict) -> None:
+    tracks = [results["tracks"][t["id"]] for t in cfg["tracks"]]
+    finished = sum(len(t["teams"]) for t in tracks)
+    entered = finished + sum(len(t["dnf"]) for t in tracks)
+    first = [t["teams"][0][0] for t in tracks]
+    closed = cfg["deadline_full"].split(",")[0]
+
+    golinks = [
+        ("Competition archive", "The rules, both track guides, the info-talk slides and the quick-start commands.",
+         "archive/index.html"),
+        *(
+            (f'{t["name"]} guide', f'{e(t["tag"])} &middot; {e(t["title"])}', f'{t["id"]}/index.html')
+            for t in cfg["tracks"]
+        ),
+        ("Repository", "The code, on GitHub.", f"https://github.com/{cfg['repo']}"),
+    ]
+
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "index.html").write_text(
+        fill(
+            load_template("home.html"),
+            lang="en",
+            title=f"{cfg['org']} &middot; {cfg['title']} &middot; Results",
+            description=e(
+                f"Results of the {cfg['title']}: {entered} teams, two tracks, one problem. "
+                f"{first[0]} won Track 1 and {first[1]} won Track 2."
+            ),
+            prefix="",
+            tokens_css=assets["tokens.css"],
+            docs_css=assets["docs.css"],
+            app_js=assets["app.js"],
+            header=header(cfg, active="home", prefix=""),
+            hero_lede=e(
+                f"Submissions closed on {closed}. {entered} teams entered across the two tracks "
+                f"and {finished} finished. These two took the flag."
+            ),
+            winners=winners(cfg, results),
+            results_lede="Final standings for both tracks, ranked by score. Select a track to see every team that entered.",
+            results=results_section(cfg, results, assets, ""),
+            archive_lede=(
+                "The competition page as it ran, kept whole. Registration and submissions are closed."
+            ),
+            golinks="".join(
+                f'<a class="golink" href="{href}"><span class="golink-t">{e(title)}</span>'
+                f'<span class="golink-d">{note}</span><span class="arw" aria-hidden="true">&rarr;</span></a>'
+                for title, note, href in golinks
+            ),
             footer=footer(cfg, prefix=""),
         ),
         encoding="utf-8",
@@ -811,9 +1001,11 @@ def main() -> int:
         help="checkout of a track branch, e.g. track1=/tmp/track1",
     )
     parser.add_argument("--config", default=HERE / "site.json", type=Path)
+    parser.add_argument("--results", default=HERE / "results.json", type=Path)
     args = parser.parse_args()
 
     cfg = json.loads(args.config.read_text(encoding="utf-8"))
+    results = json.loads(args.results.read_text(encoding="utf-8"))
     roots = dict(pair.split("=", 1) for pair in args.src)
     missing = [t["id"] for t in cfg["tracks"] if t["id"] not in roots]
     if missing:
@@ -833,10 +1025,11 @@ def main() -> int:
         pages[track["id"]] = build_track(cfg, track, src, out, page_tpl, assets)
         print(f"  {track['id']}: {len(pages[track['id']])} pages", file=sys.stderr)
 
-    build_landing(cfg, pages, out, assets)
+    build_home(cfg, results, out, assets)
+    build_archive(cfg, pages, out, assets)
     build_404(cfg, out, assets)
 
-    total = sum(len(p) for p in pages.values()) + 2
+    total = sum(len(p) for p in pages.values()) + 3
     print(f"built {total} pages into {out}", file=sys.stderr)
     return 0
 

@@ -15,9 +15,9 @@ that the lion is a logo, not an icon, and the favicon is one of the two places
 it is allowed below 64px. The header carries the wordmark instead.
 
 `track1-circuit.png` and `track2-circuit.png` are the two circuits, one per
-track card on the landing page. They are the source pictures reduced to 8-bit
-greyscale — both were already neutral, so nothing but weight was lost — with
-two deliberate changes:
+track on the home page's leaderboards and on the archive's track cards. They
+are the source pictures reduced to 8-bit greyscale — both were already neutral,
+so nothing but weight was lost — with two deliberate changes:
 
 - **Track 1** is the `icra26` occupancy grid: dark walls, a white drivable
   corridor, grey everywhere else. It is untouched apart from the greyscale
@@ -35,7 +35,7 @@ Replacing either one is a matter of dropping in a new file and correcting the
 
 `deepspeed-info-talk-17-sep-2026.pdf` is the deck from the recruitment and
 hackathon info talk given on 17 September 2026, 31 slides, exactly as
-presented. The landing page links to it twice — once to open and once to
+presented. The archive page links to it twice — once to open and once to
 download — and `app.js` loads it into an inline viewer on a wide screen. It is
 the heaviest thing the site serves, so nothing fetches it until a reader asks.
 
