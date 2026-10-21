@@ -1,6 +1,7 @@
 /* DeepSpeed hackathon docs — behaviour.
    Theme is applied by an inline head script so there is no flash; this file
-   only handles the toggle, the mobile drawer, code copying and scrollspy. */
+   handles the toggle, the mobile drawer, code copying, the slide viewer, the
+   results tabs and scrollspy. */
 (function () {
   "use strict";
 
@@ -102,6 +103,51 @@
       deck.replaceChild(frame, plate);
       frame.focus();
     });
+  }
+
+  /* ---- Results tabs ---------------------------------------------------
+     One leaderboard at a time. Both are in the HTML, so with this script off
+     they just stack. The hero's winner plates link to #track-N and so can any
+     outside link, which means the tab has to open before the page can scroll
+     to it — hence taking over those links, and the hash on load. */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.tabs [role="tab"]'));
+  if (tabs.length) {
+    var panels = tabs.map(function (t) { return document.getElementById(t.getAttribute("aria-controls")); });
+    var select = function (i, focus) {
+      tabs.forEach(function (t, n) {
+        var on = n === i;
+        t.setAttribute("aria-selected", on ? "true" : "false");
+        t.tabIndex = on ? 0 : -1;
+        panels[n].classList.toggle("is-on", on);
+      });
+      if (focus) tabs[i].focus();
+    };
+    var open = function (hash, scroll) {
+      var i = panels.map(function (p) { return "#" + p.id; }).indexOf(hash);
+      if (i < 0) return false;
+      select(i);
+      if (scroll) document.getElementById("results").scrollIntoView();
+      return true;
+    };
+
+    tabs.forEach(function (t, i) {
+      t.addEventListener("click", function () { select(i); });
+      t.addEventListener("keydown", function (ev) {
+        var next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[ev.key];
+        if (next === undefined) return;
+        ev.preventDefault();
+        select((next + tabs.length) % tabs.length, true);
+      });
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll('a[href^="#track-"]'), function (a) {
+      a.addEventListener("click", function (ev) {
+        if (!open(a.getAttribute("href"), true)) return;
+        ev.preventDefault();
+        try { history.replaceState(null, "", a.getAttribute("href")); } catch (e) { /* sandboxed */ }
+      });
+    });
+    open(location.hash, true);
   }
 
   /* ---- Scrollspy for "On this page" --------------------------------- */

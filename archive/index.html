@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-platform="linux">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Archive &middot; NTU DeepSpeed &middot; Recruitment Hackathon 26/27</title>
+<meta name="description" content="The competition page for the Recruitment Hackathon 26/27, kept as it ran. Write the software that drives a 1/10-scale racing car around a circuit it has never seen, as fast as it can, without hitting anything. Two tracks, two simulators, one problem.">
+<meta name="color-scheme" content="dark light">
+<meta property="og:title" content="Archive &middot; NTU DeepSpeed &middot; Recruitment Hackathon 26/27">
+<meta property="og:description" content="The competition page for the Recruitment Hackathon 26/27, kept as it ran. Write the software that drives a 1/10-scale racing car around a circuit it has never seen, as fast as it can, without hitting anything. Two tracks, two simulators, one problem.">
+<meta property="og:type" content="website">
+<script>
+/* Applied before paint, so the page never flashes the wrong theme or the
+   wrong platform's commands. Dark is the brand default — the identity lives
+   on black — and the platform falls back to the one you appear to be on. */
+(function () {
+  var root = document.documentElement, theme, platform;
+  try {
+    theme = localStorage.getItem("ds-theme");
+    platform = localStorage.getItem("ds-platform");
+  } catch (e) { /* storage blocked */ }
+  root.setAttribute("data-theme", theme === "light" ? "light" : "dark");
+  if (!platform) {
+    var ua = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || "";
+    platform = /mac/i.test(ua) ? "macos" : /win/i.test(ua) ? "windows" : "linux";
+  }
+  root.setAttribute("data-platform", platform);
+})();
+</script>
+<meta name="theme-color" content="#0A0A0B">
+<link rel="icon" type="image/png" href="../assets/favicon.png">
+<link rel="apple-touch-icon" href="../assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../assets/tokens.1d09187847.css">
+<link rel="stylesheet" href="../assets/docs.e3775c40f0.css">
+</head>
+<body>
+<a class="skip" href="#tracks">Skip to the tracks</a>
+<header class="hdr hdr--flat">
+  <a class="hdr-brand" href="../index.html">
+    <span class="wm">DeepSpeed</span>
+    <span class="sub">Hackathon 26/27</span>
+  </a>
+  <nav class="hdr-nav" aria-label="Site"><a class="" href="../index.html#results">Results</a><a class="hdr-nav__guide" href="../track1/index.html">Track 1</a><a class="hdr-nav__guide" href="../track2/index.html">Track 2</a><a class="on" href="../archive/index.html">Archive</a></nav>
+  <div class="hdr-right">
+    <a class="hdr-meta" href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">GitHub</a>
+    
+    <button class="toggle" type="button" aria-label="Switch theme">
+      <span class="t-light">Light</span><span class="t-dark">Dark</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/></svg>
+    </button>
+    
+  </div>
+</header>
+
+<main class="page">
+
+  <aside class="arch-note" aria-label="About this page">
+    <span class="arch-note__k">Archive</span>
+    <p>This is the competition page as it stood while the hackathon ran. Registration and submissions are closed &mdash; the final results are on the <a href="../index.html#results">home page</a>.</p>
+  </aside>
+
+  <section class="hero">
+    <div class="hero-grid" aria-hidden="true"></div>
+    <div class="eyebrow">NTU DeepSpeed &middot; Recruitment Hackathon 26/27</div>
+    <h1 class="hero-display">Drive fast. <span class="red">Don&rsquo;t crash.</span></h1>
+    <p class="hero-sub">Write the software that drives a 1/10-scale racing car around a circuit it has never seen, as fast as it can, without hitting anything. Two tracks, two simulators, one problem.</p>
+    <div class="hero-act">
+      <button class="btn accent" type="button" disabled>Registration closed</button>
+      <a class="btn ghost" href="#tracks">Choose a track</a>
+      <a class="btn ghost" href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">Repository</a>
+    </div>
+    <p class="hero-note">Registration closed <b>24 September 2026, 23:59 SGT</b>. Submissions closed 18 October 2026, 23:59 SGT.</p>
+    <div class="hero-pf">
+      <span class="eyebrow">Your platform</span>
+      <div class="pf-switch pf-switch--hero" role="group" aria-label="Platform"><button type="button" data-set-pf="linux">Linux</button><button type="button" data-set-pf="macos">macOS</button><button type="button" data-set-pf="windows">Windows</button></div>
+      <span class="hero-pf__note">Every command on this site follows it.</span>
+    </div>
+  </section>
+
+  <section class="stat-grid"><div class="stat-panel"><div class="k">Registration closed</div><div class="v">24 Sep</div><div class="foot">2026 · 23:59 SGT</div></div><div class="stat-panel"><div class="k">Submissions closed</div><div class="v">18 Oct</div><div class="foot">2026 · 23:59 SGT</div></div><div class="stat-panel"><div class="k">Team size</div><div class="v">3–5</div><div class="foot">Fixed at submission</div></div><div class="stat-panel"><div class="k">Collision</div><div class="v">+10<span class="u">s</span></div><div class="foot">Over 10 is a DQ</div></div></section>
+
+  <section class="sec" id="tracks">
+    <div class="sec-head">
+      <div>
+        <div class="sec-num">01 / Pick one</div>
+        <h2 class="sec-h">Choose your track</h2>
+      </div>
+      <p class="sec-lede">Two tracks, two simulators, one problem: get round the circuit faster than everyone else without touching anything. Each track has its own branch and its own guide.</p>
+    </div>
+    <div class="tracks"><a class="tcard" href="../track1/index.html">
+  <span class="tcard-n" aria-hidden="true">01</span>
+  <div class="eyebrow">Track 1 &middot; f1tenth_gym</div>
+  <h3>RoboRacer Autonomous Racing</h3>
+  <p class="lede">Everything in one repository — simulator, judging environment and every official track. No driver ships: you pick the algorithm and write it. Ask the car for a speed and a steering angle; the sim closes the loop for you.</p>
+  <div class="tmap-fig paper"><img src="../assets/track1-circuit.png" alt="Plan of the icra26 circuit: a squarish 17 by 18 metre corridor that runs round the outside, doubles back through the middle past a hairpin, and is marked out with cones." width="506" height="540" loading="lazy" decoding="async"></div>
+  <div class="spec"><div class="row"><span class="k">Simulator</span><span class="v">f1tenth_gym + ROS 2 bridge</span></div><div class="row"><span class="k">Control</span><span class="v">AckermannDriveStamped — ask for a speed</span></div><div class="row"><span class="k">LiDAR</span><span class="v">819 beams · 270° · 25 m</span></div><div class="row"><span class="k">Circuit</span><span class="v">icra26 · 17 × 18 m · 78 m lap</span></div><div class="row"><span class="k">Timing</span><span class="v">Our referee, against a finish line</span></div><div class="row"><span class="k">Install</span><span class="v">git clone --recurse-submodules</span></div></div>
+  <div class="tcard-foot"><span>Read the Track 1 guide</span><span class="arw">&rarr;</span></div>
+</a><a class="tcard" href="../track2/index.html">
+  <span class="tcard-n" aria-hidden="true">02</span>
+  <div class="eyebrow">Track 2 &middot; AutoDRIVE</div>
+  <h3>RoboRacer Sim Racing on AutoDRIVE</h3>
+  <p class="lede">The compete phase of the RoboRacer Sim Racing League at ICRA 2026 — same vehicle, same sensors, same circuit the ICRA teams raced. You publish raw throttle, so the speed controller is yours to write.</p>
+  <div class="tmap-fig"><img src="../assets/track2-circuit.png" alt="The ICRA 2026 compete circuit seen from above in AutoDRIVE: a long, narrow loop, 6.3 by 18.2 metres, with a tight hairpin at one end and an inner section running back down the middle." width="755" height="370" loading="lazy" decoding="async"></div>
+  <div class="spec"><div class="row"><span class="k">Simulator</span><span class="v">AutoDRIVE · Unity binary, 140 MB</span></div><div class="row"><span class="k">Control</span><span class="v">Float32 throttle in [−1, 1] — torque</span></div><div class="row"><span class="k">LiDAR</span><span class="v">1080 beams · 270° · 10 m · 40 Hz</span></div><div class="row"><span class="k">Circuit</span><span class="v">ICRA 2026 compete · 6.3 × 18.2 m · 54 m lap</span></div><div class="row"><span class="k">Timing</span><span class="v">The simulator's own clock</span></div><div class="row"><span class="k">Install</span><span class="v">Plain clone + fetch_simulator.sh</span></div></div>
+  <div class="tcard-foot"><span>Read the Track 2 guide</span><span class="arw">&rarr;</span></div>
+</a></div>
+  </section>
+
+  <section class="sec" id="slides">
+    <div class="sec-head">
+      <div>
+        <div class="sec-num">02 / Info talk</div>
+        <h2 class="sec-h">The slides</h2>
+      </div>
+      <p class="sec-lede">Every slide from the info talk on 17 September 2026 — who DeepSpeed are, what we race, the rules, the scoring, and what happens between your submission and an offer. Read them here, or take the file with you.</p>
+    </div>
+    <div class="deck">
+  <div class="deck-main">
+    <div class="deck-view" data-pdf="../assets/deepspeed-info-talk-17-sep-2026.pdf" data-pdf-title="Recruitment &amp; Hackathon Info Talk">
+      <a class="deck-plate" href="../assets/deepspeed-info-talk-17-sep-2026.pdf" target="_blank" rel="noopener">
+        <img class="deck-cover" src="../assets/info-talk-cover.jpg" alt="The title slide: DeepSpeed, Recruitment &amp; Hackathon Info Talk, presented by NTU DeepSpeed — orange type on black crumpled paper, the team&#x27;s lion above it and chequered flags down both edges."
+             width="1440" height="810" loading="lazy" decoding="async">
+        <span class="deck-bar">
+          <span class="deck-bar__c">View the slides <span class="arw" aria-hidden="true">&rarr;</span></span>
+          <span class="deck-bar__f">PDF &middot; 1.9 MB &middot; 31 slides</span>
+        </span>
+      </a>
+    </div>
+    <div class="deck-act">
+      <a class="btn accent" href="../assets/deepspeed-info-talk-17-sep-2026.pdf" target="_blank" rel="noopener">Open in a new tab</a>
+      <a class="btn ghost" href="../assets/deepspeed-info-talk-17-sep-2026.pdf" download>Download the PDF</a>
+    </div>
+  </div>
+  <aside class="deck-side">
+    <div class="spec"><div class="row"><span class="k">Talk</span><span class="v">17 September 2026</span></div><div class="row"><span class="k">Slides</span><span class="v">31</span></div><div class="row"><span class="k">File</span><span class="v">PDF &middot; 1.9 MB</span></div><div class="row"><span class="k">Deck</span><span class="v">Presented by NTU DeepSpeed</span></div></div>
+    <ol class="deck-ag"><li><span class="n">01</span><span class="t">About us</span><span class="d">RoboRacer and DeepSpeed, and where we have raced</span></li><li><span class="n">02</span><span class="t">The tech</span><span class="d">The race stack, and what you learn by writing one</span></li><li><span class="n">03</span><span class="t">The hackathon</span><span class="d">Rules, scoring, the two tracks, and how recruitment runs</span></li><li><span class="n">04</span><span class="t">Q&amp;A</span><span class="d">Everything the slides did not answer</span></li></ol>
+  </aside>
+</div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <div>
+        <div class="sec-num">03 / Shared</div>
+        <h2 class="sec-h">The same for both</h2>
+      </div>
+      <p class="sec-lede">Whichever track you take, these do not change. The full rules live in chapter 6 of your track&rsquo;s guide and they are what counts.</p>
+    </div>
+    <div class="rows"><div class="row-item"><span class="k">Registration</span><span class="v">Closed 24 September 2026, 23:59 SGT</span><span class="n">One form per team, whichever track you took</span></div><div class="row-item"><span class="k">Submission</span><span class="v">Closed 18 October 2026, 23:59 SGT</span><span class="n">Late entries were not scored</span></div><div class="row-item"><span class="k">Team size</span><span class="v">3 to 5 members</span><span class="n">One team per person, roster fixed at submission</span></div><div class="row-item"><span class="k">Score</span><span class="v">50 fastest lap + 50 ten-lap total</span><span class="n">Relative to the fastest team, out of 100</span></div><div class="row-item"><span class="k">Penalties</span><span class="v red">+10 s per collision, DQ above 10</span><span class="n">Contact is the first problem to solve</span></div><div class="row-item"><span class="k">Localisation</span><span class="v">Ground-truth pose is allowed</span><span class="n">And recommended — replacing it earns bonus marks</span></div><div class="row-item"><span class="k">AI assistants</span><span class="v">Allowed</span><span class="n">You explain your code at the interview</span></div><div class="row-item"><span class="k">Judging machine</span><span class="v">i9-14900HX · 32 GB · RTX 5060 Laptop</span><span class="n">Simulated clock, so your hardware does not matter</span></div><div class="row-item"><span class="k">Every push</span><span class="v">Races on GitHub Actions</span><span class="n">Result lands in the workflow summary</span></div></div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <div>
+        <div class="sec-num">04 / Contents</div>
+        <h2 class="sec-h">Inside the guide</h2>
+      </div>
+      <p class="sec-lede">Seven chapters, written per track. Jump straight to the chapter you need on either side.</p>
+    </div>
+    <div class="rows"><div class="row-item"><span class="k">Chapter 01</span><span class="v">Setup<br><span style="color:var(--fg-muted);font-weight:400">Docker, the simulator, the first run, and what to do when it breaks</span></span><span class="n"><a href="../track1/01-setup.html">Track 1</a> &middot; <a href="../track2/01-setup.html">Track 2</a></span></div><div class="row-item"><span class="k">Chapter 02</span><span class="v">The simulator<br><span style="color:var(--fg-muted);font-weight:400">Every topic, the vehicle, and the sensor specifications</span></span><span class="n"><a href="../track1/02-simulator.html">Track 1</a> &middot; <a href="../track2/02-simulator.html">Track 2</a></span></div><div class="row-item"><span class="k">Chapter 03</span><span class="v">ROS 2 primer<br><span style="color:var(--fg-muted);font-weight:400">Nodes and topics from scratch, if ROS 2 is new to you</span></span><span class="n"><a href="../track1/03-workshop.html">Track 1</a> &middot; <a href="../track2/03-workshop.html">Track 2</a></span></div><div class="row-item"><span class="k">Chapter 04</span><span class="v">Algorithms to start from<br><span style="color:var(--fg-muted);font-weight:400">Reactive, planned, model-based and learned — which approach to pick, and why</span></span><span class="n"><a href="../track1/04-algorithms.html">Track 1</a> &middot; <a href="../track2/04-algorithms.html">Track 2</a></span></div><div class="row-item"><span class="k">Chapter 05</span><span class="v">Evaluation<br><span style="color:var(--fg-muted);font-weight:400">Scoring yourself, reading results, and how judging day runs</span></span><span class="n"><a href="../track1/05-evaluation.html">Track 1</a> &middot; <a href="../track2/05-evaluation.html">Track 2</a></span></div><div class="row-item"><span class="k">Chapter 06</span><span class="v">Rules<br><span style="color:var(--fg-muted);font-weight:400">The rules, the scoring formula, and what gets you disqualified</span></span><span class="n"><a href="../track1/06-rules.html">Track 1</a> &middot; <a href="../track2/06-rules.html">Track 2</a></span></div><div class="row-item"><span class="k">Chapter 07</span><span class="v">Submission<br><span style="color:var(--fg-muted);font-weight:400">What to hand in, how, and what the interview covers</span></span><span class="n"><a href="../track1/07-submission.html">Track 1</a> &middot; <a href="../track2/07-submission.html">Track 2</a></span></div></div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <div>
+        <div class="sec-num">05 / Go</div>
+        <h2 class="sec-h">Start here</h2>
+      </div>
+      <p class="sec-lede">Clone once, check out the branch for your track, then follow chapter 1. Registration closed 24 September 2026, 23:59 SGT; submissions closed 18 October 2026, 23:59 SGT.</p>
+    </div>
+    <div class="pf-switch pf-switch--quick" role="group" aria-label="Platform"><button type="button" data-set-pf="linux">Linux</button><button type="button" data-set-pf="macos">macOS</button><button type="button" data-set-pf="windows">Windows</button></div>
+    <div class="quick"><div><div class="eyebrow" style="margin-bottom:var(--s-3)">Track 1 &middot; branch <span class="r">track1</span></div><pre>git clone --recurse-submodules \
+  https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627.git
+cd Recruitment_Hackathon_2627
+git checkout track1
+
+./install/<span class="pf" data-pf="linux">linux</span><span class="pf" data-pf="macos">macos</span><span class="pf" data-pf="windows">windows</span>/setup.sh   # builds the image, once
+./install/<span class="pf" data-pf="linux">linux</span><span class="pf" data-pf="macos">macos</span><span class="pf" data-pf="windows">windows</span>/run.sh     # builds, then drops you in</pre></div><div><div class="eyebrow" style="margin-bottom:var(--s-3)">Track 2 &middot; branch <span class="r">track2</span></div><pre>git clone \
+  https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627.git
+cd Recruitment_Hackathon_2627
+git checkout track2
+
+./scripts/fetch_simulator.sh   # 140 MB, once
+./install/<span class="pf" data-pf="linux">linux</span><span class="pf" data-pf="macos">macos</span><span class="pf" data-pf="windows">windows</span>/setup.sh       # builds the image, once
+./install/<span class="pf" data-pf="linux">linux</span><span class="pf" data-pf="macos">macos</span><span class="pf" data-pf="windows">windows</span>/run.sh         # builds, then drops you in</pre></div></div>
+  </section>
+
+</main>
+<footer class="ft"><div class="ft-in">
+  <span>NTU DeepSpeed &middot; Recruitment Hackathon 26/27</span>
+  <nav>
+    <a href="../index.html#results">Results</a>
+    <a href="../archive/index.html">Archive</a>
+    <a href="../track1/index.html">Track 1</a>
+    <a href="../track2/index.html">Track 2</a>
+    <a href="https://github.com/NTUDeepSpeed/Recruitment_Hackathon_2627">Repository</a>
+    <a href="mailto:ntu-deepspeed@e.ntu.edu.sg">ntu-deepspeed@e.ntu.edu.sg</a>
+  </nav>
+</div></footer>
+<script src="../assets/app.ca5c0a5b18.js" defer></script>
+</body>
+</html>
